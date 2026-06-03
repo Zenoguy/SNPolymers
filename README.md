@@ -103,6 +103,46 @@ npm run dev
 The client UI will run on `http://localhost:5173`.
 
 ---
+---
+
+## 🌐 Live Deployment
+
+### Production Environment
+
+| Service | URL |
+|----------|-----|
+| Frontend (Vercel) | https://sn-polymers-hq6rjgu36-zenoguys-projects.vercel.app |
+| Backend API (Render) | https://snpolymers.onrender.com |
+| API Health Check | https://snpolymers.onrender.com/health |
+
+### API Base URL
+
+```text
+https://snpolymers.onrender.com/api/v1/auth
+```
+
+### Deployment Architecture
+
+```text
+User
+  ↓
+Vercel Frontend
+  ↓
+Render Backend API
+  ↓
+Supabase PostgreSQL
+
+       ↓
+
+Twilio WhatsApp OTP
+```
+
+> **Note:** The frontend communicates with the backend through the `VITE_API_URL` environment variable. For production deployments this is configured as:
+
+```env
+VITE_API_URL=https://snpolymers.onrender.com/api/v1/auth
+```
+---
 
 ## 🔒 Security & Best Practices
 
