@@ -1,16 +1,72 @@
-# React + Vite
+# S.N. Polymers - IDBP Frontend Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![React](https://img.shields.io/badge/react-%5E19.0.0-blue.svg)](https://react.dev)
+[![Vite](https://img.shields.io/badge/vite-%5E8.0.0-blue.svg)](https://vite.dev)
+[![Tailwind CSS](https://img.shields.io/badge/tailwindcss-%5E3.4.4-blueviolet.svg)](https://tailwindcss.com)
 
-Currently, two official plugins are available:
+This directory contains the user interface for the S.N. Polymers **Integrated Digital Business Platform (IDBP)**. It is built as a single-page React application powered by Vite, Tailwind CSS, and Axios.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 📂 Project Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+frontend/
+├── src/
+│   ├── api/
+│   │   └── client.js        # Configured Axios client with base URL & cookies credentials
+│   ├── components/
+│   │   ├── AuthContext.jsx  # Global React Context tracking session details
+│   │   └── ProtectedRoute.jsx # Route guards verifying active user sessions
+│   ├── pages/
+│   │   ├── admin/
+│   │   │   ├── AdminPanel.jsx # Audit panel & approval hub for pending registrations
+│   │   │   └── AuditLog.jsx   # Searchable and paginated logs dashboard
+│   │   ├── Dashboard.jsx    # Portal hub for approved employees
+│   │   ├── Home.jsx         # Landing page and gateway route selector
+│   │   ├── Login.jsx        # Login entry point with credentials validation
+│   │   └── OtpVerify.jsx    # Dedicated OTP authentication checkpoint
+│   ├── App.jsx              # Application router registry
+│   ├── index.css            # Tailwind theme tokens and base styles
+│   └── main.jsx             # React DOM application mount point
+├── vite.config.js           # Vite development and builder configurations
+└── package.json             # Component scripts and runtime packages
+```
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ⚡ Setup & Launch
+
+### 1. Install Dependencies
+Ensure you are in `/frontend` directory:
+```bash
+npm install
+```
+
+### 2. Configure Endpoint Base URL
+By default, the UI communicates with the local API server running at `http://localhost:5000/api/v1`. If you need to point to a production API:
+- Open [client.js](file:///home/zenoguy/Desktop/SNPolymers/frontend/src/api/client.js) or configure your environment variables.
+
+### 3. Run Development Server
+Start the local server with hot module replacement (HMR):
+```bash
+npm run dev
+```
+The interface is now visible at: `http://localhost:5173`
+
+### 4. Build for Production
+To bundle and optimize the application assets for deployment:
+```bash
+npm run build
+```
+Production assets will compile inside the `/dist` directory.
+
+---
+
+## 🛡️ Routing Strategy & Auth Guards
+
+The application implements a secure routing hierarchy to block unauthorized workspace exploration:
+
+- **Public Routes:** `Home (/)`, `Login (/login)`, `OtpVerify (/verify-otp)`.
+- **Protected User Console:** `/dashboard` requires users to have an approved active account.
+- **Admin Console:** `/admin` and `/admin/logs` require users to have administrative roles.
