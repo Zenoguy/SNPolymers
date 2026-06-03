@@ -4,6 +4,13 @@ const { sendOtp } = require('../services/whatsapp.service');
 const { generateToken, createSession, closeSession, formatDuration } = require('../services/session.service');
 const { notifyAdminLogin, notifyAdminLogout } = require('../services/email.service');
 
+const isProd = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax'
+};
+
 /**
  * POST /api/v1/auth/request-otp
  * Validates mobile number against whitelist and triggers WhatsApp OTP
@@ -107,9 +114,7 @@ async function verifyOtpCode(req, res) {
     // 4. Store Token in httpOnly Cookie
     // Cookie parameters matches specifications
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...cookieOptions,
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -154,11 +159,7 @@ async function logout(req, res) {
     const durationFormatted = formatDuration(closedSession.duration_seconds);
 
     // 2. Clear Token Cookie
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
-    });
+    res.clearCookie('token', cookieOptions);
 
     // 3. Trigger Admin Notification (async)
     notifyAdminLogout({

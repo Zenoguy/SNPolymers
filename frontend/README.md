@@ -14,7 +14,7 @@ This directory contains the user interface for the S.N. Polymers **Integrated Di
 frontend/
 ├── src/
 │   ├── api/
-│   │   └── client.js        # Configured Axios client with base URL & cookies credentials
+│   │   └── authApi.js       # Configured Axios client with base URL & cookies credentials
 │   ├── components/
 │   │   ├── AuthContext.jsx  # Global React Context tracking session details
 │   │   └── ProtectedRoute.jsx # Route guards verifying active user sessions
@@ -45,7 +45,7 @@ npm install
 
 ### 2. Configure Endpoint Base URL
 By default, the UI communicates with the local API server running at `http://localhost:5000/api/v1`. If you need to point to a production API:
-- Open [client.js](file:///home/zenoguy/Desktop/SNPolymers/frontend/src/api/client.js) or configure your environment variables.
+- Open [authApi.js](file:///home/zenoguy/Desktop/SNPolymers/frontend/src/api/authApi.js) or configure your environment variables.
 
 ### 3. Run Development Server
 Start the local server with hot module replacement (HMR):

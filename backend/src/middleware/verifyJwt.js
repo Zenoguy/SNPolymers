@@ -3,6 +3,13 @@ const { supabase } = require('../db/supabase');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_development_jwt_secret_key_minimum_256_bit';
 
+const isProd = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax'
+};
+
 /**
  * Middleware: Verify JWT stored in httpOnly cookie
  */
@@ -26,11 +33,7 @@ async function verifyJwt(req, res, next) {
 
     if (error || !session || !session.is_active) {
       // Clear cookie immediately if token session has been invalidated
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-      });
+      res.clearCookie('token', cookieOptions);
       return res.status(401).json({ success: false, message: 'Session is inactive or has been logged out.' });
     }
 
