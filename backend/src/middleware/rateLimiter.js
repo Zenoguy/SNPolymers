@@ -21,6 +21,25 @@ const otpRequestLimiter = rateLimit({
   }
 });
 
+/**
+ * OTP Verification rate limiter:
+ * Limits verify-otp attempts to maximum 5 requests per 5-minute window per IP/mobile to prevent brute-force resources exhaustion.
+ */
+const otpVerifyLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 5, // limit each IP to 5 verification attempts per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please try again after 5 minutes.'
+  },
+  keyGenerator: (req) => {
+    return req.body.mobileNumber || req.ip;
+  }
+});
+
 module.exports = {
-  otpRequestLimiter
+  otpRequestLimiter,
+  otpVerifyLimiter
 };
