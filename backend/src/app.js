@@ -1,12 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 require('dotenv').config();
+
+// Production environment sanity checks
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'fallback_development_jwt_secret_key_minimum_256_bit') {
+    throw new Error('FATAL SECURITY ERROR: JWT_SECRET must be set and cannot be the default development secret in production.');
+  }
+  if (!process.env.FRONTEND_URL || process.env.FRONTEND_URL.includes('localhost') || process.env.FRONTEND_URL.includes('127.0.0.1')) {
+    throw new Error('FATAL SECURITY ERROR: FRONTEND_URL must be configured to a valid public origin in production.');
+  }
+}
 
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
+app.use(helmet());
 const PORT = process.env.PORT || 5000;
 
 // Configuration
