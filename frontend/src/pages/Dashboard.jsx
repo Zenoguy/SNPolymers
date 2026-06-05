@@ -1,15 +1,15 @@
 import React from 'react';
 import { useAuth } from '../components/AuthContext';
 import { Link } from 'react-router-dom';
+import BackgroundShapes from '../components/BackgroundShapes';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none animate-pulse" style={{ animationDuration: '12s' }}></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[35rem] h-[35rem] rounded-full bg-amber-500/5 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '18s' }}></div>
+      {/* Background Silhouettes & Ambient Glows */}
+      <BackgroundShapes />
 
       {/* Left Sidebar Navigation - Desktop */}
       <aside className="hidden md:flex flex-col w-64 glass-nav border-r border-white/5 p-6 relative z-20 shrink-0">

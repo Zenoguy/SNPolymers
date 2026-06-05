@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import { useAuth } from '../components/AuthContext';
+import BackgroundShapes from '../components/BackgroundShapes';
 
 const OtpVerify = () => {
   const location = useLocation();
@@ -132,9 +133,8 @@ const OtpVerify = () => {
 
   return (
     <div className="min-h-screen bg-black text-slate-100 flex items-center justify-center px-4 font-sans relative overflow-hidden">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-[15%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }}></div>
-      <div className="absolute bottom-[15%] right-[20%] w-[25rem] h-[25rem] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '12s' }}></div>
+      {/* Background Silhouettes & Ambient Glows */}
+      <BackgroundShapes />
 
       <div className="max-w-md w-full glass-panel p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
         
