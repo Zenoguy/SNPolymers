@@ -1,15 +1,15 @@
 import React from 'react';
 import { useAuth } from '../components/AuthContext';
 import { Link } from 'react-router-dom';
+import BackgroundShapes from '../components/BackgroundShapes';
 
 const Home = () => {
   const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans relative overflow-hidden">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-[10%] left-[10%] w-[35rem] h-[35rem] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none animate-pulse" style={{ animationDuration: '10s' }}></div>
-      <div className="absolute bottom-[20%] right-[10%] w-[30rem] h-[30rem] rounded-full bg-amber-500/5 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '15s' }}></div>
+      {/* Background Silhouettes & Ambient Glows */}
+      <BackgroundShapes />
 
       {/* Header Bar */}
       <header className="glass-nav sticky top-0 z-50">
