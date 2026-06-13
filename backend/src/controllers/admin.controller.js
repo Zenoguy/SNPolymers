@@ -7,30 +7,13 @@ const { supabase } = require('../db/supabase');
 async function getUsers(req, res) {
   try {
     const { data: users, error } = await supabase
-      .from('authorised_users')
+      .from('user_login_stats')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    // Optional: Get login counts & last login times from sessions for each user
-    const { data: sessions, error: sessionErr } = await supabase
-      .from('sessions')
-      .select('user_id, login_at')
-      .order('login_at', { ascending: false });
-
-    if (sessionErr) throw sessionErr;
-
-    const userLoginStats = users.map(user => {
-      const userSessions = sessions.filter(s => s.user_id === user.id);
-      return {
-        ...user,
-        session_count: userSessions.length,
-        last_login_at: userSessions.length > 0 ? userSessions[0].login_at : null
-      };
-    });
-
-    return res.status(200).json({ success: true, users: userLoginStats });
+    return res.status(200).json({ success: true, users });
   } catch (error) {
     console.error(`Admin getUsers failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to retrieve whitelisted users.' });
@@ -161,9 +144,45 @@ async function removeUser(req, res) {
  * Full session audit log with optional filter queries
  */
 async function getSessions(req, res) {
-  const { userId, dateFrom, dateTo } = req.query;
+  const reqQuery = req.query || {};
+  const { userId, dateFrom, dateTo } = reqQuery;
 
   try {
+    const hasPagination = reqQuery.page !== undefined || reqQuery.limit !== undefined;
+
+    if (!hasPagination) {
+      let query = supabase
+        .from('sessions')
+        .select(`
+          *,
+          authorised_users (
+            mobile_number,
+            display_name,
+            role
+          )
+        `)
+        .order('login_at', { ascending: false });
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+      if (dateFrom) {
+        query = query.gte('login_at', new Date(dateFrom).toISOString());
+      }
+      if (dateTo) {
+        query = query.lte('login_at', new Date(dateTo).toISOString());
+      }
+
+      const { data: sessions, error } = await query;
+      if (error) throw error;
+      return res.status(200).json({ success: true, sessions });
+    }
+
+    // Paginated flow
+    const page = parseInt(reqQuery.page) || 1;
+    const limit = Math.min(parseInt(reqQuery.limit || 50), 100);
+    const offset = (page - 1) * limit;
+
     let query = supabase
       .from('sessions')
       .select(`
@@ -173,7 +192,7 @@ async function getSessions(req, res) {
           display_name,
           role
         )
-      `)
+      `, { count: 'exact' })
       .order('login_at', { ascending: false });
 
     if (userId) {
@@ -186,11 +205,21 @@ async function getSessions(req, res) {
       query = query.lte('login_at', new Date(dateTo).toISOString());
     }
 
-    const { data: sessions, error } = await query;
+    query = query.range(offset, offset + limit - 1);
 
+    const { data: sessions, count, error } = await query;
     if (error) throw error;
 
-    return res.status(200).json({ success: true, sessions });
+    return res.status(200).json({
+      success: true,
+      sessions,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    });
   } catch (error) {
     console.error(`Admin getSessions failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to fetch session audit logs.' });

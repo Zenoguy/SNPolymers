@@ -2,12 +2,14 @@ const express = require('express');
 const { getUsers, addUser, updateUser, removeUser, getSessions } = require('../controllers/admin.controller');
 const verifyJwt = require('../middleware/verifyJwt');
 const requireAdmin = require('../middleware/requireAdmin');
+const { adminLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
-// Guard all endpoints under /admin with JWT Verification and Admin access role enforcement
+// Guard all endpoints under /admin with JWT Verification, Admin access, and rate limiting
 router.use(verifyJwt);
 router.use(requireAdmin);
+router.use(adminLimiter);
 
 // User Whitelist CRUD Endpoints
 router.get('/users', getUsers);

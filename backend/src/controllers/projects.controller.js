@@ -6,14 +6,42 @@ const { supabase } = require('../db/supabase');
  */
 async function getProjects(req, res) {
   try {
-    const { data: projects, error } = await supabase
+    const query = req.query || {};
+    const hasPagination = query.page !== undefined || query.limit !== undefined;
+
+    if (!hasPagination) {
+      const { data: projects, error } = await supabase
+        .from('projects_master')
+        .select('*')
+        .order('work_order_no', { ascending: true });
+
+      if (error) throw error;
+      return res.status(200).json({ success: true, projects });
+    }
+
+    // Paginated flow
+    const page = parseInt(query.page) || 1;
+    const limit = Math.min(parseInt(query.limit || 50), 100);
+    const offset = (page - 1) * limit;
+
+    const { data: projects, count, error } = await supabase
       .from('projects_master')
-      .select('*')
-      .order('work_order_no', { ascending: true });
+      .select('*', { count: 'exact' })
+      .order('work_order_no', { ascending: true })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
-    return res.status(200).json({ success: true, projects });
+    return res.status(200).json({
+      success: true,
+      projects,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    });
   } catch (error) {
     console.error(`getProjects failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to retrieve projects.' });

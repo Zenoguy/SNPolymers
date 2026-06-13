@@ -23,7 +23,38 @@ async function isProjectClosed(workOrderNo) {
  */
 async function getReports(req, res) {
   try {
-    const { data: reports, error } = await supabase
+    const query = req.query || {};
+    const hasPagination = query.page !== undefined || query.limit !== undefined;
+
+    if (!hasPagination) {
+      const { data: reports, error } = await supabase
+        .from('fund_reports')
+        .select(`
+          *,
+          projects_master (
+            estimate_no,
+            work_order_value,
+            site_details,
+            state,
+            district,
+            zone,
+            department,
+            status
+          )
+        `)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return res.status(200).json({ success: true, reports });
+    }
+
+    // Paginated flow
+    const page = parseInt(query.page) || 1;
+    const limit = Math.min(parseInt(query.limit || 50), 100);
+    const offset = (page - 1) * limit;
+
+    const { data: reports, count, error } = await supabase
       .from('fund_reports')
       .select(`
         *,
@@ -37,13 +68,23 @@ async function getReports(req, res) {
           department,
           status
         )
-      `)
+      `, { count: 'exact' })
       .eq('is_deleted', false)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
-    return res.status(200).json({ success: true, reports });
+    return res.status(200).json({
+      success: true,
+      reports,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    });
   } catch (error) {
     console.error(`getReports failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to retrieve fund reports.' });
@@ -56,7 +97,38 @@ async function getReports(req, res) {
  */
 async function getSoftDeletedReports(req, res) {
   try {
-    const { data: reports, error } = await supabase
+    const query = req.query || {};
+    const hasPagination = query.page !== undefined || query.limit !== undefined;
+
+    if (!hasPagination) {
+      const { data: reports, error } = await supabase
+        .from('fund_reports')
+        .select(`
+          *,
+          projects_master (
+            estimate_no,
+            work_order_value,
+            site_details,
+            state,
+            district,
+            zone,
+            department,
+            status
+          )
+        `)
+        .eq('is_deleted', true)
+        .order('deleted_at', { ascending: false });
+
+      if (error) throw error;
+      return res.status(200).json({ success: true, reports });
+    }
+
+    // Paginated flow
+    const page = parseInt(query.page) || 1;
+    const limit = Math.min(parseInt(query.limit || 50), 100);
+    const offset = (page - 1) * limit;
+
+    const { data: reports, count, error } = await supabase
       .from('fund_reports')
       .select(`
         *,
@@ -70,13 +142,23 @@ async function getSoftDeletedReports(req, res) {
           department,
           status
         )
-      `)
+      `, { count: 'exact' })
       .eq('is_deleted', true)
-      .order('deleted_at', { ascending: false });
+      .order('deleted_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
-    return res.status(200).json({ success: true, reports });
+    return res.status(200).json({
+      success: true,
+      reports,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    });
   } catch (error) {
     console.error(`getSoftDeletedReports failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to retrieve deleted reports.' });

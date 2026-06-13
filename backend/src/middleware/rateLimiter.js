@@ -2,6 +2,48 @@ const rateLimit = require('express-rate-limit');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+// Structured logging rate limit handler
+const logRateLimitExceeded = (req, res, options) => {
+  console.warn(JSON.stringify({
+    type: 'RATE_LIMIT_EXCEEDED',
+    ip: req.ip,
+    path: req.originalUrl,
+    method: req.method
+  }));
+  res.status(429).json({
+    success: false,
+    message: 'Too many requests. Please try again later.'
+  });
+};
+
+const logOtpRequestLimitExceeded = (req, res, options) => {
+  console.warn(JSON.stringify({
+    type: 'RATE_LIMIT_EXCEEDED',
+    ip: req.ip,
+    path: req.originalUrl,
+    method: req.method,
+    limiter: 'otpRequest'
+  }));
+  res.status(429).json({
+    success: false,
+    message: 'Too many OTP requests from this connection. Please try again after 15 minutes.'
+  });
+};
+
+const logOtpVerifyLimitExceeded = (req, res, options) => {
+  console.warn(JSON.stringify({
+    type: 'RATE_LIMIT_EXCEEDED',
+    ip: req.ip,
+    path: req.originalUrl,
+    method: req.method,
+    limiter: 'otpVerify'
+  }));
+  res.status(429).json({
+    success: false,
+    message: 'Too many login attempts. Please try again after 5 minutes.'
+  });
+};
+
 /**
  * OTP Request rate limiter:
  * Production: max 3 requests per 15-minute window per mobile/IP.
@@ -12,13 +54,10 @@ const otpRequestLimiter = rateLimit({
   max: isDev ? 100 : 3,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: 'Too many OTP requests from this connection. Please try again after 15 minutes.'
-  },
   keyGenerator: (req) => {
     return req.body.mobileNumber || req.ip;
-  }
+  },
+  handler: logOtpRequestLimitExceeded
 });
 
 /**
@@ -31,16 +70,52 @@ const otpVerifyLimiter = rateLimit({
   max: isDev ? 500 : 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: 'Too many login attempts. Please try again after 5 minutes.'
-  },
   keyGenerator: (req) => {
     return req.body.mobileNumber || req.ip;
-  }
+  },
+  handler: logOtpVerifyLimitExceeded
+});
+
+/**
+ * Global general-purpose rate limiter:
+ * 1,000 requests per 1-minute window.
+ */
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: logRateLimitExceeded
+});
+
+/**
+ * Refresh Token rate limiter:
+ * 60 requests per 1-minute window.
+ */
+const refreshTokenLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: logRateLimitExceeded
+});
+
+/**
+ * Admin API endpoints rate limiter:
+ * 100 requests per 1-minute window.
+ */
+const adminLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: logRateLimitExceeded
 });
 
 module.exports = {
   otpRequestLimiter,
-  otpVerifyLimiter
+  otpVerifyLimiter,
+  globalLimiter,
+  refreshTokenLimiter,
+  adminLimiter
 };

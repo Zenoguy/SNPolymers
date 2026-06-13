@@ -22,8 +22,13 @@ const materialsRoutes = require('./routes/materials.routes');
 
 const { startPolling } = require('./services/telegram.service');
 
+const { globalLimiter } = require('./middleware/rateLimiter');
+const requestLogger = require('./middleware/requestLogger');
+
 const app = express();
 app.use(helmet());
+app.use(globalLimiter);
+app.use(requestLogger);
 const PORT = process.env.PORT || 5000;
 
 // Configuration
