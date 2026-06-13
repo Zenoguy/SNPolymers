@@ -18,6 +18,7 @@ const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
 const projectRoutes = require('./routes/projects.routes');
 const reportRoutes = require('./routes/reports.routes');
+const materialsRoutes = require('./routes/materials.routes');
 
 const { startPolling } = require('./services/telegram.service');
 
@@ -45,6 +46,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/auth/admin', adminRoutes);
 app.use('/api/v1/auth/projects', projectRoutes);
 app.use('/api/v1/auth/reports', reportRoutes);
+app.use('/api/materials', materialsRoutes);
+app.use('/api/v1/auth/materials', materialsRoutes);
 
 // Basic sanity route
 app.get('/health', (req, res) => {

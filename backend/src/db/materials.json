@@ -1,0 +1,5753 @@
+[
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Cement (OPC/PPC)",
+    "material_description": "Cement (OPC/PPC)",
+    "unit": "Bag",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Fine Sand",
+    "material_description": "Fine Sand",
+    "unit": "Cum / CFT",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Coarse Sand",
+    "material_description": "Coarse Sand",
+    "unit": "Cum / CFT",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Stone Chips 10 mm",
+    "material_description": "Stone Chips 10 mm",
+    "unit": "Cum / CFT",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Stone Chips 20 mm",
+    "material_description": "Stone Chips 20 mm",
+    "unit": "Cum / CFT",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Stone Aggregate 40 mm",
+    "material_description": "Stone Aggregate 40 mm",
+    "unit": "Cum / CFT",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Water",
+    "material_description": "Water",
+    "unit": "KL / Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "TMT Bar (যদি RCC হয়)",
+    "material_description": "TMT Bar (যদি RCC হয়)",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Binding Wire",
+    "material_description": "Binding Wire",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Cover Block",
+    "material_description": "Cover Block",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Plasticizer",
+    "material_description": "Plasticizer",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Super Plasticizer",
+    "material_description": "Super Plasticizer",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Waterproofing Compound",
+    "material_description": "Waterproofing Compound",
+    "unit": "Kg / Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Expansion Joint Filler",
+    "material_description": "Expansion Joint Filler",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Curing Compound",
+    "material_description": "Curing Compound",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Shuttering Plywood",
+    "material_description": "Shuttering Plywood",
+    "unit": "Sqft",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Steel Shuttering Plate",
+    "material_description": "Steel Shuttering Plate",
+    "unit": "Sqft",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Wooden Batten",
+    "material_description": "Wooden Batten",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Nails",
+    "material_description": "Nails",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Raw Materials",
+    "sub_head": "Polythene Sheet",
+    "material_description": "Polythene Sheet",
+    "unit": "Sqm",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 1.5 Sqmm",
+    "material_description": "Copper Wire 1.5 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 2.5 Sqmm",
+    "material_description": "Copper Wire 2.5 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 4 Sqmm",
+    "material_description": "Copper Wire 4 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 6 Sqmm",
+    "material_description": "Copper Wire 6 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Aluminium Cable",
+    "material_description": "Aluminium Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Control Cable",
+    "material_description": "Control Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Flexible Wire",
+    "material_description": "Flexible Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Lug",
+    "material_description": "Cable Lug",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Gland",
+    "material_description": "Cable Gland",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Ferrule",
+    "material_description": "Ferrule",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Terminal Block",
+    "material_description": "Terminal Block",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Connector Strip",
+    "material_description": "Connector Strip",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Tie (100 mm)",
+    "material_description": "Cable Tie (100 mm)",
+    "unit": "Pkt",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Tie (200 mm)",
+    "material_description": "Cable Tie (200 mm)",
+    "unit": "Pkt",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Insulation Tape",
+    "material_description": "Insulation Tape",
+    "unit": "Roll",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Heat Shrink Sleeve",
+    "material_description": "Heat Shrink Sleeve",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "PVC Conduit Pipe",
+    "material_description": "PVC Conduit Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Flexible Conduit Pipe",
+    "material_description": "Flexible Conduit Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Conduit Bend",
+    "material_description": "Conduit Bend",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Junction Box",
+    "material_description": "Junction Box",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Inspection Box",
+    "material_description": "Inspection Box",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Saddle Clamp",
+    "material_description": "Saddle Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "PVC Adhesive",
+    "material_description": "PVC Adhesive",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCB SP",
+    "material_description": "MCB SP",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCB DP",
+    "material_description": "MCB DP",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCCB",
+    "material_description": "MCCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Fuse",
+    "material_description": "Fuse",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Fuse Wire",
+    "material_description": "Fuse Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Indicator Lamp",
+    "material_description": "Indicator Lamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Push Button",
+    "material_description": "Push Button",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Selector Switch",
+    "material_description": "Selector Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Contactor Coil",
+    "material_description": "Contactor Coil",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Relay Base",
+    "material_description": "Relay Base",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "LED Bulb",
+    "material_description": "LED Bulb",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "LED Tube Light",
+    "material_description": "LED Tube Light",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Lamp Holder",
+    "material_description": "Lamp Holder",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Ceiling Rose",
+    "material_description": "Ceiling Rose",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "GI Earthing Wire",
+    "material_description": "GI Earthing Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Earthing Wire",
+    "material_description": "Copper Earthing Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Earthing Clamp",
+    "material_description": "Earthing Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Charcoal",
+    "material_description": "Charcoal",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Salt",
+    "material_description": "Salt",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Screw",
+    "material_description": "Screw",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Nut & Bolt",
+    "material_description": "Nut & Bolt",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Washer",
+    "material_description": "Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Rawl Plug",
+    "material_description": "Rawl Plug",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Marker",
+    "material_description": "Cable Marker",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Name Plate",
+    "material_description": "Name Plate",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "PVC Cable Channel",
+    "material_description": "PVC Cable Channel",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Panel Lock",
+    "material_description": "Panel Lock",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "LT Panel",
+    "material_description": "LT Panel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCC Panel",
+    "material_description": "MCC Panel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "APFC Panel",
+    "material_description": "APFC Panel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Distribution Board (DB)",
+    "material_description": "Distribution Board (DB)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Changeover Switch",
+    "material_description": "Changeover Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Isolator",
+    "material_description": "Isolator",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCB SP",
+    "material_description": "MCB SP",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCB DP",
+    "material_description": "MCB DP",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCB TPN",
+    "material_description": "MCB TPN",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MCCB",
+    "material_description": "MCCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "RCCB / ELCB",
+    "material_description": "RCCB / ELCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Contactor",
+    "material_description": "Contactor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Overload Relay",
+    "material_description": "Overload Relay",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Timer Relay",
+    "material_description": "Timer Relay",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Push Button",
+    "material_description": "Push Button",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Selector Switch",
+    "material_description": "Selector Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Indicator Lamp",
+    "material_description": "Indicator Lamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Power Cable",
+    "material_description": "Power Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Control Cable",
+    "material_description": "Control Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 1.5 Sqmm",
+    "material_description": "Copper Wire 1.5 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 2.5 Sqmm",
+    "material_description": "Copper Wire 2.5 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 4 Sqmm",
+    "material_description": "Copper Wire 4 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Wire 6 Sqmm",
+    "material_description": "Copper Wire 6 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Flexible Wire",
+    "material_description": "Flexible Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Earthing Cable",
+    "material_description": "Earthing Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Lug",
+    "material_description": "Cable Lug",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Gland",
+    "material_description": "Cable Gland",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Ferrule",
+    "material_description": "Ferrule",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Terminal Block",
+    "material_description": "Terminal Block",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Tie",
+    "material_description": "Cable Tie",
+    "unit": "Pkt",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Heat Shrink Sleeve",
+    "material_description": "Heat Shrink Sleeve",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "PVC Conduit Pipe",
+    "material_description": "PVC Conduit Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "GI Conduit Pipe",
+    "material_description": "GI Conduit Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Flexible Conduit Pipe",
+    "material_description": "Flexible Conduit Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Tray",
+    "material_description": "Cable Tray",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Cable Raceway",
+    "material_description": "Cable Raceway",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Junction Box",
+    "material_description": "Junction Box",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "LED Bulb",
+    "material_description": "LED Bulb",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "LED Tube Light",
+    "material_description": "LED Tube Light",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Street Light",
+    "material_description": "Street Light",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Flood Light",
+    "material_description": "Flood Light",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "High Bay Light",
+    "material_description": "High Bay Light",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Light Fitting",
+    "material_description": "Light Fitting",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Lamp Holder",
+    "material_description": "Lamp Holder",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Modular Switch",
+    "material_description": "Modular Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Socket Outlet",
+    "material_description": "Socket Outlet",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Industrial Socket",
+    "material_description": "Industrial Socket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Plug Top",
+    "material_description": "Plug Top",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Fan Regulator",
+    "material_description": "Fan Regulator",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Earthing Electrode",
+    "material_description": "Earthing Electrode",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "GI Strip",
+    "material_description": "GI Strip",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Copper Strip",
+    "material_description": "Copper Strip",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "GI Wire",
+    "material_description": "GI Wire",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Earthing Clamp",
+    "material_description": "Earthing Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Earthing Pit Cover",
+    "material_description": "Earthing Pit Cover",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Charcoal",
+    "material_description": "Charcoal",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Salt",
+    "material_description": "Salt",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "PLC",
+    "material_description": "PLC",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "HMI",
+    "material_description": "HMI",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "SMPS",
+    "material_description": "SMPS",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Transformer",
+    "material_description": "Transformer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Battery Set",
+    "material_description": "Battery Set",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Battery Charger",
+    "material_description": "Battery Charger",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Solar Panel",
+    "material_description": "Solar Panel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Solar Inverter",
+    "material_description": "Solar Inverter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "DCDB",
+    "material_description": "DCDB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "ACDB",
+    "material_description": "ACDB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "MC4 Connector",
+    "material_description": "MC4 Connector",
+    "unit": "Pair",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Electrical Consumables",
+    "sub_head": "Solar Cable",
+    "material_description": "Solar Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Module Mounting Structure",
+    "material_description": "Module Mounting Structure",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Fire Alarm Panel",
+    "material_description": "Fire Alarm Panel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Smoke Detector",
+    "material_description": "Smoke Detector",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Heat Detector",
+    "material_description": "Heat Detector",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Hooter",
+    "material_description": "Hooter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Manual Call Point (MCP)",
+    "material_description": "Manual Call Point (MCP)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Nut & Bolt",
+    "material_description": "Nut & Bolt",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Washer",
+    "material_description": "Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Screw",
+    "material_description": "Screw",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Rawl Plug",
+    "material_description": "Rawl Plug",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical consumable",
+    "sub_head": "Name Plate",
+    "material_description": "Name Plate",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "MS Plate",
+    "material_description": "MS Plate",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "SS Plate",
+    "material_description": "SS Plate",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Chequered Plate",
+    "material_description": "Chequered Plate",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "MS Angle",
+    "material_description": "MS Angle",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "MS Channel",
+    "material_description": "MS Channel",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "ISMB Beam",
+    "material_description": "ISMB Beam",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "ISMC Channel",
+    "material_description": "ISMC Channel",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "MS Flat",
+    "material_description": "MS Flat",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "MS Round Bar",
+    "material_description": "MS Round Bar",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "SS Round Bar",
+    "material_description": "SS Round Bar",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Square Bar",
+    "material_description": "Square Bar",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pipe Elbow",
+    "material_description": "Pipe Elbow",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pipe Tee",
+    "material_description": "Pipe Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Reducer",
+    "material_description": "Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Flange",
+    "material_description": "Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Blind Flange",
+    "material_description": "Blind Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Union",
+    "material_description": "Union",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Coupling",
+    "material_description": "Coupling",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Ball Valve",
+    "material_description": "Ball Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Gate Valve",
+    "material_description": "Gate Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Globe Valve",
+    "material_description": "Globe Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Butterfly Valve",
+    "material_description": "Butterfly Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Check Valve (NRV)",
+    "material_description": "Check Valve (NRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Strainer",
+    "material_description": "Strainer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Expansion Joint",
+    "material_description": "Expansion Joint",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pump",
+    "material_description": "Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Centrifugal Pump",
+    "material_description": "Centrifugal Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Submersible Pump",
+    "material_description": "Submersible Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Gear Pump",
+    "material_description": "Gear Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Motor",
+    "material_description": "Motor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Gearbox",
+    "material_description": "Gearbox",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Coupling Set",
+    "material_description": "Coupling Set",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Bearing",
+    "material_description": "Bearing",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pillow Block Bearing",
+    "material_description": "Pillow Block Bearing",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "V-Belt",
+    "material_description": "V-Belt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pulley",
+    "material_description": "Pulley",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Conveyor Belt",
+    "material_description": "Conveyor Belt",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Conveyor Roller",
+    "material_description": "Conveyor Roller",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Chain Sprocket",
+    "material_description": "Chain Sprocket",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Roller Chain",
+    "material_description": "Roller Chain",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Mechanical Seal",
+    "material_description": "Mechanical Seal",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Gasket",
+    "material_description": "Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Oil Seal",
+    "material_description": "Oil Seal",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "O-Ring",
+    "material_description": "O-Ring",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Rubber Sheet",
+    "material_description": "Rubber Sheet",
+    "unit": "Sqft",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Insulation Material",
+    "material_description": "Insulation Material",
+    "unit": "Sqm",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Cladding Sheet",
+    "material_description": "Cladding Sheet",
+    "unit": "Sqm",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Grating",
+    "material_description": "Grating",
+    "unit": "Sqft",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Handrail Pipe",
+    "material_description": "Handrail Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Ladder Material",
+    "material_description": "Ladder Material",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Structural Steel Fabrication",
+    "material_description": "Structural Steel Fabrication",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Anchor Bolt",
+    "material_description": "Anchor Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Foundation Bolt",
+    "material_description": "Foundation Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Stud Bolt",
+    "material_description": "Stud Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Nut & Bolt",
+    "material_description": "Nut & Bolt",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Spring Washer",
+    "material_description": "Spring Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Plain Washer",
+    "material_description": "Plain Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Welding Electrode",
+    "material_description": "Welding Electrode",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Welding Wire",
+    "material_description": "Welding Wire",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Oxygen Gas",
+    "material_description": "Oxygen Gas",
+    "unit": "Cylinder",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Acetylene Gas",
+    "material_description": "Acetylene Gas",
+    "unit": "Cylinder",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Paint",
+    "material_description": "Paint",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Primer",
+    "material_description": "Primer",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Thinner",
+    "material_description": "Thinner",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Hydraulic Power Pack",
+    "material_description": "Hydraulic Power Pack",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Air Compressor",
+    "material_description": "Air Compressor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Pressure Gauge",
+    "material_description": "Pressure Gauge",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Temperature Gauge",
+    "material_description": "Temperature Gauge",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Flow Meter",
+    "material_description": "Flow Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Level Indicator",
+    "material_description": "Level Indicator",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Storage Tank",
+    "material_description": "Storage Tank",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Reactor Vessel",
+    "material_description": "Reactor Vessel",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Hopper",
+    "material_description": "Hopper",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Chimney / Stack",
+    "material_description": "Chimney / Stack",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Mechanical proj items",
+    "sub_head": "Ducting Material",
+    "material_description": "Ducting Material",
+    "unit": "Sqm",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 20 mm",
+    "material_description": "HDPE Pipe 20 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 25 mm",
+    "material_description": "HDPE Pipe 25 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 32 mm",
+    "material_description": "HDPE Pipe 32 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 40 mm",
+    "material_description": "HDPE Pipe 40 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 50 mm",
+    "material_description": "HDPE Pipe 50 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 63 mm",
+    "material_description": "HDPE Pipe 63 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 75 mm",
+    "material_description": "HDPE Pipe 75 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 90 mm",
+    "material_description": "HDPE Pipe 90 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 110 mm",
+    "material_description": "HDPE Pipe 110 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 160 mm",
+    "material_description": "HDPE Pipe 160 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 200 mm",
+    "material_description": "HDPE Pipe 200 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 250 mm",
+    "material_description": "HDPE Pipe 250 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 315 mm",
+    "material_description": "HDPE Pipe 315 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 355 mm",
+    "material_description": "HDPE Pipe 355 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe 400 mm",
+    "material_description": "HDPE Pipe 400 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Pipe Elbow",
+    "material_description": "HDPE Pipe Elbow",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Tee",
+    "material_description": "HDPE Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Reducer",
+    "material_description": "HDPE Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE End Cap",
+    "material_description": "HDPE End Cap",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Coupler",
+    "material_description": "HDPE Coupler",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Flange Adapter",
+    "material_description": "HDPE Flange Adapter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Backing Ring",
+    "material_description": "HDPE Backing Ring",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Stub End",
+    "material_description": "HDPE Stub End",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Service Saddle",
+    "material_description": "HDPE Service Saddle",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Compression Coupler",
+    "material_description": "HDPE Compression Coupler",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Compression Elbow",
+    "material_description": "HDPE Compression Elbow",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Compression Tee",
+    "material_description": "HDPE Compression Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Ball Valve",
+    "material_description": "HDPE Ball Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "HDPE Non Return Valve (NRV)",
+    "material_description": "HDPE Non Return Valve (NRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "GI Flange",
+    "material_description": "GI Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Rubber Gasket",
+    "material_description": "Rubber Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Nut & Bolt Set",
+    "material_description": "Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Electrofusion Coupler",
+    "material_description": "Electrofusion Coupler",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Electrofusion Elbow",
+    "material_description": "Electrofusion Elbow",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Electrofusion Tee",
+    "material_description": "Electrofusion Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Electrofusion Reducer",
+    "material_description": "Electrofusion Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Warning Tape",
+    "material_description": "Warning Tape",
+    "unit": "Roll",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Marker Post",
+    "material_description": "Marker Post",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Sand Bedding Material",
+    "material_description": "Sand Bedding Material",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe HDPE",
+    "sub_head": "Thrust Block Concrete",
+    "material_description": "Thrust Block Concrete",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 15 mm (½\")",
+    "material_description": "MS Pipe 15 mm (½\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 20 mm (¾\")",
+    "material_description": "MS Pipe 20 mm (¾\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 25 mm (1\")",
+    "material_description": "MS Pipe 25 mm (1\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 32 mm (1¼\")",
+    "material_description": "MS Pipe 32 mm (1¼\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 40 mm (1½\")",
+    "material_description": "MS Pipe 40 mm (1½\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 50 mm (2\")",
+    "material_description": "MS Pipe 50 mm (2\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 65 mm (2½\")",
+    "material_description": "MS Pipe 65 mm (2½\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 80 mm (3\")",
+    "material_description": "MS Pipe 80 mm (3\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 100 mm (4\")",
+    "material_description": "MS Pipe 100 mm (4\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 150 mm (6\")",
+    "material_description": "MS Pipe 150 mm (6\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "MS Pipe 200 mm (8\")",
+    "material_description": "MS Pipe 200 mm (8\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "GI Pipe 15 mm (½\")",
+    "material_description": "GI Pipe 15 mm (½\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "GI Pipe 20 mm (¾\")",
+    "material_description": "GI Pipe 20 mm (¾\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "GI Pipe 25 mm (1\")",
+    "material_description": "GI Pipe 25 mm (1\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "GI Pipe 50 mm (2\")",
+    "material_description": "GI Pipe 50 mm (2\")",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "SS Pipe 25 mm",
+    "material_description": "SS Pipe 25 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "SS Pipe 50 mm",
+    "material_description": "SS Pipe 50 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "SS Pipe 100 mm",
+    "material_description": "SS Pipe 100 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pipe Elbow 90°",
+    "material_description": "Pipe Elbow 90°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pipe Elbow 45°",
+    "material_description": "Pipe Elbow 45°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Equal Tee",
+    "material_description": "Equal Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Reducing Tee",
+    "material_description": "Reducing Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Reducer Concentric",
+    "material_description": "Reducer Concentric",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Reducer Eccentric",
+    "material_description": "Reducer Eccentric",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pipe Cap",
+    "material_description": "Pipe Cap",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Coupling",
+    "material_description": "Coupling",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Union",
+    "material_description": "Union",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Flange",
+    "material_description": "Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Blind Flange",
+    "material_description": "Blind Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Slip-On Flange",
+    "material_description": "Slip-On Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Weld Neck Flange",
+    "material_description": "Weld Neck Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Rubber Gasket",
+    "material_description": "Rubber Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Spiral Wound Gasket",
+    "material_description": "Spiral Wound Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Nut & Bolt Set",
+    "material_description": "Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "U-Bolt",
+    "material_description": "U-Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pipe Clamp",
+    "material_description": "Pipe Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pipe Support",
+    "material_description": "Pipe Support",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Saddle Support",
+    "material_description": "Saddle Support",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Ball Valve",
+    "material_description": "Ball Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Gate Valve",
+    "material_description": "Gate Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Globe Valve",
+    "material_description": "Globe Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Butterfly Valve",
+    "material_description": "Butterfly Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Check Valve (NRV)",
+    "material_description": "Check Valve (NRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Air Release Valve",
+    "material_description": "Air Release Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pressure Relief Valve",
+    "material_description": "Pressure Relief Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Y-Strainer",
+    "material_description": "Y-Strainer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Expansion Joint",
+    "material_description": "Expansion Joint",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Flexible Joint",
+    "material_description": "Flexible Joint",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Pressure Gauge",
+    "material_description": "Pressure Gauge",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipes Steel",
+    "sub_head": "Flow Meter",
+    "material_description": "Flow Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 80 mm",
+    "material_description": "DI Pipe 80 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 100 mm",
+    "material_description": "DI Pipe 100 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 150 mm",
+    "material_description": "DI Pipe 150 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 200 mm",
+    "material_description": "DI Pipe 200 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 250 mm",
+    "material_description": "DI Pipe 250 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 300 mm",
+    "material_description": "DI Pipe 300 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 350 mm",
+    "material_description": "DI Pipe 350 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 400 mm",
+    "material_description": "DI Pipe 400 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 450 mm",
+    "material_description": "DI Pipe 450 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 500 mm",
+    "material_description": "DI Pipe 500 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Pipe 600 mm",
+    "material_description": "DI Pipe 600 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Bend 11.25°",
+    "material_description": "DI Bend 11.25°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Bend 22.5°",
+    "material_description": "DI Bend 22.5°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Bend 45°",
+    "material_description": "DI Bend 45°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Bend 90°",
+    "material_description": "DI Bend 90°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Tee Equal",
+    "material_description": "DI Tee Equal",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Tee Reducing",
+    "material_description": "DI Tee Reducing",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Reducer",
+    "material_description": "DI Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Double Socket",
+    "material_description": "DI Double Socket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Collar",
+    "material_description": "DI Collar",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Flange Adapter",
+    "material_description": "DI Flange Adapter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Dismantling Joint",
+    "material_description": "DI Dismantling Joint",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Duckfoot Bend",
+    "material_description": "DI Duckfoot Bend",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI End Cap",
+    "material_description": "DI End Cap",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "DI Socket Spigot Joint",
+    "material_description": "DI Socket Spigot Joint",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Rubber Gasket",
+    "material_description": "Rubber Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Nut & Bolt Set",
+    "material_description": "Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Mechanical Joint Kit",
+    "material_description": "Mechanical Joint Kit",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Air Valve",
+    "material_description": "Air Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Sluice Valve",
+    "material_description": "Sluice Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Butterfly Valve",
+    "material_description": "Butterfly Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Non Return Valve (NRV)",
+    "material_description": "Non Return Valve (NRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Scour Valve",
+    "material_description": "Scour Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Pressure Reducing Valve (PRV)",
+    "material_description": "Pressure Reducing Valve (PRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Flow Meter",
+    "material_description": "Flow Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Water Meter",
+    "material_description": "Water Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Valve Chamber Cover",
+    "material_description": "Valve Chamber Cover",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Marker Post",
+    "material_description": "Marker Post",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Warning Tape",
+    "material_description": "Warning Tape",
+    "unit": "Roll",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Sand Bedding Material",
+    "material_description": "Sand Bedding Material",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe DI",
+    "sub_head": "Thrust Block Concrete",
+    "material_description": "Thrust Block Concrete",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 20 mm",
+    "material_description": "PVC Pipe 20 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 25 mm",
+    "material_description": "PVC Pipe 25 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 32 mm",
+    "material_description": "PVC Pipe 32 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 40 mm",
+    "material_description": "PVC Pipe 40 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 50 mm",
+    "material_description": "PVC Pipe 50 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 63 mm",
+    "material_description": "PVC Pipe 63 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 75 mm",
+    "material_description": "PVC Pipe 75 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 90 mm",
+    "material_description": "PVC Pipe 90 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 110 mm",
+    "material_description": "PVC Pipe 110 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Pipe 160 mm",
+    "material_description": "PVC Pipe 160 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Elbow 90°",
+    "material_description": "PVC Elbow 90°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Elbow 45°",
+    "material_description": "PVC Elbow 45°",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Tee Equal",
+    "material_description": "PVC Tee Equal",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Tee Reducing",
+    "material_description": "PVC Tee Reducing",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Reducer",
+    "material_description": "PVC Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Coupler",
+    "material_description": "PVC Coupler",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Union",
+    "material_description": "PVC Union",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC End Cap",
+    "material_description": "PVC End Cap",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Socket",
+    "material_description": "PVC Socket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Flange",
+    "material_description": "PVC Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Ball Valve",
+    "material_description": "PVC Ball Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Non Return Valve (NRV)",
+    "material_description": "PVC Non Return Valve (NRV)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Foot Valve",
+    "material_description": "PVC Foot Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Service Saddle",
+    "material_description": "PVC Service Saddle",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "PVC Repair Clamp",
+    "material_description": "PVC Repair Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Rubber Ring",
+    "material_description": "Rubber Ring",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Nut & Bolt Set",
+    "material_description": "Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "GI Flange",
+    "material_description": "GI Flange",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Water Meter",
+    "material_description": "Water Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Flow Meter",
+    "material_description": "Flow Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Air Valve",
+    "material_description": "Air Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Marker Post",
+    "material_description": "Marker Post",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Warning Tape",
+    "material_description": "Warning Tape",
+    "unit": "Roll",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Sand Bedding Material",
+    "material_description": "Sand Bedding Material",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Pipe PVC",
+    "sub_head": "Thrust Block Concrete",
+    "material_description": "Thrust Block Concrete",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar PV Module 540W/550W",
+    "material_description": "Solar PV Module 540W/550W",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Module Mounting Structure (MMS)",
+    "material_description": "Module Mounting Structure (MMS)",
+    "unit": "Kg / Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Pump Controller (VFD)",
+    "material_description": "Solar Pump Controller (VFD)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Pump Inverter",
+    "material_description": "Solar Pump Inverter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "DC Combiner Box (DCDB)",
+    "material_description": "DC Combiner Box (DCDB)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Distribution Box (ACDB)",
+    "material_description": "AC Distribution Box (ACDB)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Submersible Pump",
+    "material_description": "Solar Submersible Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Surface Pump",
+    "material_description": "Solar Surface Pump",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Pump Motor",
+    "material_description": "Pump Motor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Borewell Pump Set",
+    "material_description": "Borewell Pump Set",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Pump Starter",
+    "material_description": "Pump Starter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Float Switch",
+    "material_description": "Float Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Water Level Sensor",
+    "material_description": "Water Level Sensor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Dry Run Protection Unit",
+    "material_description": "Dry Run Protection Unit",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar DC Cable 4 Sqmm",
+    "material_description": "Solar DC Cable 4 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar DC Cable 6 Sqmm",
+    "material_description": "Solar DC Cable 6 Sqmm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Power Cable",
+    "material_description": "AC Power Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Earthing Cable",
+    "material_description": "Earthing Cable",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MC4 Connector Pair",
+    "material_description": "MC4 Connector Pair",
+    "unit": "Pair",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cable Lug",
+    "material_description": "Cable Lug",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cable Gland",
+    "material_description": "Cable Gland",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Ferrule",
+    "material_description": "Ferrule",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cable Tie",
+    "material_description": "Cable Tie",
+    "unit": "Pkt",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Earthing Electrode",
+    "material_description": "GI Earthing Electrode",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Copper Earthing Electrode",
+    "material_description": "Copper Earthing Electrode",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Strip",
+    "material_description": "GI Strip",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Earthing Pit Cover",
+    "material_description": "Earthing Pit Cover",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Lightning Arrester",
+    "material_description": "Lightning Arrester",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Surge Protection Device (SPD)",
+    "material_description": "Surge Protection Device (SPD)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MCB",
+    "material_description": "MCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MCCB",
+    "material_description": "MCCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Isolator Switch",
+    "material_description": "Isolator Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Junction Box",
+    "material_description": "Junction Box",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "HDPE Riser Pipe",
+    "material_description": "HDPE Riser Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Riser Pipe",
+    "material_description": "GI Riser Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "HDPE Delivery Pipe",
+    "material_description": "HDPE Delivery Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "PVC Delivery Pipe",
+    "material_description": "PVC Delivery Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "NRV (Non Return Valve)",
+    "material_description": "NRV (Non Return Valve)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Foot Valve",
+    "material_description": "Foot Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Ball Valve",
+    "material_description": "Ball Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Air Valve",
+    "material_description": "Air Valve",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Pipe Clamp",
+    "material_description": "Pipe Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Bend",
+    "material_description": "Bend",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Tee",
+    "material_description": "Tee",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Reducer",
+    "material_description": "Reducer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Coupler",
+    "material_description": "Coupler",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Rubber Gasket",
+    "material_description": "Rubber Gasket",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Nut & Bolt Set",
+    "material_description": "Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "RCC Foundation Material",
+    "material_description": "RCC Foundation Material",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Fencing Material",
+    "material_description": "Fencing Material",
+    "unit": "Mtr / Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Pump Controller",
+    "material_description": "Solar Pump Controller",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Inverter",
+    "material_description": "Solar Inverter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Variable Frequency Drive (VFD)",
+    "material_description": "Variable Frequency Drive (VFD)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MPPT Charge Controller",
+    "material_description": "MPPT Charge Controller",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "DC Combiner Box (DCDB)",
+    "material_description": "DC Combiner Box (DCDB)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Distribution Box (ACDB)",
+    "material_description": "AC Distribution Box (ACDB)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Junction Box",
+    "material_description": "Junction Box",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "String Monitoring Unit (SMU)",
+    "material_description": "String Monitoring Unit (SMU)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Data Logger",
+    "material_description": "Data Logger",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Remote Monitoring Unit (RMU)",
+    "material_description": "Remote Monitoring Unit (RMU)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GSM/GPRS Modem",
+    "material_description": "GSM/GPRS Modem",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Wi-Fi Monitoring Device",
+    "material_description": "Wi-Fi Monitoring Device",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "SCADA Interface Module",
+    "material_description": "SCADA Interface Module",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Solar Energy Meter",
+    "material_description": "Solar Energy Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Digital Multifunction Meter",
+    "material_description": "Digital Multifunction Meter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "DC Voltmeter",
+    "material_description": "DC Voltmeter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "DC Ammeter",
+    "material_description": "DC Ammeter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Voltmeter",
+    "material_description": "AC Voltmeter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Ammeter",
+    "material_description": "AC Ammeter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "CT (Current Transformer)",
+    "material_description": "CT (Current Transformer)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "PT (Potential Transformer)",
+    "material_description": "PT (Potential Transformer)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MCB",
+    "material_description": "MCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "MCCB",
+    "material_description": "MCCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "RCCB",
+    "material_description": "RCCB",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "DC Isolator Switch",
+    "material_description": "DC Isolator Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "AC Isolator Switch",
+    "material_description": "AC Isolator Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Changeover Switch",
+    "material_description": "Changeover Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Surge Protection Device (SPD) DC",
+    "material_description": "Surge Protection Device (SPD) DC",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Surge Protection Device (SPD) AC",
+    "material_description": "Surge Protection Device (SPD) AC",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Lightning Arrester Counter",
+    "material_description": "Lightning Arrester Counter",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Relay Module",
+    "material_description": "Relay Module",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Contactor",
+    "material_description": "Contactor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Overload Relay",
+    "material_description": "Overload Relay",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Timer Relay",
+    "material_description": "Timer Relay",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Phase Failure Relay",
+    "material_description": "Phase Failure Relay",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Dry Run Protection Device",
+    "material_description": "Dry Run Protection Device",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Water Level Controller",
+    "material_description": "Water Level Controller",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Float Switch",
+    "material_description": "Float Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Ultrasonic Water Level Sensor",
+    "material_description": "Ultrasonic Water Level Sensor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Pressure Sensor",
+    "material_description": "Pressure Sensor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Flow Sensor",
+    "material_description": "Flow Sensor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Temperature Sensor",
+    "material_description": "Temperature Sensor",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "PLC",
+    "material_description": "PLC",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "HMI",
+    "material_description": "HMI",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "SMPS",
+    "material_description": "SMPS",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Battery Charger",
+    "material_description": "Battery Charger",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Battery Bank (if applicable)",
+    "material_description": "Battery Bank (if applicable)",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Indicator Lamp",
+    "material_description": "Indicator Lamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Push Button",
+    "material_description": "Push Button",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Selector Switch",
+    "material_description": "Selector Switch",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI C Channel 41x41 mm",
+    "material_description": "GI C Channel 41x41 mm",
+    "unit": "Mtr / Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI C Channel 61x41 mm",
+    "material_description": "GI C Channel 61x41 mm",
+    "unit": "Mtr / Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI C Channel 81x41 mm",
+    "material_description": "GI C Channel 81x41 mm",
+    "unit": "Mtr / Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Angle 40x40x5 mm",
+    "material_description": "GI Angle 40x40x5 mm",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Angle 50x50x6 mm",
+    "material_description": "GI Angle 50x50x6 mm",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Square Pipe 40x40 mm",
+    "material_description": "GI Square Pipe 40x40 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Square Pipe 50x50 mm",
+    "material_description": "GI Square Pipe 50x50 mm",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Rectangular Pipe",
+    "material_description": "GI Rectangular Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Round Pipe",
+    "material_description": "GI Round Pipe",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Hot Dip Galvanized Structural Steel",
+    "material_description": "Hot Dip Galvanized Structural Steel",
+    "unit": "Kg",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Module Mounting Rail",
+    "material_description": "Module Mounting Rail",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Rail Splice",
+    "material_description": "Rail Splice",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Mid Clamp",
+    "material_description": "Mid Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "End Clamp",
+    "material_description": "End Clamp",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Module Clamp Set",
+    "material_description": "Module Clamp Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "U-Bolt",
+    "material_description": "U-Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "J-Bolt",
+    "material_description": "J-Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Foundation Bolt",
+    "material_description": "Foundation Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Anchor Bolt",
+    "material_description": "Anchor Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "SS Nut",
+    "material_description": "SS Nut",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "SS Bolt",
+    "material_description": "SS Bolt",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Spring Washer",
+    "material_description": "Spring Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Plain Washer",
+    "material_description": "Plain Washer",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "GI Nut & Bolt Set",
+    "material_description": "GI Nut & Bolt Set",
+    "unit": "Set",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cross Bracing Member",
+    "material_description": "Cross Bracing Member",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Vertical Support Leg",
+    "material_description": "Vertical Support Leg",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Horizontal Support Member",
+    "material_description": "Horizontal Support Member",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Base Plate",
+    "material_description": "Base Plate",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Gusset Plate",
+    "material_description": "Gusset Plate",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cleat Plate",
+    "material_description": "Cleat Plate",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cable Tray Support Structure",
+    "material_description": "Cable Tray Support Structure",
+    "unit": "Mtr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Earthing Strip Support",
+    "material_description": "Earthing Strip Support",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Lightning Arrester Mast",
+    "material_description": "Lightning Arrester Mast",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Walkway Structure",
+    "material_description": "Walkway Structure",
+    "unit": "Sqm",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Fence Support Post",
+    "material_description": "Fence Support Post",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Structure Touch-up Zinc Paint",
+    "material_description": "Structure Touch-up Zinc Paint",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Cold Galvanizing Spray",
+    "material_description": "Cold Galvanizing Spray",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "RCC Foundation Concrete",
+    "material_description": "RCC Foundation Concrete",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "PCC Foundation Concrete",
+    "material_description": "PCC Foundation Concrete",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Solar Pump Set Material",
+    "sub_head": "Excavation for Foundation",
+    "material_description": "Excavation for Foundation",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Electrician",
+    "material_description": "Electrician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Senior Electrician",
+    "material_description": "Senior Electrician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Solar Technician",
+    "material_description": "Solar Technician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Mechanical Technician",
+    "material_description": "Mechanical Technician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Fitter",
+    "material_description": "Fitter",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Pipe Fitter",
+    "material_description": "Pipe Fitter",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Plumber",
+    "material_description": "Plumber",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Welder",
+    "material_description": "Welder",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Fabricator",
+    "material_description": "Fabricator",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Mason (Rajmistri)",
+    "material_description": "Mason (Rajmistri)",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Carpenter",
+    "material_description": "Carpenter",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Bar Bender",
+    "material_description": "Bar Bender",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Painter",
+    "material_description": "Painter",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Helper",
+    "material_description": "Helper",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Skilled Labour",
+    "material_description": "Skilled Labour",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Semi-Skilled Labour",
+    "material_description": "Semi-Skilled Labour",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Unskilled Labour",
+    "material_description": "Unskilled Labour",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Rigger",
+    "material_description": "Rigger",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Scaffolding Labour",
+    "material_description": "Scaffolding Labour",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Excavator Operator",
+    "material_description": "Excavator Operator",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Crane Operator",
+    "material_description": "Crane Operator",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Tractor Driver",
+    "material_description": "Tractor Driver",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Truck Driver",
+    "material_description": "Truck Driver",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Borewell Technician",
+    "material_description": "Borewell Technician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Pump Installation Technician",
+    "material_description": "Pump Installation Technician",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Surveyor",
+    "material_description": "Surveyor",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Security Guard",
+    "material_description": "Security Guard",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Labour Category",
+    "sub_head": "Housekeeping Labour",
+    "material_description": "Housekeeping Labour",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Material Transportation",
+    "material_description": "Material Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Local Transportation",
+    "material_description": "Local Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Long Distance Transportation",
+    "material_description": "Long Distance Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Vehicle Hiring Charge",
+    "material_description": "Vehicle Hiring Charge",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Pickup Van Charge",
+    "material_description": "Pickup Van Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Tata 407 Charge",
+    "material_description": "Tata 407 Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Mini Truck Charge",
+    "material_description": "Mini Truck Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Truck (10 Wheeler) Charge",
+    "material_description": "Truck (10 Wheeler) Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Truck (12 Wheeler) Charge",
+    "material_description": "Truck (12 Wheeler) Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Trailer Charge",
+    "material_description": "Trailer Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Low Bed Trailer Charge",
+    "material_description": "Low Bed Trailer Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Crane Transportation",
+    "material_description": "Crane Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Equipment Transportation",
+    "material_description": "Equipment Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Solar Panel Transportation",
+    "material_description": "Solar Panel Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Pipe Transportation",
+    "material_description": "Pipe Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "DI Pipe Transportation",
+    "material_description": "DI Pipe Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "HDPE Pipe Transportation",
+    "material_description": "HDPE Pipe Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Steel Material Transportation",
+    "material_description": "Steel Material Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Cement Transportation",
+    "material_description": "Cement Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Sand Transportation",
+    "material_description": "Sand Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Stone Chips Transportation",
+    "material_description": "Stone Chips Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Water Tanker Charge",
+    "material_description": "Water Tanker Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Fuel Charge",
+    "material_description": "Fuel Charge",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Driver Allowance",
+    "material_description": "Driver Allowance",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Loading Charge",
+    "material_description": "Loading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Unloading Charge",
+    "material_description": "Unloading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Loading & Unloading Charge",
+    "material_description": "Loading & Unloading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Material Shifting Charge",
+    "material_description": "Material Shifting Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Site-to-Site Transfer Charge",
+    "material_description": "Site-to-Site Transfer Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Transport / Logistics",
+    "sub_head": "Courier / Parcel Charge",
+    "material_description": "Courier / Parcel Charge",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Material Transportation",
+    "material_description": "Material Transportation",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Loading Charge",
+    "material_description": "Loading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Unloading Charge",
+    "material_description": "Unloading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Loading & Unloading Charge",
+    "material_description": "Loading & Unloading Charge",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Vehicle Hire Charge",
+    "material_description": "Vehicle Hire Charge",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Fuel Charge",
+    "material_description": "Fuel Charge",
+    "unit": "Ltr",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Driver Allowance",
+    "material_description": "Driver Allowance",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Crane Mobilization",
+    "material_description": "Crane Mobilization",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Crane Rental",
+    "material_description": "Crane Rental",
+    "unit": "Hour / Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "JCB / Excavator Mobilization",
+    "material_description": "JCB / Excavator Mobilization",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "JCB / Excavator Rental",
+    "material_description": "JCB / Excavator Rental",
+    "unit": "Hour / Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Dumper Rental",
+    "material_description": "Dumper Rental",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Tractor Rental",
+    "material_description": "Tractor Rental",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Forklift Rental",
+    "material_description": "Forklift Rental",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Hydro Testing Charge",
+    "material_description": "Hydro Testing Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Pressure Testing Charge",
+    "material_description": "Pressure Testing Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Water Testing Charge",
+    "material_description": "Water Testing Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Electrical Testing Charge",
+    "material_description": "Electrical Testing Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Commissioning Charge",
+    "material_description": "Commissioning Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Survey Charge",
+    "material_description": "Survey Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Site Inspection Charge",
+    "material_description": "Site Inspection Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Borewell Testing Charge",
+    "material_description": "Borewell Testing Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Road Cutting Charge",
+    "material_description": "Road Cutting Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Road Restoration Charge",
+    "material_description": "Road Restoration Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Excavation Charge",
+    "material_description": "Excavation Charge",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Backfilling Charge",
+    "material_description": "Backfilling Charge",
+    "unit": "Cum",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Dewatering Charge",
+    "material_description": "Dewatering Charge",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Temporary Power Supply Charge",
+    "material_description": "Temporary Power Supply Charge",
+    "unit": "Month",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Temporary Water Supply Charge",
+    "material_description": "Temporary Water Supply Charge",
+    "unit": "Month",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Generator Rental",
+    "material_description": "Generator Rental",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Security Guard Charge",
+    "material_description": "Security Guard Charge",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Housekeeping Charge",
+    "material_description": "Housekeeping Charge",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Site Office Expense",
+    "material_description": "Site Office Expense",
+    "unit": "Month",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Internet & Communication Charge",
+    "material_description": "Internet & Communication Charge",
+    "unit": "Month",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Printing & Documentation Charge",
+    "material_description": "Printing & Documentation Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Courier Charge",
+    "material_description": "Courier Charge",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Travel Expense",
+    "material_description": "Travel Expense",
+    "unit": "Trip",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Lodging Expense",
+    "material_description": "Lodging Expense",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Boarding Expense",
+    "material_description": "Boarding Expense",
+    "unit": "Day",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Safety Equipment Expense",
+    "material_description": "Safety Equipment Expense",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "PPE Kit Expense",
+    "material_description": "PPE Kit Expense",
+    "unit": "Nos",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "First Aid Expense",
+    "material_description": "First Aid Expense",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Statutory Approval Fee",
+    "material_description": "Statutory Approval Fee",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Government Fee",
+    "material_description": "Government Fee",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Contingency Expense",
+    "material_description": "Contingency Expense",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Site Cleaning Charge",
+    "material_description": "Site Cleaning Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Waste Disposal Charge",
+    "material_description": "Waste Disposal Charge",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Contractor Overhead",
+    "material_description": "Contractor Overhead",
+    "unit": "% / Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Project Management Cost",
+    "material_description": "Project Management Cost",
+    "unit": "Month",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  },
+  {
+    "main_head": "Miscellaneous Cost",
+    "sub_head": "Miscellaneous Expense",
+    "material_description": "Miscellaneous Expense",
+    "unit": "Job",
+    "is_active": true,
+    "created_by": "+918276071523",
+    "edited_by": "+918276071523"
+  }
+]

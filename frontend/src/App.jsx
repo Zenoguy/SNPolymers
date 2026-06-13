@@ -13,6 +13,7 @@ import AdminPanel from './pages/admin/AdminPanel';
 import AuditLog from './pages/admin/AuditLog';
 import MasterData from './pages/admin/MasterData';
 import FundReports from './pages/FundReports';
+import MaterialMaster from './pages/MaterialMaster';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['staff', 'admin']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/fund-reports" element={<FundReports />} />
+            <Route path="/materials" element={<MaterialMaster />} />
           </Route>
 
           {/* Admin Protected Routes */}
