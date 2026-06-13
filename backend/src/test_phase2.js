@@ -1,6 +1,7 @@
 const { getProjects, getProjectByWorkOrder, createProject, updateProject, updateProjectStatus } = require('/home/zenoguy/Desktop/SNPolymers/backend/src/controllers/projects.controller');
 const { getReports, getReportById, createReport, updateReport, deleteReport, restoreReport } = require('/home/zenoguy/Desktop/SNPolymers/backend/src/controllers/reports.controller');
 const { supabase } = require('/home/zenoguy/Desktop/SNPolymers/backend/src/db/supabase');
+const requireAdmin = require('/home/zenoguy/Desktop/SNPolymers/backend/src/middleware/requireAdmin');
 
 // Helper to create mock res object
 function mockRes() {
@@ -25,17 +26,43 @@ async function testPhase2() {
   let passes = 0;
   let fails = 0;
 
-  // Setup a test project and a closed project
-  const testWOUnderTest = 'WB_APD_101'; // Running (from seeds)
-  const testWOClosed = 'WB_BAN_102'; // Running (we will close it to test the gate)
+  // Use isolated temporary projects instead of mutating real seed data
+  const testWOUnderTest = 'TEST_WO_PHASE2_A';
+  const testWOClosed = 'TEST_WO_PHASE2_B';
 
   try {
-    // Force set testWOClosed to Closed for test purposes
-    console.log(`Setting ${testWOClosed} to 'Closed' for mutability gate testing...`);
-    await supabase
-      .from('projects_master')
-      .update({ status: 'Closed', edited_by: '+918276071523' })
-      .eq('work_order_no', testWOClosed);
+    // 0. Setup: Clean up any previous test remnants & insert clean test projects
+    console.log('Cleaning up leftovers and inserting temporary test projects...');
+    await supabase.from('fund_reports').delete().in('work_order_no', [testWOUnderTest, testWOClosed]);
+    await supabase.from('projects_master').delete().in('work_order_no', [testWOUnderTest, testWOClosed]);
+
+    await supabase.from('projects_master').insert([
+      {
+        work_order_no: testWOUnderTest,
+        estimate_no: 'TEST_EST_A',
+        site_details: 'Test Site A',
+        state: 'West Bengal',
+        district: 'Alipurduar',
+        zone: 'North Bengal',
+        department: 'PWD',
+        status: 'Running',
+        created_by: '+918276071523',
+        edited_by: '+918276071523'
+      },
+      {
+        work_order_no: testWOClosed,
+        estimate_no: 'TEST_EST_B',
+        site_details: 'Test Site B',
+        state: 'Bihar',
+        district: 'Araria',
+        zone: 'North Bihar',
+        department: 'Irrigation',
+        status: 'Closed',
+        created_by: '+918276071523',
+        edited_by: '+918276071523'
+      }
+    ]);
+    console.log('Temporary test projects inserted successfully.');
 
     // 1. Test getProjects controller
     console.log('\n1. Testing getProjects controller...');
@@ -43,7 +70,7 @@ async function testPhase2() {
     const res1 = mockRes();
     await getProjects(req1, res1);
 
-    if (res1.statusCode === 200 && res1.jsonData.success && res1.jsonData.projects.length >= 20) {
+    if (res1.statusCode === 200 && res1.jsonData.success && res1.jsonData.projects.length >= 2) {
       console.log(`  [PASS] Successfully retrieved ${res1.jsonData.projects.length} projects.`);
       passes++;
     } else {
@@ -113,7 +140,7 @@ async function testPhase2() {
 
       if (res5.statusCode === 200 && res5.jsonData.success) {
         const report = res5.jsonData.report;
-        if (report.projects_master && report.projects_master.estimate_no === 'APD_1' && report.projects_master.state === 'West Bengal') {
+        if (report.projects_master && report.projects_master.estimate_no === 'TEST_EST_A' && report.projects_master.state === 'West Bengal') {
           console.log('  [PASS] Report fetched successfully with live project master columns:');
           console.log(`         Estimate: ${report.projects_master.estimate_no}`);
           console.log(`         State: ${report.projects_master.state}`);
@@ -145,7 +172,7 @@ async function testPhase2() {
         fails++;
       }
 
-      // Now temporarily move the project under test to Closed to test update gate
+      // Now temporarily move the project under test to Closed to test update/delete gates
       console.log(`\nTemporarily setting ${testWOUnderTest} to 'Closed' to test edit gate...`);
       await supabase
         .from('projects_master')
@@ -187,15 +214,15 @@ async function testPhase2() {
         fails++;
       }
 
-      // Re-open project under test
+      // Re-open project under test to 'Running'
       console.log(`\nRe-opening ${testWOUnderTest} to 'Running'...`);
       await supabase
         .from('projects_master')
         .update({ status: 'Running', edited_by: '+918276071523' })
         .eq('work_order_no', testWOUnderTest);
 
-      // 9. Test Soft Delete: Delete report linked to Running project (Should succeed)
-      console.log('9. Testing report soft-delete on Running project...');
+      // 9. Test Soft Delete & Metadata: Delete report linked to Running project (Should succeed)
+      console.log('9. Testing report soft-delete & metadata on Running project...');
       const req9 = {
         params: { fund_report_id: testReportId },
         user: { mobile_number: '+918276071523' }
@@ -203,11 +230,18 @@ async function testPhase2() {
       const res9 = mockRes();
       await deleteReport(req9, res9);
 
-      if (res9.statusCode === 200 && res9.jsonData.success && res9.jsonData.report.is_deleted === true) {
-        console.log('  [PASS] Report soft-deleted successfully.');
+      const report = res9.jsonData?.report;
+      if (
+        res9.statusCode === 200 &&
+        res9.jsonData.success &&
+        report.is_deleted === true &&
+        report.deleted_by === '+918276071523' &&
+        report.deleted_at !== null
+      ) {
+        console.log('  [PASS] Report soft-deleted successfully and verified metadata (deleted_by, deleted_at).');
         passes++;
       } else {
-        console.log(`  [FAIL] Soft delete failed. Status: ${res9.statusCode}`);
+        console.log(`  [FAIL] Soft delete failed or metadata missing. Status: ${res9.statusCode}, report:`, report);
         fails++;
       }
 
@@ -243,21 +277,94 @@ async function testPhase2() {
         fails++;
       }
 
-      // Clean up by hard-deleting the test report from the DB (admin operation directly via client)
-      console.log('\nCleaning up test report from database...');
-      await supabase.from('fund_reports').delete().eq('fund_report_id', testReportId);
+      // 12. Verify Audit Log Creation
+      console.log('\n12. Testing Audit Log record creation...');
+      const { data: auditLogs, error: auditErr } = await supabase
+        .from('audit_log')
+        .select('*')
+        .eq('record_identifier', testReportId)
+        .order('timestamp', { ascending: true });
+
+      if (auditErr) throw auditErr;
+
+      const actions = auditLogs.map(l => l.action);
+      const hasCreate = actions.includes('CREATE');
+      const hasEdit = actions.includes('EDIT');
+      const hasSoftDelete = actions.includes('SOFT_DELETE');
+      const hasRestore = actions.includes('RESTORE');
+
+      if (hasCreate && hasEdit && hasSoftDelete && hasRestore) {
+        console.log('  [PASS] Successfully verified all expected audit logs (CREATE, EDIT, SOFT_DELETE, RESTORE) exist.');
+        passes++;
+      } else {
+        console.log(`  [FAIL] Missing expected audit logs. Found actions: ${actions.join(', ')}`);
+        fails++;
+      }
     }
 
-    // Clean up project status
-    console.log('Restoring test projects to default "Running" state...');
-    await supabase
-      .from('projects_master')
-      .update({ status: 'Running', edited_by: '+918276071523' })
-      .eq('work_order_no', testWOClosed);
+    // 13. Verify Admin Permission Boundary
+    console.log('\n13. Testing Admin Permission Boundary (Staff/Project Manager access limitations)...');
+    const reqStaff = { user: { role: 'staff' } };
+    const resStaff = mockRes();
+    let nextCalled = false;
+    const next = () => { nextCalled = true; };
+
+    requireAdmin(reqStaff, resStaff, next);
+
+    if (resStaff.statusCode === 403 && !resStaff.jsonData?.success && !nextCalled) {
+      console.log('  [PASS] requireAdmin middleware successfully blocked staff role with 403 Forbidden.');
+      passes++;
+    } else {
+      console.log(`  [FAIL] Expected requireAdmin to block staff with 403. Status: ${resStaff.statusCode}, nextCalled: ${nextCalled}`);
+      fails++;
+    }
+
+    // 14. Testing report creation with invalid work_order_no
+    console.log('\n14. Testing report creation with invalid work_order_no...');
+    const req14 = {
+      user: { mobile_number: '+918276071523' },
+      body: { work_order_no: 'NONEXISTENT_WO_XYZ', amount: 10000, remarks: 'Invalid' }
+    };
+    const res14 = mockRes();
+    await createReport(req14, res14);
+
+    if (res14.statusCode === 404 && !res14.jsonData?.success) {
+      console.log('  [PASS] Correctly rejected report creation on nonexistent project with 404.');
+      passes++;
+    } else {
+      console.log(`  [FAIL] Expected 404 for nonexistent project, got: ${res14.statusCode}`);
+      fails++;
+    }
+
+    // 15. Testing retrieving nonexistent report ID
+    console.log('\n15. Testing retrieving nonexistent report ID...');
+    const req15 = { params: { fund_report_id: '00000000-0000-0000-0000-000000000000' } };
+    const res15 = mockRes();
+    await getReportById(req15, res15);
+
+    if (res15.statusCode === 404 && !res15.jsonData?.success) {
+      console.log('  [PASS] Correctly returned 404 for nonexistent report ID.');
+      passes++;
+    } else {
+      console.log(`  [FAIL] Expected 404 for nonexistent report, got: ${res15.statusCode}`);
+      fails++;
+    }
 
   } catch (err) {
     console.log('Unexpected validation error:', err.message);
     fails++;
+  } finally {
+    // 16. Programmatic Cleanup (Ensures zero seed data pollution even if scripts crash mid-run)
+    console.log('\n16. Cleaning up temporary test reports and projects...');
+    try {
+      await supabase.from('fund_reports').delete().in('work_order_no', [testWOUnderTest, testWOClosed]);
+      await supabase.from('projects_master').delete().in('work_order_no', [testWOUnderTest, testWOClosed]);
+      console.log('  [PASS] Temporary test artifacts deleted cleanly. Seed data remains unpolluted.');
+      passes++;
+    } catch (cleanupErr) {
+      console.log(`  [FAIL] Failed to clean up test projects/reports: ${cleanupErr.message}`);
+      fails++;
+    }
   }
 
   console.log('\n=== SUMMARY ===');

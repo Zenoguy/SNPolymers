@@ -11,9 +11,8 @@ async function isProjectClosed(workOrderNo) {
     .eq('work_order_no', workOrderNo)
     .maybeSingle();
 
-  if (error || !project) {
-    return true; // Safe default: if project doesn't exist, treat as blocked
-  }
+  if (error) throw error;
+  if (!project) return null;
   return project.status === 'Closed';
 }
 
@@ -135,6 +134,12 @@ async function createReport(req, res) {
   try {
     // Enforce Mutability Gate: Check if project status is Closed
     const isClosed = await isProjectClosed(work_order_no);
+    if (isClosed === null) {
+      return res.status(404).json({
+        success: false,
+        message: `Project with work order number '${work_order_no}' not found.`
+      });
+    }
     if (isClosed) {
       return res.status(403).json({
         success: false,
