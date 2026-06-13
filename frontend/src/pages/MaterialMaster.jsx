@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getMaterials,
   getMaterialCategories,
@@ -13,23 +14,20 @@ import {
 const MaterialMaster = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const queryClient = useQueryClient();
 
-  // Core Data States
-  const [materials, setMaterials] = useState([]);
-  const [categories, setCategories] = useState({ mainHeads: [], subHeads: [] });
-  const [loading, setLoading] = useState(true);
+  // Core Messaging & Modal / Form States
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   // Filtering & Pagination States
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [mainHeadFilter, setMainHeadFilter] = useState('');
   const [subHeadFilter, setSubHeadFilter] = useState('');
   const [activeFilter, setActiveFilter] = useState(isAdmin ? 'true' : ''); // Admins see active by default, non-admins only see active (forced by backend)
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('Material_Details');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -46,68 +44,132 @@ const MaterialMaster = () => {
     is_active: true
   });
 
-  // Fetch unique categories for filtering dropdowns
-  const fetchFilterOptions = async () => {
-    try {
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  // Reset page when search or filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, mainHeadFilter, subHeadFilter, activeFilter]);
+
+  // Fetch unique categories for filtering dropdowns using React Query
+  const { data: categoriesData } = useQuery({
+    queryKey: ['materialCategories'],
+    queryFn: async () => {
       const res = await getMaterialCategories();
-      if (res.data?.success) {
-        setCategories({
-          mainHeads: res.data.mainHeads || [],
-          subHeads: res.data.subHeads || []
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch filter categories:', err);
-    }
+      return res.data;
+    },
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000,    // 60 minutes
+  });
+
+  const categories = {
+    mainHeads: categoriesData?.mainHeads || [],
+    subHeads: categoriesData?.subHeads || []
   };
 
-  // Fetch main material records
-  const fetchMaterials = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
+  // Fetch main material records using React Query
+  const {
+    data: materialsData,
+    isLoading: loading,
+    error: queryError
+  } = useQuery({
+    queryKey: [
+      'materials',
+      {
+        page,
+        limit,
+        search: debouncedSearch,
+        main_head: mainHeadFilter,
+        sub_head: subHeadFilter,
+        is_active: activeFilter,
+        sortBy,
+        sortOrder
+      }
+    ],
+    queryFn: async () => {
       const params = {
         page,
         limit,
-        search,
+        search: debouncedSearch,
         main_head: mainHeadFilter,
         sub_head: subHeadFilter,
         is_active: activeFilter,
         sortBy,
         sortOrder
       };
-      
       const res = await getMaterials(params);
-      if (res.data?.success) {
-        setMaterials(res.data.materials || []);
-        setTotalItems(res.data.pagination?.totalItems || 0);
-        setTotalPages(res.data.pagination?.totalPages || 1);
-      }
-    } catch (err) {
-      console.error('Failed to fetch materials:', err);
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000,  // 5 minutes
+    gcTime: 10 * 60 * 1000,   // 10 minutes
+  });
+
+  const materials = materialsData?.materials || [];
+  const totalItems = materialsData?.pagination?.totalItems || 0;
+  const totalPages = materialsData?.pagination?.totalPages || 1;
+
+  // Sync query error with error state
+  useEffect(() => {
+    if (queryError) {
       setErrorMsg('Failed to load Material Master items. Please try again.');
-    } finally {
-      setLoading(false);
+    } else {
+      setErrorMsg('');
     }
-  };
+  }, [queryError]);
 
-  // Triggers
+  // Prefetch the next page of results
   useEffect(() => {
-    fetchFilterOptions();
-  }, []);
-
-  useEffect(() => {
-    fetchMaterials();
-  }, [page, mainHeadFilter, subHeadFilter, activeFilter, sortBy, sortOrder]);
+    if (page < totalPages) {
+      const nextPage = page + 1;
+      queryClient.prefetchQuery({
+        queryKey: [
+          'materials',
+          {
+            page: nextPage,
+            limit,
+            search: debouncedSearch,
+            main_head: mainHeadFilter,
+            sub_head: subHeadFilter,
+            is_active: activeFilter,
+            sortBy,
+            sortOrder
+          }
+        ],
+        queryFn: async () => {
+          const params = {
+            page: nextPage,
+            limit,
+            search: debouncedSearch,
+            main_head: mainHeadFilter,
+            sub_head: subHeadFilter,
+            is_active: activeFilter,
+            sortBy,
+            sortOrder
+          };
+          const res = await getMaterials(params);
+          return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+      });
+    }
+  }, [page, totalPages, limit, debouncedSearch, mainHeadFilter, subHeadFilter, activeFilter, sortBy, sortOrder, queryClient]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchMaterials();
+    setDebouncedSearch(search);
   };
 
   const handleClearFilters = () => {
     setSearch('');
+    setDebouncedSearch('');
     setMainHeadFilter('');
     setSubHeadFilter('');
     setActiveFilter(isAdmin ? 'true' : '');
@@ -178,16 +240,16 @@ const MaterialMaster = () => {
         if (res.data?.success) {
           setSuccessMsg('Material created successfully!');
           setTimeout(() => setIsModalOpen(false), 1200);
-          fetchMaterials();
-          fetchFilterOptions();
+          queryClient.invalidateQueries({ queryKey: ['materials'] });
+          queryClient.invalidateQueries({ queryKey: ['materialCategories'] });
         }
       } else {
         const res = await updateMaterial(currentMaterialId, formData);
         if (res.data?.success) {
           setSuccessMsg('Material updated successfully!');
           setTimeout(() => setIsModalOpen(false), 1200);
-          fetchMaterials();
-          fetchFilterOptions();
+          queryClient.invalidateQueries({ queryKey: ['materials'] });
+          queryClient.invalidateQueries({ queryKey: ['materialCategories'] });
         }
       }
     } catch (err) {
@@ -204,7 +266,8 @@ const MaterialMaster = () => {
       const res = await updateMaterialStatus(id, targetStatus);
       if (res.data?.success) {
         setSuccessMsg(`Material status updated to ${targetStatus ? 'Active' : 'Inactive'}.`);
-        fetchMaterials();
+        queryClient.invalidateQueries({ queryKey: ['materials'] });
+        queryClient.invalidateQueries({ queryKey: ['materialCategories'] });
         setTimeout(() => setSuccessMsg(''), 3000);
       }
     } catch (err) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Views
 import Home from './pages/Home';
@@ -15,10 +16,19 @@ import MasterData from './pages/admin/MasterData';
 import FundReports from './pages/FundReports';
 import MaterialMaster from './pages/MaterialMaster';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -45,6 +55,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
