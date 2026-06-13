@@ -67,7 +67,7 @@ const Dashboard = () => {
       <MobileHeader />
 
       {/* Main Administrative Control Grid */}
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10">
+      <main className="flex-grow p-6 md:p-10 overflow-y-auto no-scrollbar max-w-7xl mx-auto w-full relative z-10">
         
         <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-white/5">
           <div>

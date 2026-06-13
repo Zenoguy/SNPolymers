@@ -92,4 +92,13 @@
       0 0 20px rgba(245, 158, 11, 0.1),
       inset 0 1px 1px rgba(255, 255, 255, 0.08);
   }
+
+  /* Hide scrollbar while preserving scroll functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
