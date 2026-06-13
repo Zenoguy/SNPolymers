@@ -88,7 +88,7 @@ const Dashboard = () => {
               
               {/* Module 1: Production (Future Module Placeholder) */}
               <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
-                <div className="absolute top-0 right-0 p-5 opacity-[0.03]">
+                <div className="absolute top-0 right-0 p-5 opacity-[0.09]">
                   <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
@@ -106,7 +106,7 @@ const Dashboard = () => {
 
               {/* Module 2: Projects – Now Live */}
               <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
-                <div className="absolute top-0 right-0 p-5 opacity-[0.05]">
+                <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                   <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -129,7 +129,7 @@ const Dashboard = () => {
 
               {/* Module 3: Active Workspace */}
               <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] lg:col-span-2 glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
-                <div className="absolute top-0 right-0 p-5 opacity-[0.05]">
+                <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                   <svg className="w-24 h-24 text-amber-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ animationDuration: '4s' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11.5V10c0-2.5 2-4.5 4.5-4.5S18 7.5 18 10v1.5c0 3 .07 3.53 2.384 4.762A2 2 0 0120 19.5H8.293m0 0l-1.143-1.143M12 21a2 2 0 01-2-2h4a2 2 0 01-2 2z" />
                   </svg>
