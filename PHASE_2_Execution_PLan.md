@@ -161,6 +161,7 @@ pattern before the larger estimates controller is built.
 - Working `POST /api/v1/auth/purchase-data` (admin only)
 - Working `PUT /api/v1/auth/purchase-data/:id` (admin only)
 - Working `PATCH /api/v1/auth/purchase-data/:id/status` (admin only)
+- Minimal stub `routes/estimates.routes.js` exporting an empty Router, so the `app.js` mount added in this milestone does not crash the server before M3 implements the real routes
 
 ### Files Created or Modified
 | File | Action |
@@ -168,6 +169,7 @@ pattern before the larger estimates controller is built.
 | `backend/src/middleware/requireRole.js` | NEW |
 | `backend/src/controllers/purchaseData.controller.js` | NEW |
 | `backend/src/routes/purchaseData.routes.js` | NEW |
+| `backend/src/routes/estimates.routes.js` | NEW — stub only (exports empty `Router()`); replaced with real routes in M3 |
 | `backend/src/app.js` | MODIFY — add purchase-data route mount |
 
 ### Backend Work
@@ -191,6 +193,14 @@ Mirrors existing `requireAdmin.js` pattern.
 `createPurchaseOption`: validates `name` non-empty; sets `created_by = req.user.mobile_number`.
 `updatePurchaseOption`: updates `name` only.
 `togglePurchaseOptionStatus`: flips `is_active`.
+
+**`routes/estimates.routes.js` (stub):** Create this file in M2 containing only:
+```js
+const express = require('express');
+const router = express.Router();
+module.exports = router;
+```
+This satisfies the `app.js` mount below without crashing the server, since `estimates.controller.js` and the real routes don't exist until M3. M3 replaces this file's contents entirely.
 
 **`app.js`:** Add two mounts:
 ```
@@ -282,8 +292,8 @@ submission or review logic yet.
 | File | Action |
 |---|---|
 | `backend/src/controllers/estimates.controller.js` | NEW (partial — CRUD functions only) |
-| `backend/src/routes/estimates.routes.js` | NEW (partial — read + JE write routes only) |
-| `backend/src/app.js` | MODIFY — estimates route mount (already added in M2 as stub) |
+| `backend/src/routes/estimates.routes.js` | MODIFY — replace M2 stub content with read + JE write routes |
+| `backend/src/app.js` | No change needed — mount already added in M2 |
 
 ### Backend Work
 
@@ -303,14 +313,14 @@ Full replacement semantics (entire item array sent each time).
 2. In Draft: unrestricted full replacement.
 3. In ZO/HO Revision Requested: reject modifications to Approved rows; reject new items.
 4. Per-item: server calculates `amount = ROUND(rate * qty, 2)` — never trusted from client. Verify `unit` matches `material_master."M_Unit"` for the given `Material_Details`.
-5. DELETE step: in Draft — delete items not in payload. In Revision — skip rows where `[stage]_office_approve = 'Approve'`.
+5. DELETE step: in Draft — delete items not in payload. In Revision — skip rows where `[stage]_office_approve = 'Approve'`, where `[stage]` is the **current revision stage** (i.e. `zo_office_approve` when status = `ZO Revision Requested`, `ho_office_approve` when status = `HO Revision Requested`). **HO Revision conflict rule:** a row is protected from deletion if `ho_office_approve = 'Approve'`, *regardless* of its `zo_office_approve` value. The HO-stage column is the deciding factor during HO Revision — `zo_office_approve` is never consulted for delete eligibility in this status, consistent with M7's requirement that `zo_office_approve` is untouched during HO. Concretely: a row with `ho_office_approve = 'Approve'` and `zo_office_approve = 'Not Approve'` is still protected (skipped from deletion) during `HO Revision Requested`.
 6. UPSERT all payload items.
 7. Call `_recalculateEstimateAmount(estimate_id, actual_current_status)`.
 8. Return updated items array.
 
 **`_recalculateEstimateAmount(estimateId, currentStatus)`** — shared helper (not a route).
 
-Encapsulates the full status-to-calculation matrix. Called by `saveDraftItems`, `submitEstimate`, `submitReview`.
+Encapsulates the full status-to-calculation matrix (see Appendix D for the complete per-status breakdown). Called by `saveDraftItems`, `submitEstimate`, `submitReview`.
 
 **`getEstimates(req, res)`** — `GET /estimates`
 
@@ -483,7 +493,7 @@ None new.
 ✓ Submit with missing source_of_purchase → allowed (200)
 ✓ ZO Resubmit: Not Approve rows NULLed; Approve rows untouched
 ✓ ZO Resubmit: open revision log entry updated with resubmitted_at and modified_item_ids
-✓ HO Resubmit: only ho_office_approve NULLed; zo_office_approve untouched
+✓ HO Resubmit: only ho_office_approve NULLed; zo_office_approve untouched (field isolation verified for both stages — see Test 5b)
 ✓ submitEstimate called by non-owner non-admin → 403
 ✓ submitEstimate on Submitted estimate → 403
 ✓ Telegram notification sent to active ZO users (non-blocking — does not delay response)
@@ -507,6 +517,9 @@ Expected: 200 — optional field, no error.
 **Test 5:** Simulate ZO Revision Requested status; submit (resubmit). Verify DB: items with `zo_office_approve = 'Not Approve'` → NULL. Items with `zo_office_approve = 'Approve'` unchanged. `je_user_id` unchanged. `estimate_revision` incremented.
 Expected: 200, revision log entry updated.
 
+**Test 5b:** Simulate HO Revision Requested status (estimate previously reached ZO Approved, so items carry both `zo_office_approve` and `ho_office_approve` values). Submit (resubmit). Verify DB: items with `ho_office_approve = 'Not Approve'` → NULL; items with `ho_office_approve = 'Approve'` unchanged. `zo_office_approve` values on **all** items (Approve and the ones just NULLed for HO) remain unchanged from their pre-resubmit values. `je_user_id`/`je_date` unchanged. `estimate_revision` incremented.
+Expected: 200, revision log entry updated; field isolation confirmed — `zo_office_approve` untouched by HO resubmit.
+
 **Test 6:** `POST /estimates/:id/submit` as a `zo` user.
 Expected: 403 — wrong role.
 
@@ -515,7 +528,7 @@ Expected: 200 returned without error. `console.warn` logged.
 
 ### Exit Criteria
 ```
-✓ All 7 test cases pass
+✓ All 8 test cases pass
 ✓ estimate_revision increment logic confirmed correct across all submission types
 ✓ No open P1 defects
 ✓ Ready to begin M5
@@ -556,7 +569,13 @@ ZO decision (`submitReview`).
 
 1. Fetch estimate.
 2. Status-to-role guard: `statusRoleMap = { 'Submitted': ['zo','admin'], 'ZO Approved': ['ho','admin'] }`. If status not in map → 403. If role not in `statusRoleMap[status]` → 403.
-3. Revision deadline expiry check: query for open `estimate_revision_log` entry (`resubmitted_at IS NULL`). If found and `now() > revision_deadline` → auto-resubmit: mark log entry (`resubmitted_at = now()`, `resubmitted_by = NULL`, `is_auto_resubmitted = TRUE`, `modified_item_ids = '{}'`); set status to what it would be after manual resubmit; log `AUTO_RESUBMIT` to `audit_log`.
+3. Revision deadline expiry check: query for open `estimate_revision_log` entry (`resubmitted_at IS NULL`). If found and `now() > revision_deadline` → auto-resubmit:
+   - Mark log entry (`resubmitted_at = now()`, `resubmitted_by = NULL`, `is_auto_resubmitted = TRUE`, `modified_item_ids = '{}'`).
+   - **Target status rule (explicit):**
+     - If the expired revision's `stage = 'ZO'` (i.e. `ZO Revision Requested`): set `estimate_status = 'Submitted'`. The normal ZO path then continues (ZO will call `reviewEstimate` again to reach `Under ZO Review`).
+     - If the expired revision's `stage = 'HO'` (i.e. `HO Revision Requested`): set `estimate_status = 'Submitted'`, **and** in the same transaction immediately re-apply the auto-progression: `Submitted → ZO Approved` (since `zo_office_approve` values from the prior ZO stage are preserved/untouched) → `Under HO Review` (the actual status written to the row). In other words, an HO-revision auto-resubmit always lands directly on `'Under HO Review'`, skipping `Submitted` and `ZO Approved` as visible states — those are logical intermediate steps only, not persisted statuses. This matches the Appendix C diagram (`Submitted → ZO Approved → Under HO Review`) and is justified because `zo_office_approve` is never cleared by an HO resubmit (only `ho_office_approve = 'Not Approve'` rows are NULLed per M4 step 6).
+   - Both cases NULL out the relevant `[stage]_office_approve = 'Not Approve'` rows exactly as a manual resubmit would (per M4 steps 5–6), and call `_recalculateEstimateAmount(id, <final target status>)`.
+   - Log `AUTO_RESUBMIT` to `audit_log` with `user_id = NULL`. If the HO-revision case writes two logical transitions (Submitted→ZO Approved→Under HO Review) as one DB update, log a single `AUTO_RESUBMIT` entry whose `old_value.estimate_status = 'HO Revision Requested'` and `new_value.estimate_status = 'Under HO Review'`.
 4. Transition: `'Submitted'` → `'Under ZO Review'`.
 5. Update `estimate_status` and `last_modified_by`. Return updated estimate.
 
@@ -607,6 +626,9 @@ Uses `submit_row_approvals` RPC from M1. No new schema.
 ✓ submitReview before all rows decided → 422
 ✓ HO Telegram notification sent on ZO Approved (non-blocking)
 ✓ ZO cannot call submitReview on 'Under HO Review' estimate → 403
+✓ Auto-resubmit on expired ZO Revision Requested → status = 'Submitted' (manual-resubmit equivalent)
+✓ Auto-resubmit on expired HO Revision Requested → status = 'Under HO Review' directly (ZO stage skipped), zo_office_approve preserved
+✓ Both auto-resubmit paths NULL out Not Approve rows for their stage and log AUTO_RESUBMIT with user_id = NULL
 ```
 
 ### Test Cases
@@ -637,6 +659,12 @@ Expected: 200, `estimate_status = 'Rejected by ZO'`.
 
 **Test 9:** Simulate concurrent calls to `submitRowApprovals` (rapid duplicate requests).
 Expected: RPC atomicity — no partial state; idempotent result.
+
+**Test 10:** Estimate in `ZO Revision Requested` with expired `revision_deadline`. ZO calls `reviewEstimate`.
+Expected: 200, auto-resubmit fires, `estimate_status = 'Submitted'`, `zo_office_approve = 'Not Approve'` rows NULLed, revision log entry closed with `is_auto_resubmitted = TRUE`, `audit_log` entry `action = 'AUTO_RESUBMIT'`, `user_id = NULL`.
+
+**Test 11:** Estimate in `HO Revision Requested` with expired `revision_deadline` and existing `zo_office_approve` values from a prior ZO Approved cycle. HO calls `reviewEstimate`.
+Expected: 200, auto-resubmit fires, `estimate_status = 'Under HO Review'` directly (no intermediate persisted status), `ho_office_approve = 'Not Approve'` rows NULLed, `zo_office_approve` values unchanged, `audit_log` entry `old_value.estimate_status = 'HO Revision Requested'`, `new_value.estimate_status = 'Under HO Review'`, `user_id = NULL`.
 
 ### Exit Criteria
 ```
@@ -681,11 +709,12 @@ Body: `{ deadline_hours?: number, remarks?: string }`.
 1. Fetch estimate + items.
 2. Stage guard: `Under ZO Review` → ZO only; `Under HO Review` → HO only; others → 403.
 3. Require at least one item with `[stage]_office_approve = 'Not Approve'`. NULL rows excluded. → 422 if none.
-4. `revision_deadline = now() + ((deadline_hours || 24) hours)`.
-5. `revision_cycle = MAX(revision_cycle for this estimate + stage) + 1`, defaulting to 1.
-6. INSERT `estimate_revision_log` row.
-7. UPDATE estimate: `estimate_status = 'ZO Revision Requested'` or `'HO Revision Requested'`; `last_modified_by`.
-8. Return updated estimate + new revision log entry.
+4. Validate `deadline_hours` if provided: must be an integer in range `1–168` (inclusive). If `deadline_hours` is present and outside this range (e.g. `0`, negative, or `> 168`), or is not a number → 400 — "deadline_hours must be an integer between 1 and 168."
+5. `revision_deadline = now() + ((deadline_hours || 24) hours)`.
+6. `revision_cycle = MAX(revision_cycle for this estimate + stage) + 1`, defaulting to 1.
+7. INSERT `estimate_revision_log` row.
+8. UPDATE estimate: `estimate_status = 'ZO Revision Requested'` or `'HO Revision Requested'`; `last_modified_by`.
+9. Return updated estimate + new revision log entry.
 
 **`getRevisionLog(req, res)`** — `GET /estimates/:id/revisions`
 
@@ -711,6 +740,11 @@ None new. Writes to `estimate_revision_log` from M1.
 ✓ revision_cycle = 2 on second revision for same estimate+stage
 ✓ deadline_hours = 48 → revision_deadline = now() + 48h
 ✓ deadline_hours omitted → revision_deadline = now() + 24h
+✓ deadline_hours = 0 → 400
+✓ deadline_hours = -5 → 400
+✓ deadline_hours = 169 → 400
+✓ deadline_hours = 1 → 200, revision_deadline = now() + 1h (lower bound accepted)
+✓ deadline_hours = 168 → 200, revision_deadline = now() + 168h (upper bound accepted)
 ✓ requestRevision with no Not Approve rows (all NULL or all Approve) → 422
 ✓ requestRevision with at least one Not Approve → 201/200, log entry created
 ✓ getRevisionLog returns entries ordered by created_at ASC
@@ -739,10 +773,18 @@ Expected: manual entry shows `resubmitted_by_name = display_name`; auto entry sh
 **Test 6:** `POST /estimates/:id/request-revision` as `je` user.
 Expected: 403.
 
+**Test 7:** ZO calls `requestRevision` with `deadline_hours = 0`, one item Not Approve.
+Expected: 400 — "deadline_hours must be an integer between 1 and 168."
+
+**Test 8:** ZO calls `requestRevision` with `deadline_hours = -5`, one item Not Approve.
+Expected: 400.
+
+**Test 9:** ZO calls `requestRevision` with `deadline_hours = 99999`, one item Not Approve.
+Expected: 400.
+
 ### Exit Criteria
 ```
-✓ All 6 test cases pass
-✓ Revision log correctly tracks all cycles
+✓ All 9 test cases pass
 ✓ No open P1 defects
 ✓ Ready to begin M7
 ```
@@ -804,7 +846,7 @@ No new schema. Confirm `_recalculateEstimateAmount` returns `SUM where zo = Appr
 ✓ HO submitReview all Approve → status = 'Final Approved', ho fields stamped
 ✓ HO submitReview with one Not Approve → status = 'Rejected by HO'
 ✓ estimate_amount at Final Approved = SUM where both zo AND ho = 'Approve'
-✓ estimate_amount at Rejected by HO = SUM of all items
+✓ estimate_amount at Rejected by HO = SUM of all items (see Appendix D, row 9, for the full status-to-calculation matrix)
 ✓ HO cannot call submitReview on Under ZO Review estimate → 403
 ✓ JE cannot call submitRowApprovals (HO stage) → 403
 ```
@@ -984,7 +1026,7 @@ No `getEstimateItems` or `getEstimateSummary` exports (removed per plan).
 - TanStack Query; row click → `/estimates/:id`.
 
 **`EstimateForm.jsx` (create + edit):**
-- `/estimates/new`: header form (work order dropdown filtered to Running + Complete Under Maintenance; auto-populate Estimate No, State, District, Area Code, Department, Site Details; `zonal_office_no` text; `je_remarks` textarea).
+- `/estimates/new`: header form (work order dropdown filtered to Running + Complete Under Maintenance, **and further excluding any work order that already has a non-terminal-status estimate** — i.e. the dropdown proactively applies the same one-active-estimate rule enforced by the backend 409 in M3, so a JE never selects a blocked work order in the first place; auto-populate Estimate No, State, District, Area Code, Department, Site Details; `zonal_office_no` text; `je_remarks` textarea). The UI still handles a 409 response gracefully (e.g. race condition where another JE creates an estimate between dropdown load and submit) by showing an inline error and refreshing the dropdown — the proactive filter is the primary UX, the 409 handler is the fallback.
 - `/estimates/:id/edit`: loads `getEstimateById`; `active_revision_deadline` drives countdown; form disabled at zero with expiry message.
 - Line items table: virtualised/paginated for 500+ rows. Per row: 3-level material cascade (L2 filtered by L1; L3 filtered by L2); `unit` auto-filled (read-only); `qty`, `rate` inputs; `amount` calculated (read-only, INR); `rate_reference` text; `source_of_purchase` dropdown from `getPurchaseOptions()`; delete button (Draft only).
 - Revision mode: rejected rows (Not Approve) editable with amber border; approved rows read-only.
@@ -1027,6 +1069,8 @@ None.
 ```
 ✓ JE can create estimate from /estimates/new; redirected to list on creation
 ✓ Work order dropdown shows only Running and Complete Under Maintenance projects
+✓ Work order dropdown excludes work orders that already have a non-terminal-status estimate
+✓ If a 409 occurs at submit (race condition), UI shows inline error and refreshes dropdown
 ✓ Estimate No, Area Code, State, District auto-populate on work order selection
 ✓ Line items table supports add / edit / delete in Draft mode
 ✓ Material L2 dropdown filtered by L1 selection; L3 filtered by L2
@@ -1045,6 +1089,7 @@ None.
 ✓ is_deadline_overdue = true → amber badge escalates to red
 ✓ estimate_revision column hidden for je/staff on list view
 ✓ Purchase Data admin tab: add, list, toggle active working
+✓ Line items table with 500+ rows renders without UI freeze (virtualisation/pagination confirmed under load — see Test 11)
 ✓ Sidebar shows "Cost Estimates" nav item for all Phase 2 roles
 ✓ Dashboard stat card shows correct counts
 ✓ All 4 routes registered and accessible to correct roles
@@ -1057,6 +1102,9 @@ Expected: redirected to list; new Draft row visible.
 
 **Test 2:** JE selects a Closed work order in the dropdown.
 Expected: Closed projects not shown in dropdown (filtered out).
+
+**Test 2b:** A Running work order already has a Draft/Submitted/Under Review estimate. JE opens `/estimates/new`.
+Expected: that work order is not present in the dropdown options.
 
 **Test 3:** JE adds 3 line items, saves draft, reloads page.
 Expected: all 3 items present with correct amounts.
@@ -1082,9 +1130,12 @@ Expected: form inputs disabled; expiry message displayed.
 **Test 10:** Admin navigates to AdminPanel → Purchase Data tab. Adds "Local Market", then deactivates it.
 Expected: option appears in list; toggle changes is_active to false.
 
+**Test 11:** Load `/estimates/:id/edit` for an estimate with 500+ line items.
+Expected: table renders via virtualisation/pagination without blocking the main thread (initial render <2s); scrolling/paging through all rows works smoothly; Save Draft with the full 500+ item payload succeeds (200) and all items persist on reload.
+
 ### Exit Criteria
 ```
-✓ All 10 test cases pass
+✓ All 11 test cases pass
 ✓ No console errors in browser during any workflow path
 ✓ Full end-to-end flow (JE → ZO → HO → Final Approved) completable through UI
 ✓ No open P1 or P2 defects
@@ -1240,14 +1291,18 @@ M1 (DB Foundation)
  └── M2 (Middleware + Purchase Data API)
       └── M3 (Estimate CRUD + Draft)
            └── M4 (Submission Workflow)
-                └── M5 (ZO Review)
-                     ├── M6 (Revision Workflow)
-                     │    └── M7 (HO Review)
-                     │         └── M8 (Audit + Notifications)
-                     │              └── M9 (Frontend Integration)
-                     │                   └── M10 (UAT)
-                     └── M7 (HO Review) ──┘
+                └── M5 (ZO Review) ───────────────────────┐
+                     ├── M6 (Revision Workflow)            │
+                     │    └── M7 (HO Review) ──────┐       │
+                     │                              │       │
+                     └──────────────────────────────┴──► M8 (Audit + Notifications)
+                                                              └── M9 (Frontend Integration)
+                                                                   └── M10 (UAT)
 ```
+
+M8 depends on both M5 (ZO workflow must produce audit entries and notifications) and M7
+(HO workflow must complete all possible status values for audit verification), matching
+the milestone table at the top of this document.
 
 ---
 
@@ -1288,11 +1343,43 @@ Draft
                                                                       │                                                                      ├─[HO submitReview, all Approve]──► Final Approved
                                                                       │                                                                      ├─[HO submitReview, any Not Approve]──► Rejected by HO
                                                                       │                                                                      └─[HO requestRevision]──► HO Revision Requested
-                                                                      │                                                                                                       └─[JE submit / auto]──► Submitted (→ ZO Approved → Under HO Review)
+                                                                      │                                                                                                       └─[JE submit]──► Submitted (ZO/HO call reviewEstimate again → Under HO Review, since zo_office_approve preserved)
+                                                                      │                                                                                                       └─[auto-resubmit, expired]──► Under HO Review (direct — Submitted & ZO Approved are logical-only, not persisted)
                                                                       ├─[ZO submitReview, any Not Approve]──► Rejected by ZO
                                                                       └─[ZO requestRevision]──► ZO Revision Requested
-                                                                                                      └─[JE submit / auto]──► Submitted
+                                                                                                      └─[JE submit]──► Submitted
+                                                                                                      └─[auto-resubmit, expired]──► Submitted (manual-resubmit equivalent; ZO calls reviewEstimate again → Under ZO Review)
 ```
+
+**Auto-resubmit target status rule (see M5 §3):**
+- Expired **ZO Revision Requested** → `Submitted` (identical to a manual JE resubmit; normal ZO flow continues from there).
+- Expired **HO Revision Requested** → `Under HO Review` directly, in a single update. `Submitted` and `ZO Approved` are traversed logically (because `zo_office_approve` is preserved) but never persisted as the estimate's status — only `Under HO Review` is written. The `Not Approve` rows for the relevant stage are NULLed exactly as in a manual resubmit, and a single `AUTO_RESUBMIT` audit entry records `old_value.estimate_status = 'HO Revision Requested'` → `new_value.estimate_status = 'Under HO Review'`.
+
+---
+
+## Appendix D — `_recalculateEstimateAmount` Status-to-Calculation Matrix
+
+`estimate_amount` is recalculated on every call to `saveDraftItems`, `submitEstimate`, and `submitReview`,
+using `currentStatus` to select the correct row below. "All items" means every row in
+`project_cost_estimate_items` for the estimate, regardless of approval columns.
+
+| `estimate_status` | `estimate_amount` formula | Notes |
+|---|---|---|
+| Draft | SUM(`amount`) over all items | No approvals exist yet |
+| Submitted | SUM(`amount`) over all items | First/re-submission; pre-review |
+| Under ZO Review | SUM(`amount`) over all items | Recalculated after each `submitRowApprovals` call, but `zo_office_approve` decisions don't change the sum at this stage — full total until ZO finalises |
+| ZO Revision Requested | SUM(`amount`) over all items | Same as Submitted; JE is editing rejected rows |
+| ZO Approved | SUM(`amount`) WHERE `zo_office_approve = 'Approve'` | Approved-only total carried into HO stage |
+| Rejected by ZO | SUM(`amount`) over all items | Terminal; full total retained for record-keeping |
+| Under HO Review | SUM(`amount`) WHERE `zo_office_approve = 'Approve'` | Recalculated after each HO `submitRowApprovals` call; `ho_office_approve` decisions don't change the sum at this stage |
+| HO Revision Requested | SUM(`amount`) WHERE `zo_office_approve = 'Approve'` | Same basis as Under HO Review; JE edits HO-rejected rows |
+| Final Approved | SUM(`amount`) WHERE `zo_office_approve = 'Approve' AND ho_office_approve = 'Approve'` | Dual-approval total — final payable amount |
+| Rejected by HO | SUM(`amount`) over all items | Terminal; full total retained for record-keeping (per M7 acceptance criteria) |
+
+**Implementation notes:**
+- The helper takes `currentStatus` as an explicit parameter rather than re-reading it from the DB, so callers control which row of this matrix applies at the point of calculation (important during multi-step transitions, e.g. the M5 auto-resubmit HO path which lands on `Under HO Review` — use that row, not `HO Revision Requested`).
+- "All items" rows (Draft, Submitted, ZO/HO Revision Requested, Rejected by ZO, Rejected by HO) ignore both approval columns entirely, including any stale `NULL`/`Approve`/`Not Approve` values left over from a prior review cycle.
+- `ZO Approved` and `Under HO Review`/`HO Revision Requested` share the same filter (`zo_office_approve = 'Approve'`) — `ho_office_approve` is irrelevant until `Final Approved`.
 
 ---
 
