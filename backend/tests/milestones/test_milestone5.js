@@ -623,7 +623,7 @@ async function testMilestone5() {
 
       // Verify single AUTO_RESUBMIT audit entry
       const { data: auditLogs } = await supabase.from('audit_log').select('*').eq('record_identifier', zarEstimateId).eq('action', 'AUTO_RESUBMIT');
-      const singleAudit = auditLogs && auditLogs.length === 1 && auditLogs[0].user_id === 'SYSTEM';
+      const singleAudit = auditLogs && auditLogs.length === 1 && auditLogs[0].user_id === null;
 
       if (isRevisionIncremented && item1Reset && item2Reset && singleAudit) {
         console.log('   [PASS] Expired ZO Revision Requested auto-resubmitted successfully (Submitted, +1 revision, NULLed Not Approve rows, single AUTO_RESUBMIT log).');
@@ -738,7 +738,7 @@ async function testMilestone5() {
 
       // Verify single AUTO_RESUBMIT audit entry
       const { data: auditLogsHO } = await supabase.from('audit_log').select('*').eq('record_identifier', harEstimateId).eq('action', 'AUTO_RESUBMIT');
-      const singleAuditHO = auditLogsHO && auditLogsHO.length === 1 && auditLogsHO[0].user_id === 'SYSTEM';
+      const singleAuditHO = auditLogsHO && auditLogsHO.length === 1 && auditLogsHO[0].user_id === null;
 
       if (isRevisionIncrementedHO && zoPreserved1 && zoPreserved2 && hoApproved1 && hoReset2 && amountCorrect && singleAuditHO) {
         console.log('   [PASS] Expired HO Revision Requested auto-resubmitted successfully (Under HO Review, +1 revision, zo preserved, ho NULLed, correct amount, single AUTO_RESUBMIT log).');

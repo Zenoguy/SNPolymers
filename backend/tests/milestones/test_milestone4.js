@@ -719,28 +719,34 @@ async function testMilestone4() {
     // Test 12: RPC Defensive Gating - Duplicate Open Logs (v_open_log_count = 2)
     // -------------------------------------------------------------
     console.log('\n12. Testing RPC Defensive Gating (Multiple open revision logs)...');
-    // Insert two open logs
-    const dupLog1 = crypto.randomUUID();
-    const dupLog2 = crypto.randomUUID();
     
-    const { error: insertDupErr } = await supabase.from('estimate_revision_log').insert([
-      { id: dupLog1, estimate_id: createdEstimateId, revision_cycle: 3, stage: 'ZO', requested_by: mobileZO, revision_deadline: deadlineZO },
-      { id: dupLog2, estimate_id: createdEstimateId, revision_cycle: 3, stage: 'ZO', requested_by: mobileZO, revision_deadline: deadlineZO }
-    ]);
-    if (insertDupErr) throw insertDupErr;
-
-    const { error: rpcErr12 } = await supabase.rpc('submit_estimate', {
-      p_estimate_id: createdEstimateId,
-      p_stage: 'ZO',
-      p_mobile_number: mobileJE_Owner,
-      p_new_revision: 4
+    // Ensure one open log is present
+    const dupLog1 = crypto.randomUUID();
+    const { error: insertLog1Err } = await supabase.from('estimate_revision_log').insert({
+      id: dupLog1,
+      estimate_id: createdEstimateId,
+      revision_cycle: 3,
+      stage: 'ZO',
+      requested_by: mobileZO,
+      revision_deadline: deadlineZO
     });
 
-    if (rpcErr12 && rpcErr12.message.includes('Expected exactly one open revision log, found 2')) {
-      console.log('    [PASS] RPC successfully blocked submission when duplicate open logs exist.');
+    // Try to insert a second open log for the same estimate
+    const dupLog2 = crypto.randomUUID();
+    const { error: insertDupErr } = await supabase.from('estimate_revision_log').insert({
+      id: dupLog2,
+      estimate_id: createdEstimateId,
+      revision_cycle: 3,
+      stage: 'ZO',
+      requested_by: mobileZO,
+      revision_deadline: deadlineZO
+    });
+
+    if (insertDupErr && insertDupErr.code === '23505') {
+      console.log('    [PASS] Database constraint uniq_active_revision successfully blocked duplicate open logs.');
       passes++;
     } else {
-      console.log('    [FAIL] RPC did not throw correct exception on multiple open logs:', rpcErr12);
+      console.log('    [FAIL] Database constraint failed to prevent duplicate open logs:', insertDupErr);
       fails++;
     }
 

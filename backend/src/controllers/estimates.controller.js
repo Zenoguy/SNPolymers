@@ -835,14 +835,22 @@ async function submitRowApprovals(req, res) {
       return res.status(404).json({ success: false, message: 'Estimate not found.' });
     }
 
-    // Stage guard: Under ZO Review and user is zo/admin
+    // Stage guard: Under ZO Review (zo/admin) or Under HO Review (ho/admin)
     const effectiveRole = req.user.role === 'staff' ? 'je' : req.user.role;
-    if (estimate.estimate_status !== 'Under ZO Review') {
-      return res.status(403).json({ success: false, message: 'Row approvals can only be submitted during Under ZO Review status.' });
-    }
+    let stage = null;
 
-    if (!['zo', 'admin'].includes(effectiveRole)) {
-      return res.status(403).json({ success: false, message: 'Access denied. Only ZO or Admin can approve rows.' });
+    if (estimate.estimate_status === 'Under ZO Review') {
+      if (!['zo', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. Only ZO or Admin can approve rows during ZO Review.' });
+      }
+      stage = 'ZO';
+    } else if (estimate.estimate_status === 'Under HO Review') {
+      if (!['ho', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. Only HO or Admin can approve rows during HO Review.' });
+      }
+      stage = 'HO';
+    } else {
+      return res.status(403).json({ success: false, message: `Row approvals can only be submitted during Under ZO Review or Under HO Review status. Current status: ${estimate.estimate_status}` });
     }
 
     // 2. Validate Approvals Array
@@ -886,7 +894,7 @@ async function submitRowApprovals(req, res) {
     const { error: rpcError } = await supabase.rpc('submit_row_approvals', {
       p_estimate_id: id,
       p_approvals: approvals,
-      p_stage: 'ZO',
+      p_stage: stage,
       p_modified_by: req.user.mobile_number
     });
 
@@ -948,27 +956,48 @@ async function submitReview(req, res) {
 
     // Stage Guard
     const effectiveRole = req.user.role === 'staff' ? 'je' : req.user.role;
-    if (estimate.estimate_status !== 'Under ZO Review') {
-      return res.status(403).json({ success: false, message: 'Reviews can only be submitted for estimates under ZO Review.' });
+    let rpcResult = null;
+
+    if (estimate.estimate_status === 'Under ZO Review') {
+      if (!['zo', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. Only ZO or Admin can submit reviews.' });
+      }
+
+      // 2. Call the transactional RPC submit_zo_review
+      const { error: rpcError } = await supabase.rpc('submit_zo_review', {
+        p_estimate_id: id,
+        p_reviewer: req.user.mobile_number,
+        p_remarks: req.body?.remarks || null
+      });
+      rpcResult = rpcError;
+    } else if (estimate.estimate_status === 'Under HO Review') {
+      if (!['ho', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. Only HO or Admin can submit reviews.' });
+      }
+
+      // 2. Call the transactional RPC submit_ho_review
+      const { error: rpcError } = await supabase.rpc('submit_ho_review', {
+        p_estimate_id: id,
+        p_reviewer: req.user.mobile_number,
+        p_remarks: req.body?.remarks || null
+      });
+      rpcResult = rpcError;
+    } else {
+      return res.status(403).json({ success: false, message: 'Reviews can only be submitted for estimates under ZO Review or Under HO Review.' });
     }
 
-    if (!['zo', 'admin'].includes(effectiveRole)) {
-      return res.status(403).json({ success: false, message: 'Access denied. Only ZO or Admin can submit reviews.' });
-    }
-
-    // 2. Call the transactional RPC submit_zo_review
-    const { error: rpcError } = await supabase.rpc('submit_zo_review', {
-      p_estimate_id: id,
-      p_reviewer: req.user.mobile_number,
-      p_remarks: req.body?.remarks || null
-    });
-
-    if (rpcError) {
+    if (rpcResult) {
       // If RPC failed due to undecided rows check, return 422
-      if (rpcError.message && rpcError.message.includes('undecided')) {
+      if (rpcResult.message && rpcResult.message.includes('undecided')) {
         return res.status(422).json({ success: false, message: 'All rows must be decided.' });
       }
-      throw rpcError;
+      if (rpcResult.message && rpcResult.message.includes('no line items')) {
+        return res.status(422).json({ success: false, message: 'Estimate contains no line items.' });
+      }
+      if (rpcResult.message && rpcResult.message.includes('Inconsistent review state')) {
+        return res.status(400).json({ success: false, message: rpcResult.message });
+      }
+      throw rpcResult;
     }
 
     // 3. Fetch the updated estimate header
@@ -999,12 +1028,277 @@ async function submitReview(req, res) {
       console.info(`submitReview authorization conflict: ${error.message}`);
       return res.status(403).json({ success: false, message: error.message });
     }
-    if (error.message && (error.message.includes('Expected Under ZO Review') || error.message.includes('All rows must be decided'))) {
+    if (error.message && (
+      error.message.includes('Expected Under ZO Review') ||
+      error.message.includes('Expected Under HO Review') ||
+      error.message.includes('All rows must be decided')
+    )) {
       console.info(`submitReview transition conflict: ${error.message}`);
       return res.status(409).json({ success: false, message: error.message });
     }
     console.error(`submitReview failed: ${error.message}`);
     return res.status(500).json({ success: false, message: 'Failed to submit final review.' });
+  }
+}
+
+async function requestRevision(req, res) {
+  const { id } = req.params;
+  const { deadline_hours } = req.body;
+
+  if (!uuidRegex.test(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid UUID format.' });
+  }
+
+  // Strict integer validation for deadline_hours if provided
+  let durationHours = 24;
+  if (deadline_hours !== undefined) {
+    if (typeof deadline_hours !== 'number' || !Number.isInteger(deadline_hours) || deadline_hours < 1 || deadline_hours > 168) {
+      return res.status(400).json({
+        success: false,
+        message: 'deadline_hours must be an integer between 1 and 168.'
+      });
+    }
+    durationHours = deadline_hours;
+  }
+
+  try {
+    // 1. Fetch estimate header
+    const { data: estimate, error: estError } = await supabase
+      .from('project_cost_estimates')
+      .select('*')
+      .eq('estimate_id', id)
+      .maybeSingle();
+
+    if (estError) throw estError;
+    if (!estimate) {
+      return res.status(404).json({ success: false, message: 'Estimate not found.' });
+    }
+
+    // 2. Prevent multiple active revision requests (Pre-emptive check)
+    const { data: activeRevision, error: activeRevError } = await supabase
+      .from('estimate_revision_log')
+      .select('id')
+      .eq('estimate_id', id)
+      .is('resubmitted_at', null)
+      .limit(1)
+      .maybeSingle();
+
+    if (activeRevError) throw activeRevError;
+    if (activeRevision) {
+      return res.status(409).json({
+        success: false,
+        message: 'A revision request is already active for this estimate.'
+      });
+    }
+
+    // 3. Stage/Status and Role checks
+    const effectiveRole = req.user.role === 'staff' ? 'je' : req.user.role;
+    let stage = null;
+    let targetStatus = null;
+
+    if (estimate.estimate_status === 'Under ZO Review') {
+      if (!['zo', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. ZO review stage requires ZO or Admin role.' });
+      }
+      stage = 'ZO';
+      targetStatus = 'ZO Revision Requested';
+    } else if (estimate.estimate_status === 'Under HO Review') {
+      if (!['ho', 'admin'].includes(effectiveRole)) {
+        return res.status(403).json({ success: false, message: 'Access denied. HO review stage requires HO or Admin role.' });
+      }
+      stage = 'HO';
+      targetStatus = 'HO Revision Requested';
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: `Revision request cannot be initiated for estimate in '${estimate.estimate_status}' status.`
+      });
+    }
+
+    // 4. Require at least one row to be 'Not Approve' (NULL/Approve do not qualify)
+    const approveField = stage === 'ZO' ? 'zo_office_approve' : 'ho_office_approve';
+    const { data: disapprovedItems, error: itemsError } = await supabase
+      .from('project_cost_estimate_items')
+      .select('item_id')
+      .eq('estimate_id', id)
+      .eq(approveField, 'Not Approve')
+      .limit(1);
+
+    if (itemsError) throw itemsError;
+    if (!disapprovedItems || disapprovedItems.length === 0) {
+      return res.status(422).json({
+        success: false,
+        message: 'At least one row must be marked Not Approve before requesting a revision. NULL (unreviewed) rows do not qualify.'
+      });
+    }
+
+    // 5. Calculate cycle number
+    const { data: lastLog, error: lastLogError } = await supabase
+      .from('estimate_revision_log')
+      .select('revision_cycle')
+      .eq('estimate_id', id)
+      .eq('stage', stage)
+      .order('revision_cycle', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastLogError) throw lastLogError;
+    const cycle = lastLog ? lastLog.revision_cycle + 1 : 1;
+
+    // 6. Calculate deadline timestamp
+    const revision_deadline = new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString();
+
+    // 7. Insert revision log (omitting modified_item_ids so DB defaults to '{}')
+    const { data: logEntry, error: insertError } = await supabase
+      .from('estimate_revision_log')
+      .insert([
+        {
+          estimate_id: id,
+          revision_cycle: cycle,
+          stage,
+          requested_by: req.user.mobile_number,
+          revision_deadline,
+          resubmitted_at: null,
+          is_auto_resubmitted: false
+        }
+      ])
+      .select()
+      .single();
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        return res.status(409).json({
+          success: false,
+          message: 'A revision request is already active for this estimate.'
+        });
+      }
+      throw insertError;
+    }
+
+    // 8. Update estimate header in a single database operation (status + last_modified_by)
+    // Omit updated_at to let the database trigger set it
+    const { data: updatedEstimate, error: updateError } = await supabase
+      .from('project_cost_estimates')
+      .update({
+        estimate_status: targetStatus,
+        last_modified_by: req.user.mobile_number
+      })
+      .eq('estimate_id', id)
+      .select('*, projects_master(*)')
+      .single();
+
+    if (updateError) throw updateError;
+
+    return res.status(200).json({
+      success: true,
+      estimate: updatedEstimate,
+      revisionLog: logEntry,
+      message: 'Revision request initiated successfully.'
+    });
+
+  } catch (error) {
+    console.error(`requestRevision failed: ${error.message}`);
+    return res.status(500).json({ success: false, message: 'Failed to request revision.' });
+  }
+}
+
+async function getRevisionLog(req, res) {
+  const { id } = req.params;
+
+  if (!uuidRegex.test(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid UUID format.' });
+  }
+
+  try {
+    // 1. Fetch estimate header first to perform visibility checks
+    const { data: estimate, error: estError } = await supabase
+      .from('project_cost_estimates')
+      .select('*')
+      .eq('estimate_id', id)
+      .maybeSingle();
+
+    if (estError) throw estError;
+    if (!estimate) {
+      return res.status(404).json({ success: false, message: 'Estimate not found.' });
+    }
+
+    // 2. Evaluate role visibility matching getEstimateById exactly
+    const effectiveRole = req.user.role === 'staff' ? 'je' : req.user.role;
+    let allowed = false;
+
+    if (effectiveRole === 'admin') {
+      allowed = true;
+    } else if (effectiveRole === 'je') {
+      allowed = estimate.created_by === req.user.mobile_number;
+    } else if (effectiveRole === 'zo') {
+      const zoStatuses = ['Submitted', 'Under ZO Review', 'ZO Revision Requested', 'ZO Approved', 'Rejected by ZO'];
+      allowed = zoStatuses.includes(estimate.estimate_status);
+    } else if (effectiveRole === 'ho') {
+      const hoStatuses = ['ZO Approved', 'Under HO Review', 'HO Revision Requested', 'Final Approved', 'Rejected by HO'];
+      allowed = hoStatuses.includes(estimate.estimate_status);
+    }
+
+    if (!allowed) {
+      return res.status(404).json({ success: false, message: 'Estimate not found.' });
+    }
+
+    // 3. Fetch revision log entries
+    const { data: logs, error: logsError } = await supabase
+      .from('estimate_revision_log')
+      .select('*')
+      .eq('estimate_id', id)
+      .order('created_at', { ascending: true });
+
+    if (logsError) throw logsError;
+
+    // 4. Resolve display names for requested_by and resubmitted_by
+    const enrichedLogs = [];
+    if (logs && logs.length > 0) {
+      const mobiles = new Set();
+      logs.forEach(log => {
+        if (log.requested_by) mobiles.add(log.requested_by);
+        if (log.resubmitted_by && !log.is_auto_resubmitted) mobiles.add(log.resubmitted_by);
+      });
+
+      const userMap = {};
+      if (mobiles.size > 0) {
+        const { data: users, error: usersError } = await supabase
+          .from('authorised_users')
+          .select('mobile_number, display_name')
+          .in('mobile_number', Array.from(mobiles));
+
+        if (!usersError && users) {
+          users.forEach(u => {
+            userMap[u.mobile_number] = u.display_name;
+          });
+        }
+      }
+
+      logs.forEach(log => {
+        const requested_by_name = userMap[log.requested_by] || log.requested_by || null;
+        let resubmitted_by_name = null;
+        if (log.is_auto_resubmitted) {
+          resubmitted_by_name = 'Auto-resubmitted by system';
+        } else if (log.resubmitted_by) {
+          resubmitted_by_name = userMap[log.resubmitted_by] || log.resubmitted_by;
+        }
+
+        enrichedLogs.push({
+          ...log,
+          requested_by_name,
+          resubmitted_by_name
+        });
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      revisions: enrichedLogs
+    });
+
+  } catch (error) {
+    console.error(`getRevisionLog failed: ${error.message}`);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve revision logs.' });
   }
 }
 
@@ -1017,6 +1311,8 @@ module.exports = {
   submitEstimate,
   reviewEstimate,
   submitRowApprovals,
-  submitReview
+  submitReview,
+  requestRevision,
+  getRevisionLog
 };
 
