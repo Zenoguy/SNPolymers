@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/admin/AdminPanel';
 import AuditLog from './pages/admin/AuditLog';
 import MasterData from './pages/admin/MasterData';
+import PurchaseOptions from './pages/admin/PurchaseOptions';
 import FundReports from './pages/FundReports';
 import MaterialMaster from './pages/MaterialMaster';
 import Estimates from './pages/Estimates';
@@ -55,6 +56,7 @@ function App() {
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/sessions" element={<AuditLog />} />
             <Route path="/admin/master-data" element={<MasterData />} />
+            <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
           </Route>
 
           {/* Fallback Catch All */}
