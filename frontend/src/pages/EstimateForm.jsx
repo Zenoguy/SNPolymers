@@ -69,6 +69,7 @@ const EstimateForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [createdEstimateId, setCreatedEstimateId] = useState(null);
 
   useEffect(() => {
     initForm();
@@ -217,7 +218,7 @@ const EstimateForm = () => {
     try {
       const res = await authApi.get(`/materials/subheads?main_head=${encodeURIComponent(mainHead)}`);
       if (res.data?.success) {
-        const subs = res.data.subHeads || [];
+        const subs = Array.from(new Set(res.data.subHeads || []));
         setSubHeadsCache(prev => ({ ...prev, [mainHead]: subs }));
         return subs;
       }
@@ -311,8 +312,8 @@ const EstimateForm = () => {
     setSuccess('');
     setSubmitting(true);
     try {
-      let currentId = id;
-      if (!isEditMode) {
+      let currentId = id || createdEstimateId;
+      if (!currentId) {
         // Create header first if in new mode
         const headerRes = await authApi.post('/estimates', {
           work_order_no: selectedWorkOrder,
@@ -321,8 +322,9 @@ const EstimateForm = () => {
         });
         if (headerRes.data?.success) {
           currentId = headerRes.data.estimate.estimate_id;
+          setCreatedEstimateId(currentId);
         }
-      } else {
+      } else if (isEditMode) {
         // Update header comments/zonal office no
         await authApi.put(`/estimates/${currentId}/items`, { items: [] }); // Stub items update or headers update trigger
       }
@@ -352,14 +354,15 @@ const EstimateForm = () => {
     setSuccess('');
     setSubmitting(true);
     try {
-      let currentId = id;
-      if (!isEditMode) {
+      let currentId = id || createdEstimateId;
+      if (!currentId) {
         const headerRes = await authApi.post('/estimates', {
           work_order_no: selectedWorkOrder,
           zonal_office_no: zonalOfficeNo,
           je_remarks: jeRemarks
         });
         currentId = headerRes.data.estimate.estimate_id;
+        setCreatedEstimateId(currentId);
       }
 
       // 1. Save current items draft
@@ -608,8 +611,8 @@ const EstimateForm = () => {
                           disabled={isExpired || submitting || isLocked || !item.material_sub_head}
                         >
                           <option value="">Select Details</option>
-                          {item.matsList?.map(m => (
-                            <option key={m.Material_Details} value={m.Material_Details}>
+                          {item.matsList?.map((m, mIdx) => (
+                            <option key={`${m.id || m.Material_Details}-${mIdx}`} value={m.Material_Details}>
                               {m.Material_Details}
                             </option>
                           ))}
