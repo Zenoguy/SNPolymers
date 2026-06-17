@@ -577,6 +577,9 @@ const AdminPanel = () => {
                     disabled={submitting}
                   >
                     <option value="staff" className="bg-slate-900 text-slate-100">Staff Operator (Standard Access)</option>
+                    <option value="je" className="bg-slate-900 text-slate-100">Junior Engineer (JE)</option>
+                    <option value="zo" className="bg-slate-900 text-slate-100">Zonal Office Auditor (ZO)</option>
+                    <option value="ho" className="bg-slate-900 text-slate-100">Head Office Auditor (HO)</option>
                     <option value="admin" className="bg-slate-900 text-slate-100">System Admin (Full Controls)</option>
                   </select>
                 </div>
@@ -675,6 +678,9 @@ const AdminPanel = () => {
                     disabled={editSubmitting}
                   >
                     <option value="staff" className="bg-slate-900 text-slate-100">Staff Operator (Standard Access)</option>
+                    <option value="je" className="bg-slate-900 text-slate-100">Junior Engineer (JE)</option>
+                    <option value="zo" className="bg-slate-900 text-slate-100">Zonal Office Auditor (ZO)</option>
+                    <option value="ho" className="bg-slate-900 text-slate-100">Head Office Auditor (HO)</option>
                     <option value="admin" className="bg-slate-900 text-slate-100">System Admin (Full Controls)</option>
                   </select>
                 </div>
