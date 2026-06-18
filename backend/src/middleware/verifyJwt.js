@@ -17,7 +17,11 @@ async function verifyJwt(req, res, next) {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    return res.status(401).json({ success: false, message: 'Authentication required. No token provided.' });
+    return res.status(401).json({
+      success: false,
+      code: 'ACCESS_TOKEN_EXPIRED',
+      message: 'Authentication required. No token provided.'
+    });
   }
 
   try {
