@@ -30,7 +30,7 @@ const EstimateForm = () => {
   const [workOrders, setWorkOrders] = useState([]);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState('');
   const [estimateNo, setEstimateNo] = useState('');
-  const [zonalOfficeNo, setZonalOfficeNo] = useState('');
+  const [zonalOfficeNo, setZonalOfficeNo] = useState('N/A');
   const [jeRemarks, setJeRemarks] = useState('');
   
   // Project Info Metadata
@@ -82,17 +82,41 @@ const EstimateForm = () => {
     setLoading(true);
     setError('');
     try {
-      // 1. Fetch Purchase Options
-      const purchaseRes = await authApi.get('/purchase-data');
-      if (purchaseRes.data?.success) {
-        setPurchaseOptions(purchaseRes.data.options.filter(o => o.is_active));
+      // 1. Fetch catalog version, catalog data, and purchase options
+      const verRes = await authApi.get('/master-data/version');
+      const backendVersion = verRes.data?.version;
+      const cachedVersion = localStorage.getItem('catalog_version');
+      const cachedCatalogStr = localStorage.getItem('catalog_data');
+
+      let catalog;
+      if (cachedVersion && cachedCatalogStr && Number(cachedVersion) === Number(backendVersion)) {
+        catalog = JSON.parse(cachedCatalogStr);
+      } else {
+        const catRes = await authApi.get('/master-data/catalog');
+        catalog = catRes.data;
+        localStorage.setItem('catalog_version', String(backendVersion));
+        localStorage.setItem('catalog_data', JSON.stringify(catalog));
       }
 
-      // Fetch dynamic material main heads
-      const categoriesRes = await authApi.get('/materials/categories');
-      if (categoriesRes.data?.success) {
-        setMainHeads(categoriesRes.data.mainHeads || []);
-      }
+      // Build main heads list
+      const mainHeadsList = catalog.categories.map(c => c.name).sort();
+      setMainHeads(mainHeadsList);
+
+      // Build direct O(1) mapping lookup maps
+      const subHeadMap = {};
+      const materialMap = {};
+      catalog.categories.forEach(cat => {
+        subHeadMap[cat.name] = (cat.subHeads || []).map(sh => sh.name).sort();
+        (cat.subHeads || []).forEach(sh => {
+          const key = `${cat.name}|||${sh.name}`;
+          materialMap[key] = sh.materials || [];
+        });
+      });
+
+      // Save lookups and purchase options in state cache
+      setSubHeadsCache(subHeadMap);
+      setMaterialsCache(materialMap);
+      setPurchaseOptions(catalog.purchaseSources || []);
 
       if (isEditMode) {
         // 2. Edit Mode: Fetch Estimate Details
@@ -116,15 +140,16 @@ const EstimateForm = () => {
             });
           }
 
-          const enrichedItems = await Promise.all((estItems || []).map(async (item) => {
-            const subHeads = item.material_main_head ? await fetchSubHeads(item.material_main_head) : [];
-            const mats = (item.material_main_head && item.material_sub_head) ? await fetchMaterials(item.material_main_head, item.material_sub_head) : [];
+          const enrichedItems = (estItems || []).map((item) => {
+            const subHeads = item.material_main_head ? (subHeadMap[item.material_main_head] || []) : [];
+            const key = `${item.material_main_head}|||${item.material_sub_head}`;
+            const mats = (item.material_main_head && item.material_sub_head) ? (materialMap[key] || []) : [];
             return {
               ...item,
               subHeadsList: subHeads,
               matsList: mats
             };
-          }));
+          });
           setItems(enrichedItems);
 
           if (estimate.active_revision_deadline) {
@@ -133,23 +158,10 @@ const EstimateForm = () => {
           }
         }
       } else {
-        // 3. Create Mode: Fetch Projects for Selection
-        const [projRes, estsRes] = await Promise.all([
-          authApi.get('/projects'),
-          authApi.get('/estimates?limit=1000&global=true')
-        ]);
-
-        if (projRes.data?.success && estsRes.data?.success) {
-          // Find work orders with active non-terminal estimates
-          const blockedWorkOrders = estsRes.data.estimates
-            .filter(e => !['Final Approved', 'Rejected by ZO', 'Rejected by HO'].includes(e.estimate_status))
-            .map(e => e.work_order_no);
-
-          // Filter work orders
-          const eligibleProjects = projRes.data.projects.filter(p => 
-            p.status !== 'Closed' && !blockedWorkOrders.includes(p.work_order_no)
-          );
-          setWorkOrders(eligibleProjects);
+        // 3. Create Mode: Fetch Projects for Selection from GET /estimates/init
+        const initRes = await authApi.get('/estimates/init');
+        if (initRes.data?.success) {
+          setWorkOrders(initRes.data.availableWorkOrders || []);
         }
       }
     } catch (err) {
@@ -212,37 +224,15 @@ const EstimateForm = () => {
     }
   };
 
-  // Helper: dynamic fetch subheads for cascading selector
+  // Helper: dynamic fetch subheads from cached state lookup
   const fetchSubHeads = async (mainHead) => {
-    if (subHeadsCache[mainHead]) return subHeadsCache[mainHead];
-    try {
-      const res = await authApi.get(`/materials/subheads?main_head=${encodeURIComponent(mainHead)}`);
-      if (res.data?.success) {
-        const subs = Array.from(new Set(res.data.subHeads || []));
-        setSubHeadsCache(prev => ({ ...prev, [mainHead]: subs }));
-        return subs;
-      }
-    } catch (err) {
-      console.error('Failed to fetch subheads:', err);
-    }
-    return [];
+    return subHeadsCache[mainHead] || [];
   };
 
-  // Helper: dynamic fetch materials details for cascading selector
+  // Helper: dynamic fetch materials details from cached state lookup
   const fetchMaterials = async (mainHead, subHead) => {
     const key = `${mainHead}|||${subHead}`;
-    if (materialsCache[key]) return materialsCache[key];
-    try {
-      const res = await authApi.get(`/materials?main_head=${encodeURIComponent(mainHead)}&sub_head=${encodeURIComponent(subHead)}&limit=1000`);
-      if (res.data?.success) {
-        const mats = res.data.materials || [];
-        setMaterialsCache(prev => ({ ...prev, [key]: mats }));
-        return mats;
-      }
-    } catch (err) {
-      console.error('Failed to fetch materials:', err);
-    }
-    return [];
+    return materialsCache[key] || [];
   };
 
   const handleItemChange = async (index, field, value) => {
@@ -261,8 +251,8 @@ const EstimateForm = () => {
       item.unit = '';
       item.matsList = await fetchMaterials(item.material_main_head, value);
     } else if (field === 'material_details') {
-      const matched = item.matsList?.find(m => m.Material_Details === value);
-      item.unit = matched ? matched.M_Unit : '';
+      const matched = item.matsList?.find(m => m.name === value);
+      item.unit = matched ? matched.unit : '';
     }
 
     if (field === 'qty' || field === 'rate') {
@@ -440,7 +430,7 @@ const EstimateForm = () => {
         <div className="glass-panel p-6 rounded-3xl mb-8 border border-white/5 space-y-6">
           <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400 mb-4">Estimate Header</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Work Order Number
@@ -479,21 +469,6 @@ const EstimateForm = () => {
                 value={estimateNo}
                 readOnly
                 className="w-full glass-input cursor-not-allowed opacity-75 focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-400 text-sm font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Zonal Office Number
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. ZO-05"
-                value={zonalOfficeNo}
-                onChange={(e) => setZonalOfficeNo(e.target.value)}
-                className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-100 text-sm font-semibold"
-                disabled={isEditMode || isExpired || submitting}
-                required
               />
             </div>
           </div>
@@ -612,8 +587,8 @@ const EstimateForm = () => {
                         >
                           <option value="">Select Details</option>
                           {item.matsList?.map((m, mIdx) => (
-                            <option key={`${m.id || m.Material_Details}-${mIdx}`} value={m.Material_Details}>
-                              {m.Material_Details}
+                            <option key={`${m.id || m.name}-${mIdx}`} value={m.name}>
+                              {m.name}
                             </option>
                           ))}
                         </select>

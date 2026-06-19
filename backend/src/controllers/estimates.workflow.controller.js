@@ -37,6 +37,22 @@ async function submitEstimate(req, res) {
       return res.status(403).json({ success: false, message: 'Estimate cannot be submitted in its current status.' });
     }
 
+    // Verify that no other active estimate exists for this work order
+    const { data: otherActive, error: otherActiveErr } = await supabase
+      .from('project_cost_estimates')
+      .select('estimate_id')
+      .eq('work_order_no', estimate.work_order_no)
+      .neq('estimate_id', id)
+      .not('estimate_status', 'in', `("${ESTIMATE_STATUS.FINAL_APPROVED}","${ESTIMATE_STATUS.REJECTED_BY_ZO}","${ESTIMATE_STATUS.REJECTED_BY_HO}")`);
+
+    if (otherActiveErr) throw otherActiveErr;
+    if (otherActive && otherActive.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'An estimate already exists for the selected Work Order.'
+      });
+    }
+
     // Fetch all items associated with this estimate
     const { data: items, error: itemsError } = await supabase
       .from('project_cost_estimate_items')

@@ -220,7 +220,7 @@ async function testMilestone3() {
     const res4 = mockRes();
     await createEstimate(req4, res4);
 
-    if (res4.statusCode === 409 && res4.jsonData.message.includes('active estimate already exists')) {
+    if (res4.statusCode === 409 && res4.jsonData.message.includes('estimate already exists')) {
       console.log('   [PASS] createEstimate duplicate gate blocked second active estimate correctly.');
       passes++;
     } else {

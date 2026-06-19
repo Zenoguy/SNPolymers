@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getEstimates,
   getEstimateById,
+  getEstimateInitData,
   createEstimate,
   saveDraftItems,
   submitEstimate,
@@ -20,6 +21,7 @@ router.use(verifyJwt);
 
 // Read endpoints
 router.get('/', getEstimates);
+router.get('/init', getEstimateInitData);
 router.get('/:id', getEstimateById);
 router.get('/:id/revisions', getRevisionLog);
 

@@ -311,8 +311,15 @@ const EstimateView = () => {
   };
 
   const getCategoryTotal = (category) => {
+    const isMaterials = category.toLowerCase() === 'materials';
     return items
-      .filter(item => item.material_main_head?.toLowerCase() === category.toLowerCase())
+      .filter(item => {
+        const head = item.material_main_head?.toLowerCase();
+        if (isMaterials) {
+          return head !== 'labour' && head !== 'transport' && head !== 'miscellaneous';
+        }
+        return head === category.toLowerCase();
+      })
       .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   };
 
@@ -454,8 +461,8 @@ const EstimateView = () => {
               <span className="text-slate-200 text-sm">{estimate.projects_master?.district || 'N/A'}</span>
             </div>
             <div>
-              <span className="text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Area Code / Zonal Office</span>
-              <span className="font-mono font-bold text-slate-200 text-sm">{estimate.zonal_office_no}</span>
+              <span className="text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Area Code</span>
+              <span className="font-mono font-bold text-slate-200 text-sm">{estimate.area_code}</span>
             </div>
             <div className="md:col-span-2 border-t border-white/5 pt-4">
               <span className="text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Department</span>

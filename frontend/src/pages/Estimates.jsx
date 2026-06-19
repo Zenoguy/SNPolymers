@@ -133,8 +133,7 @@ const Estimates = () => {
       const query = searchQuery.toLowerCase();
       const matchWO = e.work_order_no?.toLowerCase().includes(query);
       const matchEstNo = e.estimate_no?.toLowerCase().includes(query);
-      const matchZO = e.zonal_office_no?.toLowerCase().includes(query);
-      return matchWO || matchEstNo || matchZO;
+      return matchWO || matchEstNo;
     }
     return true;
   });
@@ -285,7 +284,7 @@ const Estimates = () => {
                           <h4 className="text-sm font-extrabold text-slate-200 group-hover:text-slate-100 transition-colors">
                             {est.estimate_no || 'Pending Auto ID'}
                           </h4>
-                          <span className="text-[10px] text-slate-400 font-medium block mt-1">ZO Office: <span className="font-mono font-bold text-slate-300">{est.zonal_office_no}</span></span>
+                          <span className="text-[10px] text-slate-400 font-medium block mt-1">Area Code: <span className="font-mono font-bold text-slate-300">{est.area_code}</span></span>
                         </div>
                         <button className="h-8 w-8 rounded-xl bg-white/5 group-hover:bg-white/10 border border-white/5 group-hover:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 transition-all duration-300 shrink-0">
                           <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,7 +313,7 @@ const Estimates = () => {
               <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center flex-grow max-w-lg">
                 <input
                   type="text"
-                  placeholder="Search by Work Order, Estimate No, or ZO..."
+                  placeholder="Search by Work Order or Estimate No..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"

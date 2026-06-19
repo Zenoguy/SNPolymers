@@ -22,8 +22,12 @@ async function createEstimate(req, res) {
     return res.status(400).json({ success: false, message: 'work_order_no is required.' });
   }
 
-  if (!zonal_office_no || typeof zonal_office_no !== 'string' || zonal_office_no.trim() === '') {
-    return res.status(400).json({ success: false, message: 'zonal_office_no is required and cannot be blank.' });
+  let final_zonal_office_no = 'N/A';
+  if ('zonal_office_no' in req.body) {
+    if (typeof zonal_office_no !== 'string' || zonal_office_no.trim() === '') {
+      return res.status(400).json({ success: false, message: 'zonal_office_no is required and cannot be blank.' });
+    }
+    final_zonal_office_no = zonal_office_no.trim();
   }
 
   try {
@@ -52,7 +56,7 @@ async function createEstimate(req, res) {
     if (activeError) throw activeError;
 
     if (activeEstimates && activeEstimates.length > 0) {
-      return res.status(409).json({ success: false, message: 'An active estimate already exists for this work order.' });
+      return res.status(409).json({ success: false, message: 'An estimate already exists for the selected Work Order.' });
     }
 
     const { data: newEstimate, error: insertError } = await supabase
@@ -63,7 +67,7 @@ async function createEstimate(req, res) {
           estimate_no: project.estimate_no,
           area_code: project.zone,
           estimate_revision: 0,
-          zonal_office_no: zonal_office_no.trim(),
+          zonal_office_no: final_zonal_office_no,
           estimate_amount: 0,
           estimate_status: ESTIMATE_STATUS.DRAFT,
           je_remarks: je_remarks || null,
@@ -98,7 +102,7 @@ async function getEstimates(req, res) {
     const page = Math.max(parseInt(query.page) || 1, 1);
     let limit = parseInt(query.limit) || 50;
     if (limit < 1) limit = 50;
-    limit = Math.min(limit, 1000);
+    limit = Math.min(limit, 100);
     const offset = (page - 1) * limit;
 
     const effectiveRole = getEffectiveRole(req.user.role);
@@ -274,8 +278,41 @@ async function getEstimateById(req, res) {
   }
 }
 
+async function getEstimateInitData(req, res) {
+  try {
+    // 1. Fetch running projects
+    const { data: runningProjects, error: projError } = await supabase
+      .from('projects_master')
+      .select('*')
+      .neq('status', 'Closed');
+
+    if (projError) throw projError;
+
+    // 2. Fetch active estimates
+    const { data: activeEstimates, error: activeError } = await supabase
+      .from('project_cost_estimates')
+      .select('work_order_no')
+      .not('estimate_status', 'in', `("Final Approved","Rejected by ZO","Rejected by HO")`);
+
+    if (activeError) throw activeError;
+
+    const blockedWorkOrders = new Set((activeEstimates || []).map(e => e.work_order_no));
+
+    const availableWorkOrders = (runningProjects || []).filter(p => !blockedWorkOrders.has(p.work_order_no));
+
+    return res.status(200).json({
+      success: true,
+      availableWorkOrders
+    });
+  } catch (error) {
+    console.error(`getEstimateInitData failed: ${error.message}`);
+    return res.status(500).json({ success: false, message: 'Failed to initialize estimate data.' });
+  }
+}
+
 module.exports = {
   createEstimate,
   getEstimates,
-  getEstimateById
+  getEstimateById,
+  getEstimateInitData
 };

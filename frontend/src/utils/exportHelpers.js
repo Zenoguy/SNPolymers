@@ -12,7 +12,6 @@ export function exportToExcel(estimate, items) {
     "Sl. No.": index + 1,
     "Work Order No.": estimate.work_order_no || '',
     "Estimate No.": estimate.estimate_no || '',
-    "Zonal Office": estimate.zonal_office_no || '',
     "Area Code": estimate.area_code || '',
     "Estimate Status": estimate.estimate_status || '',
     "Main Head": item.material_main_head || '',
