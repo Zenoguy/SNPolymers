@@ -45,6 +45,7 @@ const EstimateView = () => {
   // Review & Decisions States (ZO & HO)
   const [rowDecisions, setRowDecisions] = useState({}); // item_id -> { approve_status: 'Approve'|'Not Approve', remarks: '' }
   const [runningApprovedTotal, setRunningApprovedTotal] = useState(0);
+  const [purchaseOptions, setPurchaseOptions] = useState([]);
 
   // Revision Modal State
   const [showRevisionModal, setShowRevisionModal] = useState(false);
@@ -64,10 +65,15 @@ const EstimateView = () => {
     setLoading(true);
     setError('');
     try {
-      const [detailRes, revisionRes] = await Promise.all([
+      const [detailRes, revisionRes, purchaseRes] = await Promise.all([
         authApi.get(`/estimates/${id}`),
-        authApi.get(`/estimates/${id}/revisions`)
+        authApi.get(`/estimates/${id}/revisions`),
+        authApi.get('/purchase-data').catch(() => ({ data: { options: [] } }))
       ]);
+
+      if (purchaseRes.data?.success) {
+        setPurchaseOptions(purchaseRes.data.options || []);
+      }
 
       if (detailRes.data?.success) {
         setEstimate(detailRes.data.estimate);
@@ -80,17 +86,11 @@ const EstimateView = () => {
         const isHoStage = detailRes.data.estimate.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW;
         
         detailRes.data.items.forEach(item => {
-          if (isZoStage) {
-            initialDecisions[item.item_id] = {
-              approve_status: item.zo_office_approve || '',
-              remarks: item.zo_remarks || ''
-            };
-          } else if (isHoStage) {
-            initialDecisions[item.item_id] = {
-              approve_status: item.ho_office_approve || '',
-              remarks: item.ho_remarks || ''
-            };
-          }
+          initialDecisions[item.item_id] = {
+            approve_status: isZoStage ? (item.zo_office_approve || '') : isHoStage ? (item.ho_office_approve || '') : '',
+            remarks: isZoStage ? (item.zo_remarks || '') : isHoStage ? (item.ho_remarks || '') : '',
+            source_of_purchase: item.source_of_purchase || ''
+          };
         });
         setRowDecisions(initialDecisions);
         calculateRunningTotal(detailRes.data.items, initialDecisions, detailRes.data.estimate.estimate_status);
@@ -168,7 +168,8 @@ const EstimateView = () => {
       .map(itemId => ({
         item_id: itemId,
         approve_status: rowDecisions[itemId].approve_status,
-        remarks: rowDecisions[itemId].remarks || null
+        remarks: rowDecisions[itemId].remarks || null,
+        source_of_purchase: rowDecisions[itemId].source_of_purchase || null
       }));
 
     if (approvalsPayload.length === 0) {
@@ -229,7 +230,8 @@ const EstimateView = () => {
       const approvalsPayload = items.map(item => ({
         item_id: item.item_id,
         approve_status: rowDecisions[item.item_id].approve_status,
-        remarks: rowDecisions[item.item_id].remarks || null
+        remarks: rowDecisions[item.item_id].remarks || null,
+        source_of_purchase: rowDecisions[item.item_id].source_of_purchase || null
       }));
       await authApi.post(`/estimates/${id}/row-approvals`, { approvals: approvalsPayload });
 
@@ -284,7 +286,8 @@ const EstimateView = () => {
         .map(itemId => ({
           item_id: itemId,
           approve_status: rowDecisions[itemId].approve_status,
-          remarks: rowDecisions[itemId].remarks || null
+          remarks: rowDecisions[itemId].remarks || null,
+          source_of_purchase: rowDecisions[itemId].source_of_purchase || null
         }));
       await authApi.post(`/estimates/${id}/row-approvals`, { approvals: approvalsPayload });
 
@@ -596,7 +599,23 @@ const EstimateView = () => {
                               </td>
                             </>
                           )}
-                          <td className="py-4 px-5 text-slate-300 font-semibold">{item.purchase_data?.name || item.source_of_purchase || 'N/A'}</td>
+                          <td className="py-4 px-5 text-slate-300 font-semibold">
+                            {((isHO || isAdmin) && showReviewPanel) ? (
+                              <select
+                                value={dec?.source_of_purchase || ''}
+                                onChange={(e) => handleDecisionChange(item.item_id, 'source_of_purchase', e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs text-slate-300"
+                                disabled={submitting}
+                              >
+                                <option value="" className="bg-slate-900 text-slate-300">Select Source</option>
+                                {purchaseOptions.map(o => (
+                                  <option key={o.id} value={o.id} className="bg-slate-900 text-slate-300">{o.name}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              item.purchase_data?.name || item.source_of_purchase || 'N/A'
+                            )}
+                          </td>
                         </tr>
                       );
                     })}

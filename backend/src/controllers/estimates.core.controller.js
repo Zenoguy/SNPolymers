@@ -110,6 +110,21 @@ async function getEstimates(req, res) {
       .from('project_cost_estimates')
       .select('*, projects_master(*)', { count: 'exact' });
 
+    const legitMobiles = [
+      '+918276071523',
+      '+917980526576',
+      '+919883321834',
+      '+919910076148',
+      '+919920076148',
+      '+919930076148',
+      '+919940076148'
+    ];
+    if (legitMobiles.includes(req.user.mobile_number)) {
+      dbQuery = dbQuery
+        .not('work_order_no', 'like', 'TEST_%')
+        .not('estimate_no', 'like', 'EST_%');
+    }
+
     if (effectiveRole === 'je' && query.global !== 'true') {
       dbQuery = dbQuery.eq('created_by', req.user.mobile_number);
     } else if (effectiveRole === 'zo') {

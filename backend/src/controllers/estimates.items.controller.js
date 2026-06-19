@@ -130,6 +130,17 @@ async function saveDraftItems(req, res) {
       }
     }
 
+    const isJE = ['je', 'staff'].includes(req.user.role);
+    if (isJE) {
+      for (const item of items) {
+        const prevItem = item.item_id ? existingMap[item.item_id] : null;
+        const prevSource = prevItem ? prevItem.source_of_purchase : null;
+        if (item.source_of_purchase && item.source_of_purchase !== prevSource) {
+          return res.status(400).json({ success: false, message: 'JE is not authorized to set or modify source_of_purchase.' });
+        }
+      }
+    }
+
     const payloadItems = items.map(item => {
       let item_id = item.item_id;
       if (!item_id) {
@@ -288,6 +299,21 @@ async function submitRowApprovals(req, res) {
     const missingIds = itemIds.filter(id => !dbItemIds.includes(id));
     if (missingIds.length > 0) {
       return res.status(404).json({ success: false, message: `Item IDs not found or do not belong to this estimate: ${missingIds.join(', ')}` });
+    }
+
+    // Update source_of_purchase for each approval if provided and authorized (HO/Admin)
+    const canUpdateSource = ['ho', 'admin'].includes(effectiveRole);
+    if (canUpdateSource) {
+      for (const app of approvals) {
+        if ('source_of_purchase' in app) {
+          const { error: updateSourceErr } = await supabase
+            .from('project_cost_estimate_items')
+            .update({ source_of_purchase: (app.source_of_purchase && app.source_of_purchase !== '') ? app.source_of_purchase : null })
+            .eq('item_id', app.item_id)
+            .eq('estimate_id', id);
+          if (updateSourceErr) throw updateSourceErr;
+        }
+      }
     }
 
     // Call submit_row_approvals RPC

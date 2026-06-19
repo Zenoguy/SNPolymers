@@ -638,7 +638,7 @@ const EstimateForm = () => {
                           value={item.source_of_purchase || ''}
                           onChange={(e) => handleItemChange(idx, 'source_of_purchase', e.target.value)}
                           className="w-full glass-input p-2 rounded-lg text-xs"
-                          disabled={isExpired || submitting || isLocked}
+                          disabled={isExpired || submitting || isLocked || user?.role === 'je' || user?.role === 'staff'}
                         >
                           <option value="">Select Source</option>
                           {purchaseOptions.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
