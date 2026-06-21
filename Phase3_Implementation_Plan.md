@@ -1,6 +1,6 @@
 # Phase 3: ZO Fund Request & HO Approval Module — Implementation Plan
 
-> **Status:** Draft — Awaiting user approval before execution begins.
+> **Status:** Approved — Ready for execution.
 > **Stack:** Supabase/PostgreSQL · Node.js/Express backend · React/Vite frontend
 > **Builds on:** Phase 1 (auth, sessions, fund reports) + Phase 2 (estimates, review workflow)
 > **Reference image:** ZO Fund Request & HO Approval Process Flow diagram
@@ -9,10 +9,7 @@
 
 ## Background & Scope
 
-Phase 3 introduces the **Fund Requisition module** — the natural downstream step after a
-`Final Approved` Project Cost Estimate. When HO gives final approval on an estimate, the
-Zonal Office can raise a formal **Fund Request** against that approved amount. HO then logs
-in and either **Approves** or puts the request on **Hold**.
+Phase 3 introduces the **Fund Requisition module** — an independent entity managed by ZO and HO, with no relation to work order numbers or estimate numbers. ZO can raise a formal **Fund Request** specifying the request number and amount. HO then reviews the requests and either **Approves or puts them on Hold**.
 
 This is the module described in the uploaded process-flow diagram and the Excel spec sheet.
 
@@ -20,12 +17,12 @@ This is the module described in the uploaded process-flow diagram and the Excel 
 
 | Actor | Action |
 |---|---|
-| **ZO** | Creates a Fund Request against a `Final Approved` estimate. Fields auto-populated: `ZO_ID`, `ZO_Date`. ZO enters: `ZO_FR_NO`, `ZO_FR_Amount`, `ZO_Remarks`. |
+| **ZO** | Creates a Fund Request (independent of estimate/work order). Fields auto-populated: `ZO_ID`, `ZO_Date`. ZO enters: `ZO_FR_NO`, `ZO_FR_Amount`, `ZO_Remarks`. |
 | **HO** | Reviews pending fund requests. Fields auto-populated: `Approve_HO_USER_ID`, `Approve_HO_DATE`. HO selects `Approve_type` (Approve / Hold). If **Approve**: fills `Approve_HO_AMOUNT`, `Transfer_from_Account` (CC / OD / CR), `HO_Remarks` (optional). If **Hold**: all fields disabled. |
 | **System** | Notifies ZO via Telegram when HO approves. ZO receives funds from the selected account. |
 
 ### What Phase 3 does NOT change
-- The estimate workflow (Phase 2) is frozen — no modifications.
+- The estimate workflow (Phase 2) is frozen — no modifications, and no direct linkage is built between estimates and fund requests.
 - The fund reports module (Phase 1) is not touched.
 - Auth, sessions, OTP, and user management are unchanged.
 
@@ -38,42 +35,27 @@ This is the module described in the uploaded process-flow diagram and the Excel 
 | `zo` / `staff` | Creates and manages fund requests |
 | `ho` | Reviews fund requests; approves or holds |
 | `admin` | Full access — can act as either ZO or HO |
-| `je` | Read-only visibility into own estimate's fund request (if any) |
+| `je` | No access (Fund Requests are independent and handled by ZO, HO, and Admin) |
 
 ---
 
-## Open Questions
-
-> [!IMPORTANT]
-> **Q1 — Multiple fund requests per estimate?**
-> Can ZO raise more than one fund request for the same `Final Approved` estimate?
-> **Plan assumes: No. One active fund request per estimate.** A second can only be raised
-> after the previous one is fully processed (Approved or Cancelled). Raise this if your
-> business rules differ.
-
-> [!IMPORTANT]
-> **Q2 — ZO_FR_NO (Fund Request Number) format**
-> Is `ZO_FR_NO` free-text entered by ZO (as the spec implies), or should the system
-> auto-generate it (e.g. `FR-{estimate_no}-{YYYYMMDD}`)?
-> **Plan assumes: Free-text, user-entered, required, non-blank.**
-
-> [!IMPORTANT]
-> **Q3 — Cancellation by ZO?**
-> Can ZO cancel a pending fund request before HO acts on it?
-> **Plan assumes: Yes — ZO can cancel a Pending request. Once HO acts (Approved or Hold),
-> cancellation is blocked.**
-
-> [!IMPORTANT]
-> **Q4 — `Approve_HO_AMOUNT` constraint**
-> Should `Approve_HO_AMOUNT` be constrained to ≤ `ZO_FR_Amount`, or can HO approve any
-> amount?
-> **Plan assumes: `Approve_HO_AMOUNT` must be > 0 and ≤ `ZO_FR_Amount`. No upper bound
-> beyond the requested amount.**
+## Resolved Questions
 
 > [!NOTE]
+> **Q1 — Relation to Estimate / Work Order?**
+> **Resolution:** Fund Requests have no relation to work order numbers or estimate numbers whatsoever; they are completely independent entities managed by ZO and HO. No estimate constraints, validations, or links will be applied in the DB table or APIs.
+> 
+> **Q2 — ZO_FR_NO (Fund Request Number) format**
+> **Resolution:** Free-text, user-entered, required, non-blank. A unique constraint will be enforced on `zo_fr_no` in the database to prevent duplicate requests.
+> 
+> **Q3 — Cancellation by ZO?**
+> **Resolution:** Yes — ZO can cancel a Pending request. Once HO acts (Approved or Hold), cancellation is blocked.
+> 
+> **Q4 — `Approve_HO_AMOUNT` constraint**
+> **Resolution:** `Approve_HO_AMOUNT` must be > 0 and ≤ `ZO_FR_Amount`. No upper bound beyond the requested amount.
+> 
 > **Q5 — `Transfer_from_Account` options**
-> The spec shows: CC / OD / CR. These are hardcoded enum values in the DB, not from a
-> reference table. Confirmed by spec screenshot.
+> **Resolution:** CC / OD / CR (hardcoded enum values in the DB). Confirmed by spec screenshot.
 
 ---
 
@@ -88,7 +70,7 @@ This is the module described in the uploaded process-flow diagram and the Excel 
 ```sql
 -- Migration: Phase 3 — Fund Requests table and workflow
 -- DB: PostgreSQL (Supabase)
--- PREREQUISITE: Migrations 01–18 must have been applied (project_cost_estimates must exist).
+-- PREREQUISITE: Migrations 01–18 must have been applied.
 
 -- ──────────────────────────────────────────────────────────────
 -- 1. Enum types
@@ -110,16 +92,12 @@ CREATE TYPE transfer_account_enum AS ENUM ('CC', 'OD', 'CR');
 CREATE TABLE IF NOT EXISTS fund_requests (
   fund_request_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  -- Link to the parent estimate (must be Final Approved)
-  estimate_id         UUID NOT NULL REFERENCES project_cost_estimates(estimate_id),
-  work_order_no       VARCHAR NOT NULL REFERENCES projects_master(work_order_no),
-
   -- ZO fields (auto-populated from session at creation)
-  zo_user_id          VARCHAR NOT NULL,   -- mobile number of ZO who created request
+  zo_user_id          VARCHAR NOT NULL REFERENCES authorised_users(mobile_number) ON DELETE RESTRICT,   -- mobile number of ZO who created request
   zo_date             TIMESTAMPTZ NOT NULL DEFAULT now(),
 
   -- ZO fields (user-entered)
-  zo_fr_no            VARCHAR NOT NULL,   -- Fund Request Number (e.g. "NB-101-150626")
+  zo_fr_no            VARCHAR NOT NULL UNIQUE,   -- Fund Request Number (user-entered, unique)
   zo_fr_amount        NUMERIC(18,2) NOT NULL,   -- Requested amount
   zo_remarks          TEXT,                      -- Optional ZO remarks
 
@@ -127,7 +105,7 @@ CREATE TABLE IF NOT EXISTS fund_requests (
   request_status      fund_request_status_enum NOT NULL DEFAULT 'Pending',
 
   -- HO fields (auto-populated at approval time)
-  approve_ho_user_id  VARCHAR,            -- mobile number of HO who acted
+  approve_ho_user_id  VARCHAR REFERENCES authorised_users(mobile_number) ON DELETE RESTRICT,            -- mobile number of HO who acted
   approve_ho_date     TIMESTAMPTZ,
 
   -- HO fields (user-entered on Approve only; NULL on Hold)
@@ -136,11 +114,11 @@ CREATE TABLE IF NOT EXISTS fund_requests (
   ho_remarks          TEXT,               -- Optional HO remarks
 
   -- Cancellation tracking
-  cancelled_by        VARCHAR,            -- mobile number of ZO who cancelled
+  cancelled_by        VARCHAR REFERENCES authorised_users(mobile_number) ON DELETE RESTRICT,            -- mobile number of ZO who cancelled
   cancelled_at        TIMESTAMPTZ,
 
   -- Audit
-  created_by          VARCHAR NOT NULL,
+  created_by          VARCHAR NOT NULL REFERENCES authorised_users(mobile_number) ON DELETE RESTRICT,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -149,15 +127,7 @@ CREATE TABLE IF NOT EXISTS fund_requests (
 -- 3. Indexes for performance
 -- ──────────────────────────────────────────────────────────────
 
--- Fast lookup of all fund requests for a given estimate
-CREATE INDEX IF NOT EXISTS idx_fund_requests_estimate_id
-  ON fund_requests(estimate_id);
-
--- Fast lookup of all fund requests for a given work order
-CREATE INDEX IF NOT EXISTS idx_fund_requests_work_order_no
-  ON fund_requests(work_order_no);
-
--- Fast lookup of active (Pending) requests — used by the one-active gate
+-- Fast lookup of active (Pending) requests — used by list views and HO queues
 CREATE INDEX IF NOT EXISTS idx_fund_requests_status
   ON fund_requests(request_status)
   WHERE request_status = 'Pending';
@@ -221,16 +191,6 @@ DROP TRIGGER IF EXISTS trg_audit_fund_request_status ON fund_requests;
 CREATE TRIGGER trg_audit_fund_request_status
 AFTER UPDATE ON fund_requests
 FOR EACH ROW EXECUTE FUNCTION audit_fund_request_status_change();
-
--- ──────────────────────────────────────────────────────────────
--- 7. One-active-request constraint (partial unique index)
--- A given estimate can only have ONE Pending fund request at a time.
--- After it resolves (Approved/Hold/Cancelled), ZO may raise another.
--- ──────────────────────────────────────────────────────────────
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_fund_requests_one_pending_per_estimate
-  ON fund_requests(estimate_id)
-  WHERE request_status = 'Pending';
 ```
 
 ---
@@ -239,16 +199,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_fund_requests_one_pending_per_estimate
 
 #### [NEW] `backend/src/controllers/fundRequests.controller.js`
 
-Six controller functions:
+Five controller functions:
 
 | Function | Method | Path | Access | Description |
 |---|---|---|---|---|
 | `createFundRequest` | POST | `/` | ZO + Admin | Create a new fund request |
-| `getFundRequests` | GET | `/` | All authenticated | Role-filtered list |
-| `getFundRequestById` | GET | `/:id` | All authenticated | Single fund request with full detail |
+| `getFundRequests` | GET | `/` | ZO, HO, Admin | Role-filtered list of requests |
+| `getFundRequestById` | GET | `/:id` | ZO, HO, Admin | Single fund request detail |
 | `actOnFundRequest` | PATCH | `/:id/action` | HO + Admin | Approve or Hold a pending request |
 | `cancelFundRequest` | PATCH | `/:id/cancel` | ZO + Admin | Cancel a Pending request |
-| `getFundRequestsByEstimate` | GET | `/by-estimate/:estimateId` | All authenticated | All requests for a given estimate |
 
 ---
 
@@ -257,34 +216,24 @@ Six controller functions:
 **Access:** `['zo', 'staff', 'admin']`
 
 ```
-Body: { estimate_id, zo_fr_no, zo_fr_amount, zo_remarks? }
+Body: { zo_fr_no, zo_fr_amount, zo_remarks? }
 
 Validation:
-  1. estimate_id: required, valid UUID
-  2. zo_fr_no: required, non-blank string after .trim()
+  1. zo_fr_no: required, non-blank string after .trim()
      → 400: "zo_fr_no (Fund Request Number) is required."
-  3. zo_fr_amount: required, must be a positive number > 0
+  2. zo_fr_amount: required, must be a positive number > 0
      → 400: "zo_fr_amount must be a positive number."
 
 Business Rules:
-  4. Fetch estimate by estimate_id:
-     - 404 if not found
-     - 403 if estimate_status ≠ 'Final Approved':
-       → "Fund requests can only be raised for Final Approved estimates."
-  5. One-active-request gate:
-     SELECT COUNT(*) FROM fund_requests
-     WHERE estimate_id = $1 AND request_status = 'Pending'
+  3. Unique request number check:
+     SELECT COUNT(*) FROM fund_requests WHERE zo_fr_no = $1
      If count > 0:
-       → 409: "A pending fund request already exists for this estimate."
-  6. Ownership check: ZO must own the estimate's zone or be admin.
-     Specifically: req.user.role must be 'zo' or 'admin'. Staff can also
-     create on behalf of ZO (treated as ZO equivalent).
+       → 409: "A fund request with number {zo_fr_no} already exists."
 
 Build insert:
   - zo_user_id  ← req.user.mobile_number
   - zo_date     ← now() (DB default)
   - request_status ← 'Pending'
-  - work_order_no ← from estimate.work_order_no (auto-populated, never user-entered)
   - created_by  ← req.user.mobile_number
 
 Return: 201 with the created fund request.
@@ -294,20 +243,17 @@ Return: 201 with the created fund request.
 
 ##### `getFundRequests(req, res)` — `GET /api/v1/auth/fund-requests`
 
-**Access:** All authenticated (role-filtered)
+**Access:** `['zo', 'staff', 'ho', 'admin']`
 
 ```
 Query params: page, limit (1–100, default 50), status (optional filter)
 
 Role-based filtering:
-  - 'je'/'staff': fund requests for estimates they created
-    JOIN project_cost_estimates ON estimate_id WHERE created_by = req.user.mobile_number
   - 'zo'/'staff': own fund requests (zo_user_id = req.user.mobile_number)
-  - 'ho': all Pending and Approved requests (HO's work queue + history)
-  - 'admin': all records
+  - 'ho'/'admin': all records (HO's work queue + history)
+  - 'je': 403 Forbidden
 
-Join project_cost_estimates and projects_master for site metadata.
-Resolve display names for zo_user_id and approve_ho_user_id.
+Resolve display names for zo_user_id and approve_ho_user_id by joining/fetching authorised_users.
 
 Response: { success, fundRequests: [...], pagination: { page, limit, total, totalPages } }
 ```
@@ -316,16 +262,14 @@ Response: { success, fundRequests: [...], pagination: { page, limit, total, tota
 
 ##### `getFundRequestById(req, res)` — `GET /api/v1/auth/fund-requests/:id`
 
-**Access:** All authenticated (visibility rules apply)
+**Access:** `['zo', 'staff', 'ho', 'admin']`
 
 ```
-1. Fetch fund_request JOIN project_cost_estimates JOIN projects_master.
+1. Fetch fund_request.
 2. Visibility:
-   - 'je'/'staff': only if estimate was created by them
-   - 'zo': only if zo_user_id = req.user.mobile_number
-   - 'ho': any Pending or Approved request
-   - 'admin': all
-   Unauthorized → 404 (not 403, to avoid leaking IDs)
+   - 'zo'/'staff': only if zo_user_id = req.user.mobile_number (else 404/403)
+   - 'ho'/'admin': all
+   - 'je': 403 Forbidden
 3. Resolve display names for zo_user_id and approve_ho_user_id.
 4. Return full fund request object with enriched names.
 ```
@@ -400,20 +344,6 @@ Body: { action, approve_ho_amount?, transfer_from_account?, ho_remarks? }
 
 ---
 
-##### `getFundRequestsByEstimate(req, res)` — `GET /api/v1/auth/fund-requests/by-estimate/:estimateId`
-
-**Access:** All authenticated (visibility rules inherited from `getFundRequestById`)
-
-```
-1. Validate estimateId as valid UUID.
-2. Fetch estimate — 404 if not found. Apply role-based visibility.
-3. Fetch all fund_requests WHERE estimate_id = $1
-   ORDER BY created_at DESC.
-4. Return: { success, fundRequests: [...] }
-```
-
----
-
 #### [NEW] `backend/src/routes/fundRequests.routes.js`
 
 ```javascript
@@ -423,8 +353,7 @@ const {
   getFundRequests,
   getFundRequestById,
   actOnFundRequest,
-  cancelFundRequest,
-  getFundRequestsByEstimate
+  cancelFundRequest
 } = require('../controllers/fundRequests.controller');
 const verifyJwt = require('../middleware/verifyJwt');
 const requireRole = require('../middleware/requireRole');
@@ -433,10 +362,11 @@ const router = express.Router();
 
 router.use(verifyJwt);
 
-// Read endpoints (all authenticated)
-router.get('/', getFundRequests);
-router.get('/by-estimate/:estimateId', getFundRequestsByEstimate);
-router.get('/:id', getFundRequestById);
+const allowedRoles = ['zo', 'staff', 'ho', 'admin'];
+
+// Read endpoints
+router.get('/', requireRole(allowedRoles), getFundRequests);
+router.get('/:id', requireRole(allowedRoles), getFundRequestById);
 
 // ZO write endpoints
 const zoRoles = ['zo', 'staff', 'admin'];
@@ -477,7 +407,6 @@ notifyZoFundRequestApproved(originalRequest, updatedRequest):
   - Message format:
     ✅ *Fund Request Approved*
     *Fund Request No:* {zo_fr_no}
-    *Work Order:* {work_order_no}
     *Requested Amount:* ₹{zo_fr_amount}
     *Approved Amount:* ₹{approve_ho_amount}
     *Transfer Account:* {transfer_from_account}
@@ -500,7 +429,6 @@ A full-featured Fund Requests management page.
 - List of own fund requests with status badges (Pending → amber, Approved → green, Hold → red, Cancelled → grey).
 - "New Fund Request" button → opens a modal/form.
 - Form fields:
-  - **Estimate** (dropdown — shows only `Final Approved` estimates that don't have a Pending request)
   - **Fund Request Number** (text input, required)
   - **Requested Amount** (numeric, required, > 0)
   - **ZO Remarks** (textarea, optional)
@@ -509,7 +437,7 @@ A full-featured Fund Requests management page.
 
 **HO View:**
 - Tabbed interface: "Pending Requests" | "History" (Approved + Hold)
-- Each pending card shows: ZO name, Estimate No, Work Order, Site, Requested Amount, ZO Date.
+- Each pending card shows: ZO name, Fund Request No, Requested Amount, ZO Date, ZO Remarks.
 - "Take Action" button opens an action panel:
   - `Approve_type` dropdown: **Approve** / **Hold**
   - If **Approve** selected: enables `Approve_HO_AMOUNT` (numeric), `Transfer_from_Account` (select: CC / OD / CR), `HO_Remarks` (textarea, optional).
@@ -547,7 +475,7 @@ Add a navigation card/link to the new Fund Requests module visible to `zo`, `ho`
 
 #### [NEW] `frontend/src/api/fundRequests.js`
 
-API client module with Axios calls for all six endpoints.
+API client module with Axios calls for all five endpoints.
 
 ---
 
