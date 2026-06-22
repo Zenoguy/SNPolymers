@@ -4,9 +4,22 @@ import FundRequestStatusBadge from './FundRequestStatusBadge';
 const formatCurrency = (val) =>
   val != null ? `₹ ${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
 
-const formatDate = (d) => (d ? new Date(d).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+const formatDate = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
-const FundRequestTable = ({ requests, user, onCancelClick, onActionClick }) => {
+const MOCK_PROJECTS = [
+  { name: 'Mumbai Metro Line 9 Extension', zone: 'West Zone', ho: 'Ashwin Guha' },
+  { name: 'Delhi Water Treatment Plant Phase 3', zone: 'North Zone', ho: 'A. Gupta' },
+  { name: 'Kolkata Flyover Rehabilitation', zone: 'East Zone', ho: 'Ashwin Guha' },
+  { name: 'Chennai Smart City Drainage Link', zone: 'South Zone', ho: 'A. Gupta' },
+  { name: 'Bengaluru Highway Corridor B', zone: 'South Zone', ho: 'Ashwin Guha' }
+];
+
+export const getMockProjectForRequest = (index) => {
+  const idx = (index ?? 0) % MOCK_PROJECTS.length;
+  return MOCK_PROJECTS[idx];
+};
+
+const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelClick }) => {
   const isHoOrAdmin = user?.role === 'ho' || user?.role === 'admin';
   const isZoOrAdmin = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
 
@@ -15,47 +28,55 @@ const FundRequestTable = ({ requests, user, onCancelClick, onActionClick }) => {
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="border-b border-white/5 bg-white/[0.02] text-[9px] uppercase tracking-widest text-slate-500">
-            {['Request No.', 'Date', 'Requested Amount', 'Status', 'ZO Remarks', 'HO Approved Amount', 'Account', 'HO Remarks', 'Actions'].map((h) => (
+            <th className="py-4 px-5 w-8">
+              <input type="checkbox" className="rounded bg-slate-900 border-white/10 text-amber-500 focus:ring-0 cursor-pointer" readOnly />
+            </th>
+            {['Fund Request Order No', 'Project Name', 'Zone', 'Requested Amount', 'Approved Amount', 'Request Date', 'Current Status', 'Assigned HO', 'Actions'].map((h) => (
               <th key={h} className="py-4 px-5 font-extrabold whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5 text-xs text-slate-300">
-          {requests.map((req) => {
+          {requests.map((req, index) => {
+            const mockProj = getMockProjectForRequest(index);
             const isPending = req.request_status === 'Pending';
             const canCancel = isPending && isZoOrAdmin;
             const canAct = isPending && isHoOrAdmin;
+
             return (
-              <tr key={req.fund_request_id} className="hover:bg-white/[0.025] transition-colors duration-200 group">
+              <tr 
+                key={req.fund_request_id} 
+                onClick={() => onRowClick && onRowClick(req, mockProj)}
+                className="hover:bg-white/[0.025] transition-colors duration-200 group cursor-pointer"
+              >
+                <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" className="rounded bg-slate-900 border-white/10 text-amber-500 focus:ring-0 cursor-pointer" readOnly />
+                </td>
                 <td className="py-4 px-5 font-mono font-semibold text-slate-100 whitespace-nowrap">
                   {req.zo_fr_no}
                 </td>
-                <td className="py-4 px-5 text-[11px] text-slate-400 whitespace-nowrap">
-                  {formatDate(req.zo_date)}
+                <td className="py-4 px-5 font-semibold text-slate-300 whitespace-nowrap max-w-[200px] truncate">
+                  {mockProj.name}
+                </td>
+                <td className="py-4 px-5 text-slate-400 whitespace-nowrap">
+                  {mockProj.zone}
                 </td>
                 <td className="py-4 px-5 font-mono font-bold text-slate-200 whitespace-nowrap">
                   {formatCurrency(req.zo_fr_amount)}
                 </td>
-                <td className="py-4 px-5 whitespace-nowrap">
-                  <FundRequestStatusBadge status={req.request_status} />
-                </td>
-                <td className="py-4 px-5 max-w-[150px]">
-                  <span className="block truncate text-slate-400" title={req.zo_remarks}>{req.zo_remarks || '—'}</span>
-                </td>
                 <td className="py-4 px-5 font-mono font-bold text-emerald-400 whitespace-nowrap">
                   {formatCurrency(req.approve_ho_amount)}
                 </td>
-                <td className="py-4 px-5 whitespace-nowrap">
-                  {req.transfer_from_account ? (
-                    <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/25 text-blue-400 font-mono text-[10px] font-bold">
-                      {req.transfer_from_account}
-                    </span>
-                  ) : '—'}
-                </td>
-                <td className="py-4 px-5 max-w-[150px]">
-                  <span className="block truncate text-slate-400" title={req.ho_remarks}>{req.ho_remarks || '—'}</span>
+                <td className="py-4 px-5 text-[11px] text-slate-400 whitespace-nowrap">
+                  {formatDate(req.zo_date)}
                 </td>
                 <td className="py-4 px-5 whitespace-nowrap">
+                  <FundRequestStatusBadge status={req.request_status} />
+                </td>
+                <td className="py-4 px-5 text-slate-400 whitespace-nowrap">
+                  {mockProj.ho}
+                </td>
+                <td className="py-4 px-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2">
                     {canAct && (
                       <button
@@ -73,7 +94,15 @@ const FundRequestTable = ({ requests, user, onCancelClick, onActionClick }) => {
                         Cancel
                       </button>
                     )}
-                    {!canCancel && !canAct && '—'}
+                    <button 
+                      onClick={() => onRowClick && onRowClick(req, mockProj)}
+                      className="p-1.5 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/5 text-slate-400 hover:text-slate-200 transition-all"
+                      title="View Details"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   </div>
                 </td>
               </tr>
