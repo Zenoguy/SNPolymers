@@ -85,6 +85,9 @@ async function testMilestoneP3M4() {
     console.log('\nTest 2: Verifying behavior with missing telegram_chat_id...');
     process.env.NODE_ENV = 'development';
     
+    // Ensure the dummy user does not have a telegram chat ID in DB
+    await supabase.from('authorised_users').update({ telegram_chat_id: null }).eq('mobile_number', '+918000000002');
+    
     try {
       const originalWarn = console.warn;
       let warnOutput = '';

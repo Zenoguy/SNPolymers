@@ -1,5 +1,7 @@
 const { supabase } = require('../db/supabase');
 const ESTIMATE_STATUS = require('../constants/estimate-status');
+const validate = require('../validation/validate');
+const { createEstimateSchema } = require('../validation/estimate.schema');
 const {
   getEstimateById: getEstimateByIdHelper,
   getEffectiveRole,
@@ -16,19 +18,9 @@ const {
  * Creates a new estimate header (Draft).
  */
 async function createEstimate(req, res) {
+  if (!validate(req, res, createEstimateSchema)) return;
   const { work_order_no, zonal_office_no, je_remarks } = req.body;
-
-  if (!work_order_no || typeof work_order_no !== 'string' || work_order_no.trim() === '') {
-    return res.status(400).json({ success: false, message: 'work_order_no is required.' });
-  }
-
-  let final_zonal_office_no = 'N/A';
-  if ('zonal_office_no' in req.body) {
-    if (typeof zonal_office_no !== 'string' || zonal_office_no.trim() === '') {
-      return res.status(400).json({ success: false, message: 'zonal_office_no is required and cannot be blank.' });
-    }
-    final_zonal_office_no = zonal_office_no.trim();
-  }
+  const final_zonal_office_no = zonal_office_no ? zonal_office_no.trim() : 'N/A';
 
   try {
     const { data: project, error: projectError } = await supabase

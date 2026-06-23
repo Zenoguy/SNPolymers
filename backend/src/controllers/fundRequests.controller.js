@@ -1,6 +1,8 @@
 'use strict';
 
 const { supabase } = require('../db/supabase');
+const validate = require('../validation/validate');
+const { createFundRequestSchema, actOnFundRequestSchema, cancelFundRequestSchema } = require('../validation/fundRequest.schema');
 
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
@@ -38,16 +40,9 @@ async function resolveDisplayNames(mobiles) {
  * Creates a new fund request.
  */
 async function createFundRequest(req, res) {
+  if (!validate(req, res, createFundRequestSchema)) return;
   const { zo_fr_no, zo_fr_amount, zo_remarks } = req.body;
-
-  if (!zo_fr_no || typeof zo_fr_no !== 'string' || zo_fr_no.trim() === '') {
-    return res.status(400).json({ success: false, message: 'zo_fr_no (Fund Request Number) is required.' });
-  }
-
-  const amount = Number(zo_fr_amount);
-  if (isNaN(amount) || amount <= 0 || !isFinite(amount)) {
-    return res.status(400).json({ success: false, message: 'zo_fr_amount must be a positive number greater than zero.' });
-  }
+  const amount = zo_fr_amount;
 
   try {
     // Unique check
@@ -225,16 +220,9 @@ async function getFundRequestById(req, res) {
  * Workflow action on a fund request (Approve or Hold) by HO or Admin.
  */
 async function actOnFundRequest(req, res) {
+  if (!validate(req, res, actOnFundRequestSchema)) return;
   const { id } = req.params;
   const { action, approve_ho_amount, transfer_from_account, ho_remarks } = req.body;
-
-  if (!uuidRegex.test(id)) {
-    return res.status(400).json({ success: false, message: 'Invalid fund request ID.' });
-  }
-
-  if (!['Approve', 'Hold'].includes(action)) {
-    return res.status(400).json({ success: false, message: "action must be 'Approve' or 'Hold'." });
-  }
 
   try {
     const { data: fr, error: frError } = await supabase
@@ -330,11 +318,8 @@ async function actOnFundRequest(req, res) {
  * Cancels a fund request. Restricted to creator ZO or Admin.
  */
 async function cancelFundRequest(req, res) {
+  if (!validate(req, res, cancelFundRequestSchema)) return;
   const { id } = req.params;
-
-  if (!uuidRegex.test(id)) {
-    return res.status(400).json({ success: false, message: 'Invalid fund request ID.' });
-  }
 
   try {
     const { data: fr, error: frError } = await supabase
