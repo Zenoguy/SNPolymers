@@ -13,12 +13,10 @@ import CancelFundRequestModal from '../components/fundRequests/CancelFundRequest
 
 // API Clients
 import { getFundRequests, createFundRequest, cancelFundRequest, actOnFundRequest } from '../api/fundRequests';
-import { getProjects } from '../api/projectsApi';
 
 const FundRequests = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
-  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -26,7 +24,6 @@ const FundRequests = () => {
   
   // Dashboard navigation states
   const [activeRequest, setActiveRequest] = useState(null); // request details panel view
-  const [selectedMockProject, setSelectedMockProject] = useState(null);
   const [showCreateFlow, setShowCreateFlow] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null); // { id, no }
   const [isCancelling, setIsCancelling] = useState(false);
@@ -46,14 +43,10 @@ const FundRequests = () => {
     setLoading(true);
     setError('');
     try {
-      const [reqRes, projRes] = await Promise.all([
-        getFundRequests(),
-        getProjects()
-      ]);
+      const reqRes = await getFundRequests();
       setRequests(reqRes.data?.fundRequests ?? []);
-      setProjects(projRes.data?.projects ?? []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch requisition data.');
+      setError(err.response?.data?.message || 'Failed to fetch fund requests.');
     } finally {
       setLoading(false);
     }
@@ -114,9 +107,8 @@ const FundRequests = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleRowClick = (req, mockProj) => {
+  const handleRowClick = (req) => {
     setActiveRequest(req);
-    setSelectedMockProject(mockProj);
   };
 
   const handleReviewNowTrigger = () => {
@@ -199,8 +191,6 @@ const FundRequests = () => {
             <RequestDetailPanel
               user={user}
               request={activeRequest}
-              mockProject={selectedMockProject}
-              projects={projects}
               onClose={() => {
                 setActiveRequest(null);
                 setShowCreateFlow(false);

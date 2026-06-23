@@ -6,11 +6,21 @@ const formatCurrency = (val) =>
 
 const formatDate = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
+const formatDateTime = (d) => {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
 const RequestDetailPanel = ({
   user,
   request,        // null if creating new
-  mockProject,    // associated project layout details
-  projects,       // array of projects from projectsApi
   onClose,
   onSave,         // ZO submit function
   onAct,          // HO approve/hold action function
@@ -47,13 +57,15 @@ const RequestDetailPanel = ({
       setZoRemarks(request.zo_remarks || '');
       setHoRemarks(request.ho_remarks || '');
       
-      // Load mock comments
+      // Load comments
       const feed = [];
       if (request.zo_remarks) {
-        feed.push({ author: 'Siddharth Rao (ZO)', text: request.zo_remarks, type: 'zo' });
+        const author = request.zo_name ? `${request.zo_name} (ZO)` : 'ZO User';
+        feed.push({ author, text: request.zo_remarks, type: 'zo' });
       }
       if (request.ho_remarks) {
-        feed.push({ author: 'Ashwin Guha (HO)', text: request.ho_remarks, type: 'ho' });
+        const author = request.approve_ho_name ? `${request.approve_ho_name} (HO)` : 'HO User';
+        feed.push({ author, text: request.ho_remarks, type: 'ho' });
       }
       setComments(feed);
     } else {
@@ -177,7 +189,9 @@ const RequestDetailPanel = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-white/5">
         <div className="text-left">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black tracking-tight">Fund Request Management</h2>
+            <h2 className="text-2xl font-black tracking-tight">
+              {isCreate ? 'Fund Request Management' : `Fund Request ${request.zo_fr_no}`}
+            </h2>
             {!isCreate && (
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
                 request.request_status === 'Pending' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
@@ -244,91 +258,7 @@ const RequestDetailPanel = ({
         {/* Left and center column details */}
         <div className="lg:col-span-2 space-y-6 text-left">
           
-          {/* Card A: Project Dashboard details */}
-          <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 block mb-4">Project Dashboard</span>
-            
-            {isCreate ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Select Project/Work Order <span className="text-red-400">*</span></label>
-                  <select 
-                    onChange={handleProjectSelect}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition"
-                  >
-                    <option value="">Choose Work Order...</option>
-                    {projects.map(p => (
-                      <option key={p.work_order_no} value={p.work_order_no}>{p.work_order_no} | {p.site_details || 'Site Details'}</option>
-                    ))}
-                  </select>
-                </div>
-                {selectedProject && (
-                  <div className="grid grid-cols-2 gap-4 pt-2 text-xs">
-                    <div>
-                      <span className="text-slate-500 block">Estimate Number</span>
-                      <span className="font-mono font-bold text-slate-300">{selectedProject.estimate_no || 'N/A'}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block">Current Status</span>
-                      <span className="font-bold text-emerald-400">Final Approved</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-base font-extrabold text-slate-200">
-                  {request.zo_fr_no} | {mockProject?.name}
-                </h3>
-                <div className="grid grid-cols-2 gap-4 mt-4 text-xs">
-                  <div>
-                    <span className="text-slate-500 block">Estimate: {request.zo_fr_no.split('/')[1] || 'EST/MUM-012'}</span>
-                    <span className="font-bold text-emerald-400 mt-1 block">Status: Final Approved</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 border-l border-white/5 pl-4">
-                    <div>
-                      <span className="text-slate-500 block">Request Date</span>
-                      <span className="font-semibold text-slate-300">{formatDate(request.zo_date)}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block">Requested By</span>
-                      <span className="font-semibold text-slate-300">ZO User</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Card B: Financial Summary & Burn charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-panel p-5 rounded-3xl border border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Financial Summary</span>
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="text-slate-500 block">Approved Estimate</span>
-                  <span className="font-mono font-bold text-slate-300 text-sm">₹ 10,00,000</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Available Balance</span>
-                  <span className="font-mono font-bold text-slate-300 text-sm">₹ 6,00,000</span>
-                </div>
-              </div>
-            </div>
-            <div className="glass-panel p-5 rounded-3xl border border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-3">Estimate Utilization</span>
-              <div className="space-y-2">
-                <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-white/5">
-                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: '80%' }} />
-                </div>
-                <div className="flex justify-between text-[9px] font-bold uppercase text-slate-500">
-                  <span>Consumed: ₹8.0L</span>
-                  <span>Available: ₹2.0L</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Card C: Amount Card and Remarks form inputs */}
           <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
@@ -372,7 +302,7 @@ const RequestDetailPanel = ({
                   ) : (
                     <div>
                       <span className="text-slate-500 block">Requested By</span>
-                      <span className="font-bold text-slate-300">ZO User</span>
+                      <span className="font-bold text-slate-300">{request.zo_name || 'ZO User'}</span>
                     </div>
                   )}
                   <div>
@@ -488,7 +418,7 @@ const RequestDetailPanel = ({
                 <div className="space-y-3.5 text-xs">
                   <div className="flex justify-between items-center pb-2 border-b border-white/5">
                     <span className="text-slate-500 font-semibold">Approved By</span>
-                    <span className="font-bold text-slate-300">{request.approve_ho_user_id ? 'Ashwin Guha' : '—'}</span>
+                    <span className="font-bold text-slate-300">{request.approve_ho_name || (request.approve_ho_user_id ? 'HO User' : '—')}</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-white/5">
                     <span className="text-slate-500 font-semibold">Approved Amount</span>
@@ -550,14 +480,14 @@ const RequestDetailPanel = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                   <div className="flex flex-col text-[11px]">
                     <span className="text-slate-300 font-bold">Created</span>
-                    <span className="text-[9px] text-slate-500 mt-0.5">{formatDate(request.zo_date)} 10:15</span>
+                    <span className="text-[9px] text-slate-500 mt-0.5">{formatDateTime(request.created_at || request.zo_date)}</span>
                   </div>
                 </div>
                 <div className="flex gap-2.5 text-xs items-start">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                   <div className="flex flex-col text-[11px]">
                     <span className="text-slate-300 font-bold">Submitted</span>
-                    <span className="text-[9px] text-slate-500 mt-0.5">{formatDate(request.zo_date)} 11:30</span>
+                    <span className="text-[9px] text-slate-500 mt-0.5">{formatDateTime(request.zo_date)}</span>
                   </div>
                 </div>
                 {request.request_status !== 'Pending' && (
@@ -565,7 +495,11 @@ const RequestDetailPanel = ({
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                     <div className="flex flex-col text-[11px]">
                       <span className="text-slate-300 font-bold">Status Action: {request.request_status}</span>
-                      <span className="text-[9px] text-slate-500 mt-0.5">{formatDate(request.approve_ho_date)}</span>
+                      <span className="text-[9px] text-slate-500 mt-0.5">
+                        {request.request_status === 'Cancelled'
+                          ? formatDateTime(request.cancelled_at)
+                          : formatDateTime(request.approve_ho_date)}
+                      </span>
                     </div>
                   </div>
                 )}

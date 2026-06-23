@@ -61,33 +61,11 @@ const DashboardMetrics = ({ requests }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       )
-    },
-    {
-      label: 'Average Approval Time',
-      value: '1.4 Days',
-      trend: 'Operational efficiency',
-      trendColor: 'text-slate-400',
-      icon: (
-        <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      )
-    },
-    {
-      label: 'Available Project Balance',
-      value: '₹ 3.7 Cr',
-      trend: 'Across active estimates',
-      trendColor: 'text-slate-400',
-      icon: (
-        <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-        </svg>
-      )
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {metrics.map((m) => (
         <div key={m.label} className="glass-panel rounded-2xl p-4 border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent flex flex-col justify-between text-left">
           <div className="flex justify-between items-start gap-2">

@@ -31,14 +31,13 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
             <th className="py-4 px-5 w-8">
               <input type="checkbox" className="rounded bg-slate-900 border-white/10 text-amber-500 focus:ring-0 cursor-pointer" readOnly />
             </th>
-            {['Fund Request Order No', 'Project Name', 'Zone', 'Requested Amount', 'Approved Amount', 'Request Date', 'Current Status', 'Actions'].map((h) => (
+            {['Fund Request Order No', 'Requested Amount', 'Approved Amount', 'Request Date', 'Current Status', 'Actions'].map((h) => (
               <th key={h} className="py-4 px-5 font-extrabold whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5 text-xs text-slate-300">
           {requests.map((req, index) => {
-            const mockProj = getMockProjectForRequest(index);
             const isPending = req.request_status === 'Pending';
             const canCancel = isPending && isZoOrAdmin;
             const canAct = isPending && isHoOrAdmin;
@@ -46,7 +45,7 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
             return (
               <tr 
                 key={req.fund_request_id} 
-                onClick={() => onRowClick && onRowClick(req, mockProj)}
+                onClick={() => onRowClick && onRowClick(req)}
                 className="hover:bg-white/[0.025] transition-colors duration-200 group cursor-pointer"
               >
                 <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
@@ -54,12 +53,6 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
                 </td>
                 <td className="py-4 px-5 font-mono font-semibold text-slate-100 whitespace-nowrap">
                   {req.zo_fr_no}
-                </td>
-                <td className="py-4 px-5 font-semibold text-slate-300 whitespace-nowrap max-w-[200px] truncate">
-                  {mockProj.name}
-                </td>
-                <td className="py-4 px-5 text-slate-400 whitespace-nowrap">
-                  {mockProj.zone}
                 </td>
                 <td className="py-4 px-5 font-mono font-bold text-slate-200 whitespace-nowrap">
                   {formatCurrency(req.zo_fr_amount)}
@@ -92,7 +85,7 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
                       </button>
                     )}
                     <button 
-                      onClick={() => onRowClick && onRowClick(req, mockProj)}
+                      onClick={() => onRowClick && onRowClick(req)}
                       className="p-1.5 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/5 text-slate-400 hover:text-slate-200 transition-all"
                       title="View Details"
                     >
