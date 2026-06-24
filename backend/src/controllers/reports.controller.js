@@ -54,26 +54,36 @@ async function getReports(req, res) {
     const limit = Math.min(parseInt(query.limit || 50), 100);
     const offset = (page - 1) * limit;
 
-    const { data: reports, count, error } = await supabase
-      .from('fund_reports')
-      .select(`
-        *,
-        projects_master (
-          estimate_no,
-          work_order_value,
-          site_details,
-          state,
-          district,
-          zone,
-          department,
-          status
-        )
-      `, { count: 'exact' })
-      .eq('is_deleted', false)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const [countRes, reportsRes] = await Promise.all([
+      supabase
+        .from('fund_reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_deleted', false),
+      supabase
+        .from('fund_reports')
+        .select(`
+          *,
+          projects_master (
+            estimate_no,
+            work_order_value,
+            site_details,
+            state,
+            district,
+            zone,
+            department,
+            status
+          )
+        `)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+    ]);
 
-    if (error) throw error;
+    if (countRes.error) throw countRes.error;
+    if (reportsRes.error) throw reportsRes.error;
+
+    const count = countRes.count;
+    const reports = reportsRes.data;
 
     return res.status(200).json({
       success: true,
@@ -128,26 +138,36 @@ async function getSoftDeletedReports(req, res) {
     const limit = Math.min(parseInt(query.limit || 50), 100);
     const offset = (page - 1) * limit;
 
-    const { data: reports, count, error } = await supabase
-      .from('fund_reports')
-      .select(`
-        *,
-        projects_master (
-          estimate_no,
-          work_order_value,
-          site_details,
-          state,
-          district,
-          zone,
-          department,
-          status
-        )
-      `, { count: 'exact' })
-      .eq('is_deleted', true)
-      .order('deleted_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const [countRes, reportsRes] = await Promise.all([
+      supabase
+        .from('fund_reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_deleted', true),
+      supabase
+        .from('fund_reports')
+        .select(`
+          *,
+          projects_master (
+            estimate_no,
+            work_order_value,
+            site_details,
+            state,
+            district,
+            zone,
+            department,
+            status
+          )
+        `)
+        .eq('is_deleted', true)
+        .order('deleted_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+    ]);
 
-    if (error) throw error;
+    if (countRes.error) throw countRes.error;
+    if (reportsRes.error) throw reportsRes.error;
+
+    const count = countRes.count;
+    const reports = reportsRes.data;
 
     return res.status(200).json({
       success: true,
