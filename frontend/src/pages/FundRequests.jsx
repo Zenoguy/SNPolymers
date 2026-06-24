@@ -234,6 +234,7 @@ const FundRequests = () => {
             <RequisitionCharts 
               requests={requests} 
               onReviewNowClick={handleReviewNowTrigger}
+              isApprover={user?.role === 'ho' || user?.role === 'admin'}
             />
 
             {/* Lower Layout Panel: Left data table, Right sidebar filters */}

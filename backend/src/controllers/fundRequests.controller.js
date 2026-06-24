@@ -97,11 +97,7 @@ async function createFundRequest(req, res) {
 async function getFundRequests(req, res) {
   try {
     const query = req.query || {};
-    const page = Math.max(parseInt(query.page) || 1, 1);
-    let limit = parseInt(query.limit) || 50;
-    if (limit < 1) limit = 50;
-    limit = Math.min(limit, 100);
-    const offset = (page - 1) * limit;
+    const hasPagination = query.page !== undefined || query.limit !== undefined;
 
     const effectiveRole = getEffectiveFrRole(req.user.role);
 
@@ -122,9 +118,25 @@ async function getFundRequests(req, res) {
       dbQuery = dbQuery.eq('request_status', query.status);
     }
 
-    const { data: fundRequests, count, error } = await dbQuery
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    let result;
+    let page = 1;
+    let limit = 0;
+
+    if (hasPagination) {
+      page = Math.max(parseInt(query.page) || 1, 1);
+      limit = parseInt(query.limit) || 50;
+      if (limit < 1) limit = 50;
+      limit = Math.min(limit, 1000);
+      const offset = (page - 1) * limit;
+      result = await dbQuery
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+    } else {
+      result = await dbQuery
+        .order('created_at', { ascending: false });
+    }
+
+    const { data: fundRequests, count, error } = result;
 
     if (error) throw error;
 
@@ -150,9 +162,9 @@ async function getFundRequests(req, res) {
       fundRequests: enriched,
       pagination: {
         page,
-        limit,
+        limit: hasPagination ? limit : (count || enriched.length),
         total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
+        totalPages: hasPagination ? Math.ceil((count || 0) / limit) : 1
       }
     });
 

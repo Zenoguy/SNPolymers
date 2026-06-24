@@ -7,22 +7,72 @@ const DashboardMetrics = ({ requests }) => {
   const totalCount = requests.length;
   const pendingCount = requests.filter(r => r.request_status === 'Pending').length;
   
-  // Calculate hold amount
+  // Calculate MoM percentage change for Total Fund Requests
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const thisMonthRequests = requests.filter(r => {
+    const d = new Date(r.zo_date || r.created_at);
+    return d >= startOfThisMonth;
+  });
+
+  const lastMonthRequests = requests.filter(r => {
+    const d = new Date(r.zo_date || r.created_at);
+    return d >= startOfLastMonth && d < startOfThisMonth;
+  });
+
+  const thisMonthCount = thisMonthRequests.length;
+  const lastMonthCount = lastMonthRequests.length;
+
+  let totalTrendText = '+0% this month';
+  let totalTrendColor = 'text-slate-400';
+
+  if (thisMonthCount > 0 || lastMonthCount > 0) {
+    if (lastMonthCount === 0) {
+      totalTrendText = `+${thisMonthCount} new this month`;
+      totalTrendColor = 'text-emerald-400';
+    } else {
+      const pctChange = Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100);
+      if (pctChange > 0) {
+        totalTrendText = `+${pctChange}% this month`;
+        totalTrendColor = 'text-emerald-400';
+      } else if (pctChange < 0) {
+        totalTrendText = `${pctChange}% this month`;
+        totalTrendColor = 'text-red-400';
+      } else {
+        totalTrendText = '0% change this MoM';
+        totalTrendColor = 'text-slate-400';
+      }
+    }
+  }
+
+  // Pending action trend
+  const pendingTrendText = pendingCount > 0 ? `${pendingCount} awaiting action` : 'All caught up';
+  const pendingTrendColor = pendingCount > 0 ? 'text-amber-400' : 'text-emerald-400';
+
+  // Approved This Month (filtered by approval date this month)
+  const approvedThisMonthList = requests.filter(
+    r => r.request_status === 'Approved' && r.approve_ho_date && new Date(r.approve_ho_date) >= startOfThisMonth
+  );
+  const approvedSumThisMonth = approvedThisMonthList.reduce((sum, r) => sum + Number(r.approve_ho_amount || 0), 0);
+  const approvedCountThisMonth = approvedThisMonthList.length;
+  const approvedTrendText = `${approvedCountThisMonth} request${approvedCountThisMonth !== 1 ? 's' : ''} approved`;
+
+  // Funds on hold trend and sum
   const holdSum = requests
     .filter(r => r.request_status === 'Hold')
     .reduce((sum, r) => sum + Number(r.zo_fr_amount || 0), 0);
-
-  // Calculate approved sum
-  const approvedSum = requests
-    .filter(r => r.request_status === 'Approved')
-    .reduce((sum, r) => sum + Number(r.approve_ho_amount || 0), 0);
+  const holdCount = requests.filter(r => r.request_status === 'Hold').length;
+  const holdTrendText = holdCount > 0 ? `${holdCount} request${holdCount !== 1 ? 's' : ''} on hold` : '0 requests on hold';
+  const holdTrendColor = holdCount > 0 ? 'text-red-400' : 'text-slate-400';
 
   const metrics = [
     {
       label: 'Total Fund Requests',
-      value: totalCount || '126',
-      trend: '+12% this month',
-      trendColor: 'text-emerald-400',
+      value: totalCount,
+      trend: totalTrendText,
+      trendColor: totalTrendColor,
       icon: (
         <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -31,9 +81,9 @@ const DashboardMetrics = ({ requests }) => {
     },
     {
       label: 'Pending Approval',
-      value: pendingCount || '14',
-      trend: 'Awaiting HO action',
-      trendColor: 'text-amber-400',
+      value: pendingCount,
+      trend: pendingTrendText,
+      trendColor: pendingTrendColor,
       icon: (
         <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -42,8 +92,8 @@ const DashboardMetrics = ({ requests }) => {
     },
     {
       label: 'Approved This Month',
-      value: approvedSum ? formatCurrency(approvedSum) : '₹ 1.82 Cr',
-      trend: 'Released funds',
+      value: formatCurrency(approvedSumThisMonth),
+      trend: approvedTrendText,
       trendColor: 'text-emerald-400',
       icon: (
         <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,9 +103,9 @@ const DashboardMetrics = ({ requests }) => {
     },
     {
       label: 'Funds On Hold',
-      value: holdSum ? formatCurrency(holdSum) : '₹ 18 Lakh',
-      trend: 'Requires review',
-      trendColor: 'text-red-400',
+      value: formatCurrency(holdSum),
+      trend: holdTrendText,
+      trendColor: holdTrendColor,
       icon: (
         <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
