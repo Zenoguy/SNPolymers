@@ -13,7 +13,7 @@ Phase 5 introduces the **Daily Work Progress Module** — a daily site-visit tra
 
 The interaction model is two-sided:
 
-1. **Step 1 — Daily Progress Entry (by JE):** The JE logs in; the system auto-captures login date and user ID. They select a Work Order Number from master data; the system auto-fetches the geographic metadata (State, District, Area Code, Department, Site Details) as a frozen snapshot. The JE then enters the Site Visit Date, Work Progress Details (free text), Physical Work Progress (cumulative %, JE-maintained), uploads a single GPS-tagged site photo, and optionally enters Remarks After Site Visit. On save, the report is immediately stored and viewable — no further workflow step exists.
+1. **Step 1 — Daily Progress Entry (by JE):** The JE logs in; the system auto-captures login date and user ID. They select a Work Order Number from master data; the system auto-fetches the geographic metadata (State, District, Area Code, Department, Site Details) as a frozen snapshot. The JE then enters the Site Visit Date, Work Progress Details (free text), Physical Work Progress (cumulative %, JE-maintained), uploads a single Site Photo, and optionally enters Remarks After Site Visit. On save, the report is immediately stored and viewable — no further workflow step exists.
 
 2. **Step 2 — View & Remarks by Authority (ZO / HO / Admin):** Authorities access a list of all submitted daily progress reports. They view the full details including the uploaded photo (via signed URL). They may optionally write or overwrite the `Remarks_Approved_Authority` field. This remark is the only field an authority can modify. Remarks remain editable until the parent Work Order's status in `projects_master` becomes `Closed`.
 
@@ -21,7 +21,7 @@ The interaction model is two-sided:
 
 | Actor | Action |
 |---|---|
-| **JE (Reporter)** | Creates one daily progress report per work order per day. Uploads one GPS site photo per report. Views only own reports. Cannot edit submitted reports. |
+| **JE (Reporter)** | Creates one daily progress report per work order per day. Uploads one Site Photo per report. Views only own reports. Cannot edit submitted reports. |
 | **ZO / HO / Admin (Viewer)** | Views all submitted reports. Optionally adds or overwrites authority remarks. Remarks are blocked if the work order is Closed. |
 | **System** | Auto-fetches and freezes geo-metadata from `projects_master` at submission time. Generates signed URLs for photo viewing. Audits all inserts. |
 
@@ -261,7 +261,7 @@ FOR EACH ROW EXECUTE FUNCTION audit_daily_progress_insert();
 
 | Bucket Name | Access | Notes |
 |---|---|---|
-| `daily-progress-photos` | **Private** | Stores GPS site photos uploaded by JEs |
+| `daily-progress-photos` | **Private** | Stores Site Photos uploaded by JEs |
 
 > [!IMPORTANT]
 > The bucket MUST be set to **private** in the Supabase Dashboard. Signed URLs (TTL: 1 hour) will be generated via the backend for every photo view request. Do NOT make this bucket public.
@@ -486,13 +486,13 @@ Handles Supabase Storage image upload.
 
 | Function | Method | Path | Access | Description |
 |---|---|---|---|---|
-| `uploadSitePhoto` | POST | `/upload/photo` | `je` | Upload a GPS site photo |
+| `uploadSitePhoto` | POST | `/upload/photo` | `je` | Upload a Site Photo |
 
 ```
 uploadSitePhoto(req, res):
   1. Expect multipart/form-data with a single file field named 'file'.
-  2. Validate MIME type: must be one of image/jpeg, image/png, image/webp, image/heic, image/heif
-     → 400: "Only image files are accepted (JPEG, PNG, WebP, HEIC)."
+  2. Validate MIME type: must be one of image/jpeg, image/png
+     → 400: "Only image files are accepted (JPEG, JPG, PNG)."
   3. Validate file size: must be ≤ 10MB (10 * 1024 * 1024 bytes)
      → 400: "File size must not exceed 10MB."
   4. Generate storage path: daily-progress-photos/{uuid}.{ext}
@@ -590,7 +590,7 @@ A full-featured Daily Work Progress management page with role-based views.
   - `Site Visit Date` — date picker (required)
   - `Work Progress Details` — textarea (required; placeholder: "Describe all work done at the site today")
   - `Physical Work Progress (%)` — numeric input, 0–100 (required)
-  - `Daily Site Photo` — image file upload (required; max 10MB; JPEG/PNG/WebP/HEIC only)
+  - `Daily Site Photo` — image file upload (required; max 10MB; JPEG/JPG/PNG only)
     - Shows file name and preview thumbnail after upload
   - `Remarks After Site Visit` — textarea (optional)
   - **Save button** → submits to API
@@ -657,8 +657,8 @@ Add a navigation card for the Daily Progress module, visible to `je`, `zo`, `ho`
 
 | # | Concern | Severity | Resolution |
 |---|---|---|---|
-| SEC-P5-1 | **Image MIME type enforcement** — Must validate `mimetype` is a real image type (`image/jpeg`, `image/png`, `image/webp`, `image/heic`, `image/heif`), not just the file extension | **HIGH** | `fileFilter` in multer config + server-side MIME check in controller |
-| SEC-P5-2 | **File size limit** — GPS photos from mobile devices can exceed 15MB | **HIGH** | Enforce ≤ 10MB via multer `limits.fileSize` AND re-validate in controller |
+| SEC-P5-1 | **Image MIME type enforcement** — Must validate `mimetype` is a real image type (`image/jpeg`, `image/png`), not just the file extension | **HIGH** | `fileFilter` in multer config + server-side MIME check in controller |
+| SEC-P5-2 | **File size limit** — Site photos from mobile devices can exceed 15MB | **HIGH** | Enforce ≤ 10MB via multer `limits.fileSize` AND re-validate in controller |
 | SEC-P5-3 | **Private bucket + signed URL** — Photo bucket `daily-progress-photos` must never be publicly readable | **HIGH** | Bucket configured as private in Supabase Dashboard; `createSignedUrl(path, 3600)` at read time only |
 | SEC-P5-4 | **JE record isolation** — JE must not be able to read other JEs' report IDs or details | **HIGH** | Visibility gate in `getProgressReportById` returns 404 (not 403) for non-owner JE |
 | SEC-P5-5 | **Authority remarks gated on work order status** — Remarks must be blocked if parent work order is `Closed` | **MEDIUM** | `addAuthorityRemarks` fetches `projects_master.status` before write; 403 if Closed |
