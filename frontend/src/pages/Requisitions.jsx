@@ -469,6 +469,15 @@ const ActionModal = ({ requisition, onClose, onSave }) => {
 // Main Requisition Creation Form Modal
 const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave, requisitions }) => {
   const { user } = useAuth();
+
+  // Filter projects (work orders) to only those that have a 'Final Approved' estimate
+  const filteredProjects = projects.map(p => {
+    const approvedEst = estimates.find(e => e.work_order_no === p.work_order_no && e.estimate_status === 'Final Approved');
+    return {
+      ...p,
+      approvedEst
+    };
+  }).filter(p => p.approvedEst);
   
   // Step 1 read-only values
   const systemDateStr = new Date().toLocaleDateString('en-IN', { dateStyle: 'medium' });
@@ -760,9 +769,9 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
                 className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
               >
                 <option value="">-- Choose Work Order --</option>
-                {projects.map((p) => (
+                {filteredProjects.map((p) => (
                   <option key={p.work_order_no} value={p.work_order_no}>
-                    {p.work_order_no}
+                    {p.work_order_no} ({p.approvedEst.estimate_no})
                   </option>
                 ))}
               </select>

@@ -34,7 +34,7 @@ router.use(verifyJwt);
 const readerRoles = ['je', 'zo', 'ho', 'admin'];
 const requesterRoles = ['je', 'admin'];
 const approverRoles = ['zo', 'ho', 'admin'];
-const uploadRoles = ['je'];
+const uploadRoles = ['je', 'admin'];
 
 // Read endpoints
 router.get('/', requireRole(readerRoles), getRequisitions);
