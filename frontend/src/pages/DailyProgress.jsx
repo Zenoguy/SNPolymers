@@ -38,6 +38,11 @@ const DailyProgress = () => {
   const [physicalWorkProgress, setPhysicalWorkProgress] = useState('');
   const [remarksAfterSiteVisit, setRemarksAfterSiteVisit] = useState('');
 
+  // Authority Remarks State
+  const [authorityRemarks, setAuthorityRemarks] = useState('');
+  const [savingRemarks, setSavingRemarks] = useState(false);
+  const [remarksFormError, setRemarksFormError] = useState('');
+
   // File Upload State
   const [uploadedPhoto, setUploadedPhoto] = useState(null); // Local File object
   const [dailySitePhotoUrl, setDailySitePhotoUrl] = useState(''); // Server path
@@ -280,17 +285,68 @@ const DailyProgress = () => {
   const handleViewDetails = async (reportItem) => {
     setLoadingDetail(true);
     setError('');
+    setRemarksFormError('');
     try {
       const res = await getProgressReportById(reportItem.report_id);
       if (res.data?.success) {
         // Enriched details includes full photo signed url
         setActiveReport(res.data.report);
+        setAuthorityRemarks(res.data.report.remarks_approved_authority || '');
       }
     } catch (err) {
       console.error('Error fetching report details:', err);
       setError(err.response?.data?.message || 'Failed to retrieve report details.');
     } finally {
       setLoadingDetail(false);
+    }
+  };
+
+  // Save or overwrite authority remarks (ZO/HO/Admin only)
+  const handleSaveRemarks = async () => {
+    if (!activeReport) return;
+    if (!authorityRemarks.trim()) {
+      setRemarksFormError('Authority remarks cannot be blank.');
+      return;
+    }
+
+    setSavingRemarks(true);
+    setRemarksFormError('');
+    try {
+      const res = await addAuthorityRemarks(activeReport.report_id, {
+        remarks_approved_authority: authorityRemarks.trim()
+      });
+
+      if (res.data?.success) {
+        setSuccess('Authority remarks saved successfully.');
+        
+        // Re-fetch enriched report details to keep names/dates/signed url correctly synchronized
+        const detailRes = await getProgressReportById(activeReport.report_id);
+        if (detailRes.data?.success) {
+          const refreshedReport = detailRes.data.report;
+          setActiveReport(refreshedReport);
+          setAuthorityRemarks(refreshedReport.remarks_approved_authority || '');
+        }
+
+        // Re-fetch the main list to update remarks counts/badges
+        fetchData(pagination.page);
+      }
+    } catch (err) {
+      console.error('Failed to save authority remarks:', err);
+      const errMsg = err.response?.data?.message || 'Failed to save authority remarks.';
+      setRemarksFormError(errMsg);
+      
+      // If project status changed on server to Closed (409), re-sync details
+      if (err.response?.status === 409) {
+        const detailRes = await getProgressReportById(activeReport.report_id);
+        if (detailRes.data?.success) {
+          const refreshedReport = detailRes.data.report;
+          setActiveReport(refreshedReport);
+          setAuthorityRemarks(refreshedReport.remarks_approved_authority || '');
+        }
+        fetchData(pagination.page);
+      }
+    } finally {
+      setSavingRemarks(false);
     }
   };
 
@@ -762,26 +818,92 @@ const DailyProgress = () => {
                     )}
                   </div>
 
-                  {activeReport.remarks_approved_authority ? (
-                    <div className="space-y-3">
-                      <div className="p-4 bg-emerald-950/5 border border-emerald-900/10 rounded-2xl text-xs text-slate-300 leading-relaxed italic whitespace-pre-wrap">
-                        "{activeReport.remarks_approved_authority}"
-                      </div>
-                      <div className="text-[10px] text-slate-400 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Reviewed By</span>
-                          <span className="font-bold text-slate-300">{activeReport.approved_by_name || activeReport.approved_user_id}</span>
+                  {isAuthority ? (
+                    (() => {
+                      const parentProject = projects.find(p => p.work_order_no === activeReport.work_order_no);
+                      const isProjectActive = parentProject && parentProject.status === 'Running';
+
+                      return (
+                        <div className="space-y-4">
+                          <div>
+                            <textarea
+                              value={authorityRemarks}
+                              onChange={(e) => setAuthorityRemarks(e.target.value)}
+                              disabled={!isProjectActive || savingRemarks}
+                              placeholder={isProjectActive ? "Enter authority review remarks..." : "Remarks cannot be modified for this project."}
+                              rows={3}
+                              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition bg-black resize-none ${(!isProjectActive || savingRemarks) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            />
+                            {remarksFormError && (
+                              <p className="text-[10px] text-red-400 font-semibold mt-1">{remarksFormError}</p>
+                            )}
+                          </div>
+
+                          {!isProjectActive && (
+                            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-950/20 border border-red-900/30 text-[10px] text-red-300 font-medium">
+                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2-2H6a2 2 0 00-2-2V7a6 6 0 0112 0v4h3a2 2 0 002 2v6a2 2 0 00-2 2z" />
+                              </svg>
+                              <span>Remarks cannot be modified because this project is currently in [{parentProject?.status || 'N/A'}] status.</span>
+                            </div>
+                          )}
+
+                          {isProjectActive && (
+                            <div className="flex justify-end">
+                              <button
+                                type="button"
+                                onClick={handleSaveRemarks}
+                                disabled={savingRemarks || !authorityRemarks.trim()}
+                                className="bg-white hover:bg-slate-100 text-slate-950 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition shadow disabled:opacity-40 flex items-center gap-1.5"
+                              >
+                                {savingRemarks && (
+                                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-950" />
+                                )}
+                                {savingRemarks ? 'Saving Remarks...' : 'Save Remarks'}
+                              </button>
+                            </div>
+                          )}
+
+                          {activeReport.remarks_approved_authority && (
+                            <div className="text-[10px] text-slate-400 space-y-1 mt-2 pt-2 border-t border-white/5">
+                              <div className="flex justify-between">
+                                <span>Last Reviewed By</span>
+                                <span className="font-bold text-slate-300">{activeReport.approved_by_name || activeReport.approved_user_id}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Last Review Timestamp</span>
+                                <span className="font-mono text-slate-400">
+                                  {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex justify-between">
-                          <span>Review Timestamp</span>
-                          <span className="font-mono text-slate-400">
-                            {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()
                   ) : (
-                    <p className="text-xs text-slate-500 italic">No authority reviews or remarks have been submitted for this daily progress report record yet.</p>
+                    /* JE View: Read-only remarks display */
+                    activeReport.remarks_approved_authority ? (
+                      <div className="space-y-3">
+                        <div className="p-4 bg-emerald-950/5 border border-emerald-900/10 rounded-2xl text-xs text-slate-300 leading-relaxed italic whitespace-pre-wrap">
+                          "{activeReport.remarks_approved_authority}"
+                        </div>
+                        <div className="text-[10px] text-slate-400 space-y-1">
+                          <div className="flex justify-between">
+                            <span>Reviewed By</span>
+                            <span className="font-bold text-slate-300">{activeReport.approved_by_name || activeReport.approved_user_id}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Review Timestamp</span>
+                            <span className="font-mono text-slate-400">
+                              {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 italic">No authority reviews or remarks have been submitted for this daily progress report record yet.</p>
+                    )
                   )}
                 </div>
               </div>
