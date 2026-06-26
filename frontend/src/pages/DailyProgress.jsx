@@ -730,7 +730,7 @@ const DailyProgress = () => {
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Submission Timestamp</p>
                       <p className="text-slate-400 mt-0.5">
-                        {activeReport.created_at ? new Date(activeReport.created_at).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                        {activeReport.created_at ? new Date(activeReport.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -873,7 +873,7 @@ const DailyProgress = () => {
                               <div className="flex justify-between">
                                 <span>Last Review Timestamp</span>
                                 <span className="font-mono text-slate-400">
-                                  {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                                  {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                                 </span>
                               </div>
                             </div>
@@ -896,7 +896,7 @@ const DailyProgress = () => {
                           <div className="flex justify-between">
                             <span>Review Timestamp</span>
                             <span className="font-mono text-slate-400">
-                              {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleDateString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                              {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                             </span>
                           </div>
                         </div>
@@ -1125,17 +1125,26 @@ const DailyProgress = () => {
                           </td>
                           <td className="p-4 text-center">
                             <div className="flex justify-center">
-                              <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
+                              {report.daily_site_photo_url ? (
+                                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" title={report.original_photo_filename || "Photo uploaded"}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
                             </div>
                           </td>
                           <td className="p-4 text-center">
-                            <div className="flex justify-center">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                              {report.remarks_after_site_visit ? (
+                                <span className="px-2 py-0.5 bg-blue-950/20 text-blue-400 border border-blue-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_after_site_visit}>JE</span>
+                              ) : null}
                               {report.remarks_approved_authority ? (
-                                <span className="px-2 py-0.5 bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 text-[9px] font-extrabold uppercase rounded-lg">Yes</span>
+                                <span className="px-2 py-0.5 bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_approved_authority}>Auth</span>
                               ) : (
-                                <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-extrabold uppercase rounded-lg">No</span>
+                                <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-extrabold uppercase rounded-lg">None</span>
                               )}
                             </div>
                           </td>
