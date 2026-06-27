@@ -7,6 +7,22 @@ export const MobileHeader = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const [isLightMode, setIsLightMode] = useState(() => {
+    return document.documentElement.classList.contains('light');
+  });
+
+  const toggleTheme = () => {
+    const next = !isLightMode;
+    if (next) {
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    }
+    setIsLightMode(next);
+  };
+
   return (
     <header className="md:hidden glass-nav sticky top-0 z-50 p-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -17,6 +33,21 @@ export const MobileHeader = () => {
       </div>
       {user && (
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 bg-white/5 border border-white/5 text-slate-300 rounded-xl transition hover:bg-white/10"
+            title={isLightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {isLightMode ? (
+              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
           {user.role === 'admin' && currentPath !== '/admin' && (
             <Link
               to="/admin"
@@ -50,6 +81,22 @@ const Sidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   const isAdmin = user?.role === 'admin';
+
+  const [isLightMode, setIsLightMode] = useState(() => {
+    return document.documentElement.classList.contains('light');
+  });
+
+  const toggleTheme = () => {
+    const next = !isLightMode;
+    if (next) {
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    }
+    setIsLightMode(next);
+  };
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
     return localStorage.getItem('sidebar-collapsed') === 'true';
@@ -207,9 +254,36 @@ const Sidebar = () => {
         })}
       </nav>
 
+      {/* Theme Toggle */}
+      <div className="border-t border-white/5 pt-4 mt-auto">
+        <button
+          onClick={toggleTheme}
+          className={`w-full flex items-center rounded-xl text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300 ${
+            isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'
+          }`}
+          title={isLightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        >
+          {isLightMode ? (
+            <>
+              <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+              {!isCollapsed && <span>Light Mode</span>}
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+              {!isCollapsed && <span>Dark Mode</span>}
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Operator Profile and Logout */}
       {user && (
-        <div className="border-t border-white/5 pt-6 mt-auto">
+        <div className="border-t border-white/5 pt-6">
           {isCollapsed ? (
             <div className="flex flex-col items-center gap-4">
               <div
