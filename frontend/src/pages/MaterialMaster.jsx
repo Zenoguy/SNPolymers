@@ -10,6 +10,13 @@ import {
   updateMaterial,
   updateMaterialStatus
 } from '../api/materialsApi';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Textarea from '../components/common/Textarea';
+import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
+import Table from '../components/common/Table';
 
 const MaterialMaster = () => {
   const { user } = useAuth();
@@ -276,6 +283,82 @@ const MaterialMaster = () => {
     }
   };
 
+  const columns = [
+    {
+      key: 'Material_Main_Head',
+      header: (
+        <span
+          onClick={() => handleSort('Material_Main_Head')}
+          className="cursor-pointer hover:text-slate-200 transition-colors"
+        >
+          Main Head {sortBy === 'Material_Main_Head' && (sortOrder === 'asc' ? '▲' : '▼')}
+        </span>
+      ),
+      className: 'font-semibold text-slate-200 max-w-[180px] truncate'
+    },
+    {
+      key: 'Material_Sub_Head',
+      header: (
+        <span
+          onClick={() => handleSort('Material_Sub_Head')}
+          className="cursor-pointer hover:text-slate-200 transition-colors"
+        >
+          Sub Head {sortBy === 'Material_Sub_Head' && (sortOrder === 'asc' ? '▲' : '▼')}
+        </span>
+      ),
+      className: 'text-slate-300 max-w-[180px] truncate'
+    },
+    {
+      key: 'Material_Details',
+      header: (
+        <span
+          onClick={() => handleSort('Material_Details')}
+          className="cursor-pointer hover:text-slate-200 transition-colors"
+        >
+          Material Description {sortBy === 'Material_Details' && (sortOrder === 'asc' ? '▲' : '▼')}
+        </span>
+      ),
+      className: 'text-slate-100 font-medium max-w-sm whitespace-pre-wrap'
+    },
+    {
+      key: 'M_Unit',
+      header: 'Unit',
+      className: 'font-mono text-slate-400'
+    },
+    ...(isAdmin ? [
+      {
+        key: 'is_active',
+        header: 'Status',
+        align: 'center',
+        render: (val, material) => (
+          <Button
+            onClick={() => handleToggleStatus(material.id, val)}
+            variant={val ? 'success' : 'danger'}
+            size="sm"
+            className="text-[9px] py-1 px-2.5"
+          >
+            {val ? 'Active' : 'Inactive'}
+          </Button>
+        )
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'right',
+        render: (_, material) => (
+          <Button
+            onClick={() => openEditModal(material)}
+            variant="secondary"
+            size="sm"
+            className="text-[9px] py-1.5 px-2.5"
+          >
+            Edit
+          </Button>
+        )
+      }
+    ] : [])
+  ];
+
   return (
     <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
       <BackgroundShapes />
@@ -286,18 +369,18 @@ const MaterialMaster = () => {
         
         {/* Module Header */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-white/5">
-          <div>
+          <div className="text-left">
             <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Inventory Registry</span>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-100 mt-1">Material Master</h1>
             <p className="text-xs text-slate-400 font-medium mt-1">Centralised catalog of construction resources, aggregates, components, and tools.</p>
           </div>
           {isAdmin && (
-            <button
+            <Button
               onClick={openCreateModal}
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-bold uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-amber-500/10 transition-all duration-200"
+              variant="primary"
             >
               + Create Material
-            </button>
+            </Button>
           )}
         </div>
 
@@ -314,323 +397,183 @@ const MaterialMaster = () => {
         )}
 
         {/* Search and Filters Bar */}
-        <div className="glass-panel p-4 rounded-2xl mb-6 space-y-4">
+        <Card className="p-4 mb-6 space-y-4 text-left">
           <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-3">
-            <div className="flex-grow relative">
-              <input
+            <div className="flex-grow">
+              <Input
                 type="text"
                 placeholder="Search by Main Head, Sub Head or Material Details..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+                icon={
+                  search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className="text-slate-400 hover:text-slate-200 text-xs font-semibold"
+                    >
+                      Clear
+                    </button>
+                  )
+                }
+                size="sm"
               />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch('')}
-                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200 text-xs"
-                >
-                  Clear
-                </button>
-              )}
             </div>
-            <button
+            <Button
               type="submit"
-              className="px-6 py-2.5 bg-white/5 border border-white/10 text-slate-200 font-bold uppercase text-xs rounded-xl hover:bg-white/10 active:scale-98 transition-all duration-200"
+              variant="secondary"
             >
               Search
-            </button>
+            </Button>
           </form>
 
           {/* Filtering Dropdowns */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Main Head</label>
-              <select
-                value={mainHeadFilter}
-                onChange={(e) => { setMainHeadFilter(e.target.value); setPage(1); }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:bg-slate-900 transition-colors"
-              >
-                <option value="">All Categories</option>
-                {categories.mainHeads.map((mh) => (
-                  <option key={mh} value={mh}>{mh}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Main Head"
+              value={mainHeadFilter}
+              onChange={(e) => { setMainHeadFilter(e.target.value); setPage(1); }}
+              size="sm"
+            >
+              <option value="">All Categories</option>
+              {categories.mainHeads.map((mh) => (
+                <option key={mh} value={mh}>{mh}</option>
+              ))}
+            </Select>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Sub Head</label>
-              <select
-                value={subHeadFilter}
-                onChange={(e) => { setSubHeadFilter(e.target.value); setPage(1); }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:bg-slate-900 transition-colors"
-              >
-                <option value="">All Sub categories</option>
-                {categories.subHeads.map((sh) => (
-                  <option key={sh} value={sh}>{sh}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Sub Head"
+              value={subHeadFilter}
+              onChange={(e) => { setSubHeadFilter(e.target.value); setPage(1); }}
+              size="sm"
+            >
+              <option value="">All Sub categories</option>
+              {categories.subHeads.map((sh) => (
+                <option key={sh} value={sh}>{sh}</option>
+              ))}
+            </Select>
 
-            {isAdmin && (
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Operational Status</label>
-                <select
-                  value={activeFilter}
-                  onChange={(e) => { setActiveFilter(e.target.value); setPage(1); }}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:bg-slate-900 transition-colors"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="true">Active Materials Only</option>
-                  <option value="false">Inactive Materials Only</option>
-                </select>
-              </div>
+            {isAdmin ? (
+              <Select
+                label="Operational Status"
+                value={activeFilter}
+                onChange={(e) => { setActiveFilter(e.target.value); setPage(1); }}
+                size="sm"
+              >
+                <option value="">All Statuses</option>
+                <option value="true">Active Materials Only</option>
+                <option value="false">Inactive Materials Only</option>
+              </Select>
+            ) : (
+              <div className="hidden md:block" />
             )}
 
             <div className="flex items-end">
-              <button
+              <Button
                 onClick={handleClearFilters}
-                className="w-full px-4 py-2 border border-dashed border-white/10 text-slate-400 hover:text-slate-200 font-semibold text-xs rounded-xl hover:bg-white/5 transition-all duration-200"
+                variant="secondary"
+                className="w-full border-dashed"
               >
                 Reset All Filters
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Data Table */}
-        <div className="glass-panel rounded-2xl overflow-hidden mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-wider select-none">
-                  <th
-                    onClick={() => handleSort('Material_Main_Head')}
-                    className="p-4 cursor-pointer hover:text-slate-200 transition-colors"
-                  >
-                    Main Head {sortBy === 'Material_Main_Head' && (sortOrder === 'asc' ? '▲' : '▼')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('Material_Sub_Head')}
-                    className="p-4 cursor-pointer hover:text-slate-200 transition-colors"
-                  >
-                    Sub Head {sortBy === 'Material_Sub_Head' && (sortOrder === 'asc' ? '▲' : '▼')}
-                  </th>
-                  <th
-                    onClick={() => handleSort('Material_Details')}
-                    className="p-4 cursor-pointer hover:text-slate-200 transition-colors"
-                  >
-                    Material Description {sortBy === 'Material_Details' && (sortOrder === 'asc' ? '▲' : '▼')}
-                  </th>
-                  <th className="p-4">Unit</th>
-                  {isAdmin && <th className="p-4 text-center">Status</th>}
-                  {isAdmin && <th className="p-4 text-right">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-xs">
-                {loading ? (
-                  <tr>
-                    <td colSpan={isAdmin ? 6 : 4} className="p-10 text-center text-slate-500 font-medium">
-                      <div className="flex justify-center items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                        Loading material registry logs...
-                      </div>
-                    </td>
-                  </tr>
-                ) : materials.length === 0 ? (
-                  <tr>
-                    <td colSpan={isAdmin ? 6 : 4} className="p-10 text-center text-slate-500 font-semibold">
-                      No materials found matching criteria.
-                    </td>
-                  </tr>
-                ) : (
-                  materials.map((material) => (
-                    <tr
-                      key={material.id}
-                      className={`hover:bg-white/5 transition-colors ${!material.is_active ? 'opacity-50' : ''}`}
-                    >
-                      <td className="p-4 font-semibold text-slate-200 max-w-[180px] truncate">{material.Material_Main_Head}</td>
-                      <td className="p-4 text-slate-300 max-w-[180px] truncate">{material.Material_Sub_Head}</td>
-                      <td className="p-4 text-slate-100 font-medium max-w-sm whitespace-pre-wrap">{material.Material_Details}</td>
-                      <td className="p-4 font-mono text-slate-400">{material.M_Unit}</td>
-                      {isAdmin && (
-                        <td className="p-4 text-center">
-                          <button
-                            onClick={() => handleToggleStatus(material.id, material.is_active)}
-                            className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
-                              material.is_active
-                                ? 'bg-emerald-950/20 border-emerald-900/30 text-emerald-400'
-                                : 'bg-red-950/20 border-red-900/30 text-red-400'
-                            }`}
-                          >
-                            {material.is_active ? 'Active' : 'Inactive'}
-                          </button>
-                        </td>
-                      )}
-                      {isAdmin && (
-                        <td className="p-4 text-right">
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              onClick={() => openEditModal(material)}
-                              className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 font-bold uppercase text-[9px] rounded-lg tracking-wider transition-all duration-200"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination Footer */}
-          <div className="p-4 bg-white/5 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs select-none">
-            <span className="text-slate-400 font-medium">
-              Showing <span className="font-extrabold text-slate-200">{materials.length}</span> of <span className="font-extrabold text-slate-200">{totalItems}</span> items
-            </span>
-            <div className="flex gap-1.5 items-center">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page === 1}
-                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase text-slate-300 disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 transition-colors"
-              >
-                Prev
-              </button>
-              
-              <div className="flex items-center gap-1.5 px-3 py-1">
-                <span className="text-slate-400">Page</span>
-                <span className="font-mono font-bold text-amber-500">{page}</span>
-                <span className="text-slate-400">of</span>
-                <span className="font-mono font-bold text-slate-300">{totalPages}</span>
-              </div>
-
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page === totalPages}
-                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase text-slate-300 disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+        <Table
+          columns={columns}
+          data={materials}
+          isLoading={loading}
+          emptyMessage="No materials found matching criteria."
+          className="mb-6 shadow-2xl"
+          pagination={{
+            page,
+            totalPages,
+            total: totalItems,
+            onPageChange: (newPage) => setPage(newPage)
+          }}
+        />
       </main>
 
       {/* Create / Edit Modal Dialog */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="glass-panel w-full max-w-lg rounded-3xl p-6 md:p-8 relative glow-border-active shadow-2xl">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-200 text-lg transition-colors p-1"
-            >
-              ✕
-            </button>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === 'create' ? 'Add New Catalog Entry' : 'Modify Catalog Entry'}
+        subtitle={modalMode === 'create' ? 'Create Material Record' : 'Edit Material Record'}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4 text-left">
+          <Input
+            label="Main Head (Category)"
+            type="text"
+            name="Material_Main_Head"
+            value={formData.Material_Main_Head}
+            onChange={handleFormChange}
+            placeholder="e.g. Raw Materials"
+            required
+          />
 
-            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
-              {modalMode === 'create' ? 'Create Material Record' : 'Edit Material Record'}
-            </span>
-            <h2 className="text-xl font-extrabold text-slate-100 mt-1 mb-6">
-              {modalMode === 'create' ? 'Add New Catalog Entry' : 'Modify Catalog Entry'}
-            </h2>
+          <Input
+            label="Sub Head (Sub category)"
+            type="text"
+            name="Material_Sub_Head"
+            value={formData.Material_Sub_Head}
+            onChange={handleFormChange}
+            placeholder="e.g. Cement (OPC/PPC)"
+            required
+          />
 
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Main Head (Category) <span className="text-amber-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="Material_Main_Head"
-                  value={formData.Material_Main_Head}
-                  onChange={handleFormChange}
-                  placeholder="e.g. Raw Materials"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                  required
-                />
-              </div>
+          <Textarea
+            label="Material Description / Details"
+            name="Material_Details"
+            value={formData.Material_Details}
+            onChange={handleFormChange}
+            placeholder="Enter detailed description of the material size, grade, brand info..."
+            rows="3"
+            required
+          />
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Sub Head (Sub category) <span className="text-amber-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="Material_Sub_Head"
-                  value={formData.Material_Sub_Head}
-                  onChange={handleFormChange}
-                  placeholder="e.g. Cement (OPC/PPC)"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                  required
-                />
-              </div>
+          <Input
+            label="Unit of Measurement"
+            type="text"
+            name="M_Unit"
+            value={formData.M_Unit}
+            onChange={handleFormChange}
+            placeholder="e.g. Bag, Cum / CFT, Kg"
+            required
+          />
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Material Description / Details <span className="text-amber-500">*</span>
-                </label>
-                <textarea
-                  name="Material_Details"
-                  value={formData.Material_Details}
-                  onChange={handleFormChange}
-                  placeholder="Enter detailed description of the material size, grade, brand info..."
-                  rows="3"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Unit of Measurement <span className="text-amber-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="M_Unit"
-                  value={formData.M_Unit}
-                  onChange={handleFormChange}
-                  placeholder="e.g. Bag, Cum / CFT, Kg"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center gap-2.5 pt-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleFormChange}
-                  className="h-4 w-4 bg-white/5 border border-white/10 rounded focus:ring-0 accent-amber-500"
-                />
-                <label htmlFor="is_active" className="text-xs text-slate-300 font-bold cursor-pointer select-none">
-                  Available for Operations (Active status)
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 bg-white/5 border border-white/10 text-slate-300 font-bold text-xs uppercase rounded-xl hover:bg-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-extrabold text-xs uppercase rounded-xl shadow-lg transition-all duration-200"
-                >
-                  {modalMode === 'create' ? 'Create Record' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
+          <div className="flex items-center gap-2.5 pt-2">
+            <input
+              type="checkbox"
+              id="is_active"
+              name="is_active"
+              checked={formData.is_active}
+              onChange={handleFormChange}
+              className="h-4 w-4 bg-white/5 border border-white/10 rounded focus:ring-0 accent-amber-500"
+            />
+            <label htmlFor="is_active" className="text-xs text-slate-300 font-bold cursor-pointer select-none">
+              Available for Operations (Active status)
+            </label>
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-6">
+            <Button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              variant="ghost"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+            >
+              {modalMode === 'create' ? 'Create Record' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

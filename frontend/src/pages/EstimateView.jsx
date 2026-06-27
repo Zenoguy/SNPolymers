@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import authApi from '../api/authApi';
 import { exportToExcel, exportToPDF } from '../utils/exportHelpers';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
 
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
@@ -408,50 +413,52 @@ const EstimateView = () => {
             <p className="text-xs text-slate-400 font-medium mt-1.5">Manage, audit, and audit trail logs for cost estimate entry.</p>
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={() => exportToExcel(estimate, items)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-slate-100 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+              variant="success"
             >
               Excel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => exportToPDF('printable-estimate-area', estimate.estimate_no)}
-              className="bg-rose-600 hover:bg-rose-700 text-slate-100 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+              variant="danger"
             >
               PDF
-            </button>
+            </Button>
             {canReopen && (
-              <button
+              <Button
                 onClick={handleReopenEstimate}
-                className="bg-red-600 hover:bg-red-700 text-slate-100 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200 shadow-red-950/20"
+                variant="danger"
                 disabled={submitting}
+                className="shadow-red-955/20"
               >
                 Reopen Estimate
-              </button>
+              </Button>
             )}
             {canEditEstimate && (
-              <Link
-                to={`/estimates/${id}/edit`}
-                className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition duration-200"
+              <Button
+                onClick={() => navigate(`/estimates/${id}/edit`)}
+                variant="primary"
               >
                 Edit Draft Items
-              </Link>
+              </Button>
             )}
             {canStartZOReview && (
-              <button
+              <Button
                 onClick={handleStartReview}
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+                variant="primary"
               >
                 Start ZO Review
-              </button>
+              </Button>
             )}
             {canStartHOReview && (
-              <button
+              <Button
                 onClick={handleStartReview}
-                className="bg-indigo-500 hover:bg-indigo-600 text-slate-100 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+                variant="primary"
+                className="bg-indigo-500 hover:bg-indigo-600 text-slate-100"
               >
                 Start HO Review
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -472,7 +479,7 @@ const EstimateView = () => {
         <div id="printable-estimate-area" className="space-y-8 bg-black p-4 rounded-3xl">
 
         {/* 1. HEADER INFORMATION */}
-        <div className="glass-panel p-6 rounded-3xl mb-8 border border-white/5 space-y-6">
+        <Card className="p-6 mb-8 space-y-6">
           <div className="flex items-center gap-2 text-amber-500">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -510,7 +517,7 @@ const EstimateView = () => {
               <span className="text-slate-300 text-sm block leading-relaxed">{estimate.projects_master?.site_details}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Tab view controllers */}
         <div className="flex gap-6 mb-6 border-b border-white/5">
@@ -535,7 +542,7 @@ const EstimateView = () => {
         {activeViewTab === 'items' ? (
           <>
             {/* 2. MATERIAL ENTRY / COST ESTIMATE LINE ITEMS */}
-            <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden mb-8">
+            <Card className="p-0 overflow-hidden mb-8">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[1200px]">
                   <thead>
@@ -588,26 +595,25 @@ const EstimateView = () => {
                           {showReviewPanel ? (
                             <>
                               <td className="py-3 px-4">
-                                <select
+                                <Select
                                   value={dec?.approve_status || ''}
                                   onChange={(e) => handleDecisionChange(item.item_id, 'approve_status', e.target.value)}
-                                  className="w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs"
+                                  size="sm"
                                   disabled={submitting}
                                 >
                                   <option value="">Decide</option>
                                   <option value="Approve">Approve</option>
                                   <option value="Not Approve">Not Approve</option>
-                                </select>
+                                </Select>
                               </td>
                               <td className="py-3 px-4">
-                                <input
+                                <Input
                                   type="text"
                                   placeholder={isRejected ? 'Remarks mandatory' : 'Optional comments'}
                                   value={dec?.remarks || ''}
                                   onChange={(e) => handleDecisionChange(item.item_id, 'remarks', e.target.value)}
-                                  className={`w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs ${
-                                    isRejected && !dec?.remarks?.trim() ? 'border border-red-500/50 bg-red-950/10' : ''
-                                  }`}
+                                  size="sm"
+                                  className={isRejected && !dec?.remarks?.trim() ? 'border border-red-500/50 bg-red-955/10' : ''}
                                   disabled={submitting}
                                   required={isRejected}
                                 />
@@ -635,17 +641,17 @@ const EstimateView = () => {
                           )}
                           <td className="py-4 px-5 text-slate-300 font-semibold">
                             {((isHO || isAdmin) && showReviewPanel) ? (
-                              <select
+                              <Select
                                 value={dec?.source_of_purchase || ''}
                                 onChange={(e) => handleDecisionChange(item.item_id, 'source_of_purchase', e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs text-slate-300"
+                                size="sm"
                                 disabled={submitting}
                               >
                                 <option value="" className="bg-slate-900 text-slate-300">Select Source</option>
                                 {purchaseOptions.map(o => (
                                   <option key={o.id} value={o.id} className="bg-slate-900 text-slate-300">{o.name}</option>
                                 ))}
-                              </select>
+                              </Select>
                             ) : (
                               item.purchase_data?.name || item.source_of_purchase || 'N/A'
                             )}
@@ -661,13 +667,13 @@ const EstimateView = () => {
                 <span>Total Items: <strong className="text-slate-200">{items.length}</strong></span>
                 <span>Total Materials Cost: <strong className="text-amber-500 font-bold">{formatINR(getCategoryTotal('Materials'))}</strong></span>
               </div>
-            </div>
+            </Card>
 
             {/* Bottom Grid for Summary and Approval Logs */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
               
               {/* 3. ESTIMATE SUMMARY */}
-              <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
+              <Card className="p-6 space-y-4">
                 <div className="flex items-center gap-2 text-amber-500">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -705,10 +711,10 @@ const EstimateView = () => {
                     </tr>
                   </tbody>
                 </table>
-              </div>
+              </Card>
 
               {/* 4. APPROVAL INFORMATION */}
-              <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4 lg:col-span-2">
+              <Card className="p-6 space-y-4 lg:col-span-2">
                 <div className="flex items-center gap-2 text-amber-500 mb-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -790,49 +796,49 @@ const EstimateView = () => {
                   </div>
 
                 </div>
-              </div>
+              </Card>
 
             </div>
 
             {/* Live Helper & Actions Panel */}
             {showReviewPanel && (
-              <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 mb-8 bg-gradient-to-r from-amber-500/[0.01] to-white/[0.01]">
+              <Card className="p-6 flex flex-col md:flex-row justify-between items-center gap-6 mb-8 bg-gradient-to-r from-amber-500/[0.01] to-white/[0.01]">
                 <div className="text-left">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500 block mb-1">Session Audit Helper</span>
                   <p className="text-xs text-slate-400">Approved running total for items selected: <strong className="text-amber-500 font-mono">{formatINR(runningApprovedTotal)}</strong></p>
                 </div>
                 <div className="flex gap-3">
-                  <button
+                  <Button
                     type="button"
                     onClick={handleSaveRowApprovals}
-                    className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200"
+                    variant="secondary"
                     disabled={submitting}
                   >
                     Save Row Approvals
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setShowRevisionModal(true)}
-                    className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200"
+                    className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20"
                     disabled={submitting}
                   >
                     Request Revision
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleSubmitReview}
-                    className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200 shadow-lg"
                     disabled={submitting}
+                    className="shadow-lg animate-pulse"
                   >
                     Submit Final Review
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             )}
           </>
         ) : (
           /* Revisions Log Tab */
-          <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+          <Card className="p-0 overflow-hidden">
             {revisions.length === 0 ? (
               <div className="text-center p-24 text-slate-400 text-xs uppercase font-extrabold tracking-widest">
                 No revision request cycles are currently recorded for this cost estimate.
@@ -881,62 +887,46 @@ const EstimateView = () => {
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         )}
         </div>
 
         {/* ── REQUEST REVISION MODAL ── */}
-        {showRevisionModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-all duration-300">
-            <div className="glass-panel p-6 rounded-3xl max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-white/10 relative overflow-hidden">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-sm font-extrabold uppercase tracking-widest text-slate-200">Request JE Revision</h3>
-                <button onClick={() => setShowRevisionModal(false)} className="text-slate-400 hover:text-slate-200 transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+        <Modal
+          isOpen={showRevisionModal}
+          onClose={() => setShowRevisionModal(false)}
+          title="Request JE Revision"
+        >
+          <form onSubmit={handleRequestRevision} className="space-y-5">
+            <Input
+              label="Revision Deadline duration (Hours)"
+              type="number"
+              min="1"
+              max="168"
+              value={deadlineHours}
+              onChange={(e) => setDeadlineHours(parseInt(e.target.value) || '')}
+              required
+              disabled={submitting}
+            />
+            <span className="text-[10px] text-slate-500 mt-1 block">Specify integer value between 1 and 168 hours (Max 7 days). Default is 24h.</span>
 
-              <form onSubmit={handleRequestRevision} className="space-y-5">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">
-                    Revision Deadline duration (Hours)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="168"
-                    value={deadlineHours}
-                    onChange={(e) => setDeadlineHours(parseInt(e.target.value) || '')}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-100 text-sm font-semibold transition"
-                    required
-                    disabled={submitting}
-                  />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Specify integer value between 1 and 168 hours (Max 7 days). Default is 24h.</span>
-                </div>
-
-                <div className="flex gap-3 justify-end mt-8">
-                  <button
-                    type="button"
-                    onClick={() => setShowRevisionModal(false)}
-                    className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md"
-                    disabled={submitting}
-                  >
-                    Request Revision
-                  </button>
-                </div>
-              </form>
+            <div className="flex gap-3 justify-end mt-8">
+              <Button
+                variant="ghost"
+                onClick={() => setShowRevisionModal(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+              >
+                Request Revision
+              </Button>
             </div>
-          </div>
-        )}
+          </form>
+        </Modal>
       </main>
     </div>
   );

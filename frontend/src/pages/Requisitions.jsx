@@ -14,6 +14,13 @@ import {
   uploadRequisitionPdf,
   uploadGstBillPdf
 } from '../api/requisitionsApi';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Textarea from '../components/common/Textarea';
+import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
+import Table from '../components/common/Table';
 
 // Helper for currency formatting
 const formatCurrency = (val) =>
@@ -40,42 +47,25 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// Modal for confirming cancellation
 const CancelConfirmModal = ({ requisitionNo, isCancelling, onConfirm, onClose }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div className="glass-panel p-6 rounded-3xl max-w-sm w-full border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-500/10">
-          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </div>
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-100">
-          Confirm Cancel
-        </h2>
-      </div>
-      <p className="text-xs text-slate-400 mb-6">
-        Are you sure you want to cancel requisition <span className="font-mono font-bold text-slate-200">{requisitionNo}</span>? This action is permanent.
-      </p>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onClose} disabled={isCancelling} className="px-4 py-2 text-slate-400 hover:text-slate-200 font-bold text-xs uppercase tracking-wider transition">
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isCancelling}
-          className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md bg-red-500/90 hover:bg-red-500 text-white flex items-center gap-1.5"
-        >
-          {isCancelling ? (
-            <>
-              <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-              Cancelling…
-            </>
-          ) : 'Yes, Cancel'}
-        </button>
-      </div>
+  <Modal isOpen={true} onClose={onClose} title="Confirm Cancel" maxWidth="max-w-sm">
+    <p className="text-xs text-slate-400 mb-6 font-medium">
+      Are you sure you want to cancel requisition <span className="font-mono font-bold text-slate-200">{requisitionNo}</span>? This action is permanent.
+    </p>
+    <div className="flex gap-3 justify-end">
+      <Button onClick={onClose} disabled={isCancelling} variant="ghost">
+        Cancel
+      </Button>
+      <Button
+        onClick={onConfirm}
+        disabled={isCancelling}
+        variant="danger"
+        isLoading={isCancelling}
+      >
+        Yes, Cancel
+      </Button>
     </div>
-  </div>
+  </Modal>
 );
 
 // Detail Modal for viewing requisition metadata and PDF previews
@@ -167,20 +157,19 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-4xl w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 my-8 relative flex flex-col md:flex-row gap-6">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Requisition Details"
+      subtitle={`Requisition ID: ${requisition.requisition_no}`}
+      maxWidth="max-w-4xl"
+    >
+      <div className="flex flex-col md:flex-row gap-6 text-left">
         
         {/* Left Side: Metadata */}
         <div className="flex-1 space-y-4">
           <div className="flex justify-between items-start">
-            <div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-                Requisition ID: {requisition.requisition_no}
-              </span>
-              <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-                Requisition Details
-              </h2>
-            </div>
+            <div />
             <StatusBadge status={requisition.requisition_status} />
           </div>
 
@@ -197,20 +186,20 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
 
           <div className="flex justify-between items-center pt-2">
             {showCancel ? (
-              <button
+              <Button
                 onClick={() => onCancelClick(requisition.requisition_id, requisition.requisition_no)}
-                className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-red-950/40 hover:bg-red-950/60 border border-red-900/30 text-red-400 transition"
+                variant="danger"
               >
                 Cancel Requisition
-              </button>
+              </Button>
             ) : <div />}
             
-            <button
+            <Button
               onClick={onClose}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition"
+              variant="primary"
             >
               Close Details
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -219,7 +208,7 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
           <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Attached Documents</h3>
           
           {/* Requisition PDF Card */}
-          <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col justify-between min-h-[120px]">
+          <Card className="p-4 flex flex-col justify-between min-h-[120px]">
             <div>
               <p className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Purchase Requisition PDF</p>
               <p className="text-xs font-semibold text-slate-300 mt-1 truncate" title={requisition.original_filename || requisition.requisition_pdf_url}>
@@ -238,11 +227,11 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
             ) : (
               <span className="text-[10px] text-red-400 mt-2">Expired or unavailable</span>
             )}
-          </div>
+          </Card>
 
           {/* GST Bill Card */}
           {requisition.gst_bill === 'Yes' && (
-            <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col justify-between min-h-[120px]">
+            <Card className="p-4 flex flex-col justify-between min-h-[120px]">
               <div>
                 <p className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">GST Bill Invoice</p>
                 <p className="text-xs font-semibold text-slate-300 mt-1 truncate">
@@ -261,12 +250,12 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
               ) : (
                 <span className="text-[10px] text-red-400 mt-2">No PDF invoice uploaded</span>
               )}
-            </div>
+            </Card>
           )}
         </div>
 
       </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -326,143 +315,104 @@ const ActionModal = ({ requisition, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden my-8">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Take Workflow Action"
+      subtitle={`Requisition NO: ${requisition.requisition_no}`}
+      maxWidth="max-w-md"
+    >
+      {error && (
+        <div className="mb-4 p-4 bg-red-955/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+          {error}
+        </div>
+      )}
 
-        <div className="flex justify-between items-center mb-6 relative z-10">
+      <form onSubmit={handleSubmit} className="space-y-4 relative z-10 text-left">
+        {/* Read-Only Info */}
+        <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              Requisition NO: {requisition.requisition_no}
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              Take Workflow Action
-            </h2>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Requested Amount</p>
+            <p className="text-xs font-mono font-bold text-amber-400 mt-0.5">{formatCurrency(requisition.requisition_amount)}</p>
           </div>
-          <button onClick={onClose} disabled={submitting} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Material Head</p>
+            <p className="text-xs font-semibold text-slate-300 mt-0.5">{requisition.material_main_head}</p>
+          </div>
+          <div className="col-span-2 border-t border-white/5 pt-2 flex justify-between text-[11px] text-slate-400 font-semibold">
+            <span>Approver: {approverName}</span>
+            <span>Date: {systemDateStr}</span>
+          </div>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-            {error}
+        {/* Action Choice */}
+        <Select
+          label="Action"
+          value={approveType}
+          onChange={(e) => setApproveType(e.target.value)}
+          required
+          disabled={submitting}
+        >
+          <option value="Approve">Approve</option>
+          <option value="Hold">Hold</option>
+        </Select>
+
+        {/* Approved Amount (Approve Only) */}
+        {approveType === 'Approve' && (
+          <div className="space-y-4">
+            <Input
+              label="Approved Amount (₹)"
+              type="number"
+              value={approvedAmount}
+              onChange={(e) => setApprovedAmount(e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              min="0.01"
+              required
+              disabled={submitting}
+            />
+
+            {/* Live Computed Approved Balance */}
+            {approvedAmount !== '' && (
+              <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex justify-between items-center text-xs">
+                <span className="text-slate-400 font-medium">Approved Balance:</span>
+                <span className="font-mono font-bold text-slate-200">{formatCurrency(liveApprovedBalance)}</span>
+              </div>
+            )}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-          {/* Read-Only Info */}
-          <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Requested Amount</p>
-              <p className="text-xs font-mono font-bold text-amber-400 mt-0.5">{formatCurrency(requisition.requisition_amount)}</p>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Material Head</p>
-              <p className="text-xs font-semibold text-slate-300 mt-0.5">{requisition.material_main_head}</p>
-            </div>
-            <div className="col-span-2 border-t border-white/5 pt-2 flex justify-between text-[11px] text-slate-400 font-semibold">
-              <span>Approver: {approverName}</span>
-              <span>Date: {systemDateStr}</span>
-            </div>
-          </div>
+        {/* Remarks (Required for both Approve and Hold) */}
+        <Textarea
+          label="Remarks / Comments"
+          value={remarks}
+          onChange={(e) => setRemarks(e.target.value)}
+          placeholder={`Enter the reason for placing on ${approveType === 'Approve' ? 'approval' : 'hold'}…`}
+          rows={3}
+          required
+          disabled={submitting}
+        />
 
-          {/* Action Choice */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Action <span className="text-red-400">*</span>
-            </label>
-            <select
-              value={approveType}
-              onChange={(e) => setApproveType(e.target.value)}
-              required
-              disabled={submitting}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-            >
-              <option value="Approve">Approve</option>
-              <option value="Hold">Hold</option>
-            </select>
-          </div>
-
-          {/* Approved Amount (Approve Only) */}
-          {approveType === 'Approve' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Approved Amount (₹) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={approvedAmount}
-                  onChange={(e) => setApprovedAmount(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition"
-                />
-              </div>
-
-              {/* Live Computed Approved Balance */}
-              {approvedAmount !== '' && (
-                <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex justify-between items-center text-xs">
-                  <span className="text-slate-400 font-medium">Approved Balance:</span>
-                  <span className="font-mono font-bold text-slate-200">{formatCurrency(liveApprovedBalance)}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Remarks (Required for both Approve and Hold) */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Remarks / Comments <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              placeholder={`Enter the reason for placing on ${approveType === 'Approve' ? 'approval' : 'hold'}…`}
-              rows={3}
-              required
-              disabled={submitting}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className={`px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md flex items-center gap-1.5 ${
-                approveType === 'Approve'
-                  ? 'bg-white hover:bg-slate-100 text-slate-950'
-                  : 'bg-orange-500 hover:bg-orange-600 text-white'
-              }`}
-            >
-              {submitting ? (
-                <>
-                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-                  Saving…
-                </>
-              ) : `Save Approval (${approveType})`}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Buttons */}
+        <div className="flex gap-3 justify-end pt-2">
+          <Button
+            onClick={onClose}
+            disabled={submitting}
+            variant="ghost"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            isLoading={submitting}
+            className={approveType === 'Approve' ? '' : 'bg-orange-500 hover:bg-orange-600 text-white'}
+          >
+            {submitting ? 'Saving…' : `Save Approval (${approveType})`}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
@@ -704,32 +654,19 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-lg w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden my-8">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
-
-        <div className="flex justify-between items-center mb-6 relative z-10">
-          <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              Step {step} of 3
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              Create Requisition
-            </h2>
-          </div>
-          <button onClick={onClose} disabled={submitting} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Requisition"
+      subtitle={`Step ${step} of 3`}
+      maxWidth="max-w-lg"
+    >
+      {error && (
+        <div className="mb-4 p-4 bg-red-955/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+          {error}
         </div>
-
-        {error && (
-          <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-            {error}
-          </div>
-        )}
+      )}
 
         {/* ──────── STEP 1: USER DETAILS (AUTO-FILLED) ──────── */}
         {step === 1 && (
@@ -759,23 +696,19 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
         {/* ──────── STEP 2: MASTER DATA SELECTION ──────── */}
         {step === 2 && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Work Order No. <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={selectedWO}
-                onChange={(e) => setSelectedWO(e.target.value)}
-                className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-              >
-                <option value="">-- Choose Work Order --</option>
-                {filteredProjects.map((p) => (
-                  <option key={p.work_order_no} value={p.work_order_no}>
-                    {p.work_order_no} ({p.approvedEst.estimate_no})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Work Order No."
+              value={selectedWO}
+              onChange={(e) => setSelectedWO(e.target.value)}
+              required
+            >
+              <option value="">-- Choose Work Order --</option>
+              {filteredProjects.map((p) => (
+                <option key={p.work_order_no} value={p.work_order_no}>
+                  {p.work_order_no} ({p.approvedEst.estimate_no})
+                </option>
+              ))}
+            </Select>
 
             {projectMetadata && (
               <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-3">
@@ -835,44 +768,35 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
             <div className="max-h-[380px] overflow-y-auto pr-1 space-y-4 scroll-smooth">
               
               {/* Requisition NO. */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Requisition Number <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={requisitionNo}
-                  onChange={(e) => setRequisitionNo(e.target.value.replace(/[^A-Za-z0-9_\-.]/g, ''))}
-                  placeholder="e.g. REQ-WO-001"
-                  required
-                  disabled={requisitionPdfUrl !== '' || submitting}
-                  className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition ${requisitionPdfUrl !== '' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-                {requisitionPdfUrl && (
-                  <p className="text-[9px] text-amber-500 font-semibold mt-1">Requisition number is locked while PDF is uploaded.</p>
-                )}
-              </div>
+              <Input
+                label="Requisition Number"
+                type="text"
+                value={requisitionNo}
+                onChange={(e) => setRequisitionNo(e.target.value.replace(/[^A-Za-z0-9_\-.]/g, ''))}
+                placeholder="e.g. REQ-WO-001"
+                required
+                disabled={requisitionPdfUrl !== '' || submitting}
+                className={requisitionPdfUrl !== '' ? 'opacity-50 cursor-not-allowed' : ''}
+              />
+              {requisitionPdfUrl && (
+                <p className="text-[9px] text-amber-500 font-semibold mt-1">Requisition number is locked while PDF is uploaded.</p>
+              )}
 
               {/* Material Main Head */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Material Main Head <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={materialHead}
-                  onChange={(e) => setMaterialHead(e.target.value)}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-                >
-                  <option value="">-- Select Material Head --</option>
-                  {mainHeads.map((head) => (
-                    <option key={head} value={head}>
-                      {head}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Material Main Head"
+                value={materialHead}
+                onChange={(e) => setMaterialHead(e.target.value)}
+                required
+                disabled={submitting}
+              >
+                <option value="">-- Select Material Head --</option>
+                {mainHeads.map((head) => (
+                  <option key={head} value={head}>
+                    {head}
+                  </option>
+                ))}
+              </Select>
 
               {/* Requisition PDF Upload */}
               <div className="p-4 border border-white/5 rounded-2xl bg-white/[0.01]">
@@ -928,21 +852,17 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
               </div>
 
               {/* Requisition Amount */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Requisition Amount (₹) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={reqAmount}
-                  onChange={(e) => setReqAmount(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition"
-                />
+              <Input
+                label="Requisition Amount (₹)"
+                type="number"
+                value={reqAmount}
+                onChange={(e) => setReqAmount(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                required
+                disabled={submitting}
+              />
 
                 {/* Advisory Balance Display */}
                 {projectMetadata && projectMetadata.estimateAmount !== null && (
@@ -961,24 +881,18 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
                     </p>
                   </div>
                 )}
-              </div>
 
               {/* GST Bill Toggle */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  GST Bill Included? <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={gstBill}
-                  onChange={(e) => handleGstToggle(e.target.value)}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
+              <Select
+                label="GST Bill Included?"
+                value={gstBill}
+                onChange={(e) => handleGstToggle(e.target.value)}
+                required
+                disabled={submitting}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </Select>
 
               {/* GST Bill PDF Upload */}
               {gstBill === 'Yes' && (
@@ -1036,35 +950,25 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
               )}
 
               {/* Bank Details */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Bank Details <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  value={bankDetails}
-                  onChange={(e) => setBankDetails(e.target.value)}
-                  placeholder="Enter payee bank name, branch, account number, and IFSC code…"
-                  rows={2}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-                />
-              </div>
+              <Textarea
+                label="Bank Details"
+                value={bankDetails}
+                onChange={(e) => setBankDetails(e.target.value)}
+                placeholder="Enter payee bank name, branch, account number, and IFSC code…"
+                rows={2}
+                required
+                disabled={submitting}
+              />
 
               {/* Remarks */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Expenditure Head Remarks (Optional)
-                </label>
-                <textarea
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Optional notes or head of expenditure remarks…"
-                  rows={2}
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-                />
-              </div>
+              <Textarea
+                label="Expenditure Head Remarks (Optional)"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                placeholder="Optional notes or head of expenditure remarks…"
+                rows={2}
+                disabled={submitting}
+              />
 
             </div>
 
@@ -1091,9 +995,7 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
             </div>
           </form>
         )}
-
-      </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -1214,6 +1116,86 @@ const Requisitions = () => {
 
   const filteredRequisitions = getFilteredRequisitions();
 
+  const columns = [
+    {
+      key: 'requisition_no',
+      header: 'Requisition No.',
+      className: 'font-mono font-semibold text-slate-100 whitespace-nowrap'
+    },
+    {
+      key: 'work_order_no',
+      header: 'Work Order',
+      className: 'font-mono text-slate-400 whitespace-nowrap'
+    },
+    {
+      key: 'material_main_head',
+      header: 'Material Head',
+      className: 'text-slate-300 font-semibold whitespace-nowrap'
+    },
+    {
+      key: 'requisition_amount',
+      header: 'Amount',
+      className: 'font-mono font-bold text-amber-500 whitespace-nowrap',
+      render: (val) => formatCurrency(val)
+    },
+    {
+      key: 'requisition_status',
+      header: 'Status',
+      className: 'whitespace-nowrap',
+      render: (val) => <StatusBadge status={val} />
+    },
+    {
+      key: 'created_at',
+      header: 'Submitted Date',
+      className: 'text-[11px] text-slate-500 whitespace-nowrap',
+      render: (val) => formatDate(val)
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      className: 'whitespace-nowrap',
+      render: (_, req) => {
+        const isPending = req.requisition_status === 'Pending';
+        const isOwner = req.requester_user_id === user?.mobile_number;
+        const isAdmin = user?.role === 'admin';
+        const canCancel = isPending && (isOwner || isAdmin);
+        return (
+          <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+            <Button
+              onClick={() => setActiveReqId(req.requisition_id)}
+              variant="secondary"
+              size="sm"
+            >
+              View Details
+            </Button>
+
+            {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
+              <Button
+                onClick={() => setActionTargetReq(req)}
+                variant="secondary"
+                size="sm"
+                className="bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20"
+              >
+                Take Action
+              </Button>
+            )}
+            
+            {canCancel && (
+              <Button
+                onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
+                variant="secondary"
+                size="sm"
+                className="bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
+
   // Stats computation
   const totalCount = requisitions.length;
   const pendingCount = requisitions.filter(r => r.requisition_status === 'Pending').length;
@@ -1240,15 +1222,16 @@ const Requisitions = () => {
             </p>
           </div>
           {isCreator && (
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+              variant="primary"
+              className="flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
             >
               <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               New Requisition
-            </button>
+            </Button>
           )}
         </div>
 
@@ -1260,10 +1243,10 @@ const Requisitions = () => {
             { label: 'Approved Requests', value: approvedCount, accent: 'from-emerald-500/20 to-emerald-500/5', border: 'border-emerald-500/20' },
             { label: 'Hold / Cancelled', value: holdOrCancelCount, accent: 'from-red-500/20 to-red-500/5', border: 'border-red-500/20' },
           ].map(({ label, value, accent, border }) => (
-            <div key={label} className={`glass-panel rounded-2xl p-5 border ${border} bg-gradient-to-br ${accent}`}>
+            <Card key={label} className={`rounded-2xl p-5 border ${border} bg-gradient-to-br ${accent}`}>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
               <p className="font-black text-slate-100 mt-1.5 text-3xl tabular-nums">{value}</p>
-            </div>
+            </Card>
           ))}
         </div>
 
@@ -1306,117 +1289,42 @@ const Requisitions = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Requisitions List</span>
           )}
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search requisitions…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 transition w-48 sm:w-60 font-semibold"
-              />
-            </div>
-            <button
+            <Input
+              type="text"
+              placeholder="Search requisitions…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              icon={
+                <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              }
+              className="w-48 sm:w-60 font-semibold"
+            />
+            <Button
               onClick={fetchAll}
               title="Refresh"
-              className="p-2.5 rounded-xl glass-input hover:border-white/20 transition text-slate-400 hover:text-slate-200"
+              variant="secondary"
+              size="sm"
+              className="p-2.5 rounded-xl"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Requisitions List Table */}
-        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
-          {loading ? (
-            <div className="flex items-center justify-center p-24">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
-            </div>
-          ) : filteredRequisitions.length === 0 ? (
-            <div className="text-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
-              No requisitions matching parameters.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-[9px] uppercase tracking-widest text-slate-500">
-                    {['Requisition No.', 'Work Order', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
-                      <th key={h} className="py-4 px-5 font-extrabold whitespace-nowrap">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-xs text-slate-300">
-                  {filteredRequisitions.map((req) => {
-                    const isPending = req.requisition_status === 'Pending';
-                    const isOwner = req.requester_user_id === user?.mobile_number;
-                    const isAdmin = user?.role === 'admin';
-                    const canCancel = isPending && (isOwner || isAdmin);
-                    return (
-                      <tr key={req.requisition_id} className="hover:bg-white/[0.025] transition-colors duration-200 group">
-                        <td className="py-4 px-5 font-mono font-semibold text-slate-100 whitespace-nowrap">
-                          {req.requisition_no}
-                        </td>
-                        <td className="py-4 px-5 font-mono text-slate-400 whitespace-nowrap">
-                          {req.work_order_no}
-                        </td>
-                        <td className="py-4 px-5 text-slate-300 font-semibold whitespace-nowrap">
-                          {req.material_main_head}
-                        </td>
-                        <td className="py-4 px-5 font-mono font-bold text-amber-500 whitespace-nowrap">
-                          {formatCurrency(req.requisition_amount)}
-                        </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
-                          <StatusBadge status={req.requisition_status} />
-                        </td>
-                        <td className="py-4 px-5 text-[11px] text-slate-500 whitespace-nowrap">
-                          {formatDate(req.created_at)}
-                        </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
-                          <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
-                            {/* View details */}
-                            <button
-                              onClick={() => setActiveReqId(req.requisition_id)}
-                              className="px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                            >
-                              View Details
-                            </button>
-
-                            {/* Take Action Button (ZO/HO/Admin for Pending rows only) */}
-                            {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
-                              <button
-                                onClick={() => setActionTargetReq(req)}
-                                className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                              >
-                                Take Action
-                              </button>
-                            )}
-                            
-                            {/* Cancel Button */}
-                            {canCancel && (
-                              <button
-                                onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
-                                className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                              >
-                                Cancel
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="px-5 py-3 border-t border-white/5 bg-white/[0.01] text-[10px] text-slate-600 font-mono">
-                Showing {filteredRequisitions.length} of {requisitions.length} records
-              </div>
-            </div>
-          )}
+        <Table
+          columns={columns}
+          data={filteredRequisitions}
+          isLoading={loading}
+          emptyMessage="No requisitions matching parameters."
+          className="shadow-2xl"
+        />
+        <div className="mt-4 text-[10px] text-slate-600 font-mono">
+          Showing {filteredRequisitions.length} of {requisitions.length} records
         </div>
 
       </main>

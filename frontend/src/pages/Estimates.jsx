@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import authApi from '../api/authApi';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Button from '../components/common/Button';
 
 const getStatusBadgeStyles = (status, isOverdue) => {
   if (isOverdue) {
@@ -183,7 +187,7 @@ const Estimates = () => {
         )}
 
         {/* 1. Top Horizontal Stats Card */}
-        <div className="glass-panel p-5 rounded-2xl mb-8 border border-white/10 bg-gradient-to-r from-white/[0.02] to-amber-500/[0.02] flex justify-around items-center text-center divide-x divide-white/5 shrink-0">
+        <Card className="mb-8 bg-gradient-to-r from-white/[0.02] to-amber-500/[0.02] flex justify-around items-center text-center divide-x divide-white/5 shrink-0">
           <div className="flex-1">
             <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mb-1">Total Estimates</span>
             <span className="text-2xl font-black text-slate-100 font-mono">{totalCount}</span>
@@ -196,14 +200,14 @@ const Estimates = () => {
             <span className="text-[10px] uppercase font-bold tracking-widest text-sky-500 block mb-1">Submitted Sheets</span>
             <span className="text-2xl font-black text-sky-400 font-mono">{submittedCount}</span>
           </div>
-        </div>
+        </Card>
 
         {/* 2. Main Two-Column Workspace */}
         <div className="flex flex-col md:flex-row gap-6 flex-grow overflow-hidden min-h-0">
           
           {/* Left Column: MY Sheets Navigation */}
           <div className="w-full md:w-56 flex flex-col gap-4 shrink-0">
-            <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col justify-between h-full">
+            <Card className="flex flex-col justify-between h-full">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-4">MY Sheets</span>
                 <div className="space-y-2.5">
@@ -232,8 +236,8 @@ const Estimates = () => {
               
               {/* Plus Button inside MY Sheets card to Initialize New Sheet */}
               {(isJE || user?.role === 'admin') && (
-                <Link
-                  to="/estimates/new"
+                <Button
+                  onClick={() => navigate('/estimates/new')}
                   className="mt-6 w-full py-4 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition duration-200"
                   title="Initialize New Cost Estimate Sheet"
                 >
@@ -241,9 +245,9 @@ const Estimates = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
                   </svg>
                   New Sheet
-                </Link>
+                </Button>
               )}
-            </div>
+            </Card>
           </div>
 
           {/* Right Column: Active Project Cost Estimate Sheets Card Grid / List */}
@@ -273,10 +277,11 @@ const Estimates = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {filteredEstimates.map((est) => (
-                    <div
+                    <Card
                       key={est.estimate_id}
                       onClick={() => handleCardClick(est.estimate_id)}
-                      className="glass-panel p-5 rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.02] cursor-pointer transition duration-300 flex flex-col justify-between gap-4 group relative"
+                      hoverable={true}
+                      className="p-5 flex flex-col justify-between gap-4 group relative"
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -302,7 +307,7 @@ const Estimates = () => {
                           <span className="text-sm font-black text-slate-200 font-mono">{formatINR(est.estimate_amount)}</span>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               )}
@@ -311,21 +316,20 @@ const Estimates = () => {
             {/* 3. Bottom Controls: Search Bar and Filters */}
             <div className="border-t border-white/5 pt-5 flex flex-col sm:flex-row gap-4 shrink-0 items-center justify-between z-10">
               <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center flex-grow max-w-lg">
-                <input
+                <Input
                   type="text"
                   placeholder="Search by Work Order or Estimate No..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
                 />
               </div>
 
               <div className="w-full sm:w-auto flex gap-3 items-center shrink-0">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">Status</label>
-                <select
+                <Select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition-colors"
+                  className="w-auto py-2 px-3"
                 >
                   <option value="All">All Statuses</option>
                   <option value="Draft">Draft</option>
@@ -338,7 +342,7 @@ const Estimates = () => {
                   <option value="Rejected by HO">Rejected by HO</option>
                   <option value="ZO Revision Requested">ZO Revision Requested</option>
                   <option value="HO Revision Requested">HO Revision Requested</option>
-                </select>
+                </Select>
               </div>
             </div>
             
@@ -347,20 +351,22 @@ const Estimates = () => {
               <div className="mt-4 flex justify-between items-center text-[10px] text-slate-500 shrink-0 font-bold uppercase tracking-wider z-10">
                 <span>Page {page} of {totalPages} ({totalItems} total)</span>
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.max(p - 1, 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition border border-white/5"
+                    variant="ghost"
+                    size="sm"
                   >
                     Prev
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setPage(p => Math.min(p + 1, totalPages))}
                     disabled={page === totalPages}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition border border-white/5"
+                    variant="ghost"
+                    size="sm"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

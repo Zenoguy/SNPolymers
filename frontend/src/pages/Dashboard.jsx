@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import BackgroundShapes from '../components/BackgroundShapes';
 import authApi from '../api/authApi';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 
 const formatTimeAgo = (dateStr) => {
   if (!dateStr) return 'N/A';
@@ -94,10 +96,10 @@ const Dashboard = () => {
           <div className="lg:col-span-2 space-y-8">
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Enterprise Modules</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
               
               {/* Module 1: Production (Future Module Placeholder) */}
-              <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+              <Card className="relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6">
                 <div className="absolute top-0 right-0 p-5 opacity-[0.09]">
                   <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -112,10 +114,10 @@ const Dashboard = () => {
                   <span className="text-[9px] uppercase tracking-widest font-extrabold text-amber-600 bg-amber-950/20 border border-amber-900/30 px-2 py-0.5 rounded-lg">Phase 2+ Rollout</span>
                   <span className="text-slate-500 text-xs font-bold select-none">Access Restricted</span>
                 </div>
-              </div>
+              </Card>
 
               {/* Module 2: Projects – Now Live */}
-              <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
+              <Card className="relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6 glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
                 <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                   <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -128,18 +130,17 @@ const Dashboard = () => {
                 </div>
                 <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
                   <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
-                  <Link
-                    to="/estimates"
-                    className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
-                  >
-                    Open Cost Estimates &rarr;
+                  <Link to="/estimates">
+                    <Button variant="primary" size="sm">
+                      Open Cost Estimates &rarr;
+                    </Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
 
               {/* Module 2b: Requisition Management — Now Live */}
               {['je', 'zo', 'ho', 'admin'].includes(user?.role) && (
-                <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
+                <Card className="relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6 glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
                   <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                     <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -155,23 +156,22 @@ const Dashboard = () => {
                   </div>
                   <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
                     <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
-                    <Link
-                      to="/requisitions"
-                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
-                    >
-                      Open Requisitions &rarr;
+                    <Link to="/requisitions">
+                      <Button variant="primary" size="sm">
+                        Open Requisitions &rarr;
+                      </Button>
                     </Link>
                   </div>
-                </div>
+                </Card>
               )}
 
               {/* Module 2c: Daily Work Progress — Now Live */}
               {['je', 'zo', 'ho', 'admin'].includes(user?.role) && (
-                <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(16,185,129,0.04)]">
+                <Card className="relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6 glow-border-active shadow-[0_8px_32px_rgba(16,185,129,0.04)]">
                   <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                     <svg className="w-24 h-24 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h2a2 2 0 012-2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                   </div>
                   <div>
@@ -183,18 +183,17 @@ const Dashboard = () => {
                   </div>
                   <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
                     <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
-                    <Link
-                      to="/daily-progress"
-                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
-                    >
-                      Open Reports &rarr;
+                    <Link to="/daily-progress">
+                      <Button variant="primary" size="sm">
+                        Open Reports &rarr;
+                      </Button>
                     </Link>
                   </div>
-                </div>
+                </Card>
               )}
 
               {/* Module 3: Active Workspace */}
-              <div className={`glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)] ${!['zo', 'staff', 'ho', 'admin'].includes(user?.role) ? 'lg:col-span-2' : ''}`}>
+              <Card className={`relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6 glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)] ${!['zo', 'staff', 'ho', 'admin'].includes(user?.role) ? 'lg:col-span-2' : ''}`}>
                 <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                   <svg className="w-24 h-24 text-amber-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ animationDuration: '4s' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11.5V10c0-2.5 2-4.5 4.5-4.5S18 7.5 18 10v1.5c0 3 .07 3.53 2.384 4.762A2 2 0 0120 19.5H8.293m0 0l-1.143-1.143M12 21a2 2 0 01-2-2h4a2 2 0 01-2 2z" />
@@ -208,21 +207,20 @@ const Dashboard = () => {
                 <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
                   <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
                   {user?.role === 'admin' ? (
-                    <Link
-                      to="/admin"
-                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
-                    >
-                      Manage System Whitelist &rarr;
+                    <Link to="/admin">
+                      <Button variant="primary" size="sm">
+                        Manage System Whitelist &rarr;
+                      </Button>
                     </Link>
                   ) : (
                     <span className="text-slate-400 text-xs font-bold select-none">Permissions Validated</span>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* Module 4: Fund Requests (ZO & HO Requisitions) */}
               {['zo', 'staff', 'ho', 'admin'].includes(user?.role) && (
-                <div className="glass-panel glass-card-hover p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
+                <Card className="relative overflow-hidden flex flex-col justify-between min-h-[220px] p-6 glow-border-active shadow-[0_8px_32px_rgba(245,158,11,0.04)]">
                   <div className="absolute top-0 right-0 p-5 opacity-[0.14]">
                     <svg className="w-24 h-24 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -235,25 +233,23 @@ const Dashboard = () => {
                   </div>
                   <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
                     <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
-                    <Link
-                      to="/fund-requests"
-                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
-                    >
-                      Open Fund Requests &rarr;
+                    <Link to="/fund-requests">
+                      <Button variant="primary" size="sm">
+                        Open Fund Requests &rarr;
+                      </Button>
                     </Link>
                   </div>
-                </div>
+                </Card>
               )}
 
             </div>
           </div>
-
-          {/* Right Sidebar Stats & Info widgets */}
-          <div className="space-y-8">
+                    {/* Right Sidebar Stats & Info widgets */}
+          <div className="space-y-8 text-left">
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Project Operations Overview</h2>
             
             {/* Operator Card widget */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+            <Card className="p-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Operator Information</span>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs pb-3 border-b border-white/5">
@@ -267,10 +263,10 @@ const Dashboard = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Project Overview widget */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+            <Card className="p-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Project Overview</span>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -301,12 +297,12 @@ const Dashboard = () => {
                     <span className="text-xs font-mono font-bold text-amber-400">{overview.lastUpdatedProject}</span>
                     <span className="text-[10px] text-slate-400 font-medium">{formatTimeAgo(overview.lastUpdatedAt)}</span>
                   </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </Card>
             
             {/* Estimates Overview widget */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+            <Card className="p-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Estimates Overview</span>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -323,26 +319,24 @@ const Dashboard = () => {
               <div className="border-t border-white/5 pt-3 mt-1 flex flex-col">
                 <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Quick Actions</span>
                 <div className="mt-2 flex gap-2">
-                  <Link
-                    to="/estimates"
-                    className="flex-1 text-center py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] uppercase font-bold text-slate-300 transition-all duration-200"
-                  >
-                    View Estimates List
+                  <Link to="/estimates" className="flex-1">
+                    <Button variant="secondary" size="sm" className="w-full text-[10px]">
+                      View Estimates List
+                    </Button>
                   </Link>
                   {['je', 'staff', 'admin'].includes(user?.role) && (
-                    <Link
-                      to="/estimates/new"
-                      className="flex-1 text-center py-2 bg-white hover:bg-slate-100 rounded-xl text-[10px] uppercase font-bold text-slate-950 transition-all duration-200 shadow-md"
-                    >
-                      New Estimate
+                    <Link to="/estimates/new" className="flex-1">
+                      <Button variant="primary" size="sm" className="w-full text-[10px]">
+                        New Estimate
+                      </Button>
                     </Link>
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Recent Activity widget */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+            <Card className="p-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Recent Activity</span>
               <div className="space-y-4">
                 {activities.length > 0 ? (
@@ -388,7 +382,7 @@ const Dashboard = () => {
                   </>
                 )}
               </div>
-            </div>
+            </Card>
 
           </div>
 

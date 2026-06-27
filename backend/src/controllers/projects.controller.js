@@ -258,13 +258,27 @@ async function updateProjectStatus(req, res) {
  */
 async function getDashboardOverview(req, res) {
   try {
-    // 1. Fetch projects to calculate counts
-    const { data: projects, error: projectsErr } = await supabase
-      .from('projects_master')
-      .select('status, work_order_no, edited_at')
-      .order('edited_at', { ascending: false });
+    // Fetch projects, audit logs, and authorized users in parallel
+    const [projectsRes, logsRes, usersRes] = await Promise.all([
+      supabase
+        .from('projects_master')
+        .select('status, work_order_no, edited_at')
+        .order('edited_at', { ascending: false }),
+      supabase
+        .from('audit_log')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(10),
+      supabase
+        .from('authorised_users')
+        .select('mobile_number, display_name')
+    ]);
 
-    if (projectsErr) throw projectsErr;
+    if (projectsRes.error) throw projectsRes.error;
+
+    const projects = projectsRes.data || [];
+    const logs = logsRes.data || [];
+    const users = usersRes.data || [];
 
     const totalProjects = projects.length;
     const running = projects.filter(p => p.status === 'Running').length;
@@ -274,26 +288,12 @@ async function getDashboardOverview(req, res) {
     const lastUpdatedProject = projects.length > 0 ? projects[0].work_order_no : 'N/A';
     const lastUpdatedAt = projects.length > 0 ? projects[0].edited_at : null;
 
-    // 2. Fetch recent activity from audit_log
-    const { data: logs, error: logsErr } = await supabase
-      .from('audit_log')
-      .select('*')
-      .order('timestamp', { ascending: false })
-      .limit(10);
-
     let recentActivity = [];
-    if (!logsErr && logs) {
-      // Fetch users to map display name
-      const { data: users } = await supabase
-        .from('authorised_users')
-        .select('mobile_number, display_name');
-
+    if (logs.length > 0) {
       const userMap = {};
-      if (users) {
-        users.forEach(u => {
-          userMap[u.mobile_number] = u;
-        });
-      }
+      users.forEach(u => {
+        userMap[u.mobile_number] = u;
+      });
 
       recentActivity = logs.map(log => {
         const user = userMap[log.user_id];

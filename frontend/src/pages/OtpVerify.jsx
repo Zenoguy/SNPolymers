@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 
 // Small inline Telegram icon
 const TelegramInlineIcon = () => (
@@ -154,7 +156,7 @@ const OtpVerify = () => {
       {/* Background Silhouettes & Ambient Glows */}
       <BackgroundShapes />
 
-      <div className="max-w-md w-full glass-panel p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
+      <Card className="max-w-md w-full p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
         
         {/* Seal and Title */}
         <div className="text-center mb-8">
@@ -224,20 +226,14 @@ const OtpVerify = () => {
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading || countdown <= 0}
-            className="w-full bg-white hover:bg-slate-100 disabled:opacity-50 text-slate-950 text-xs font-bold uppercase tracking-wider py-4 px-4 rounded-xl shadow-[0_4px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.2)] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center gap-2"
+            isLoading={loading}
+            disabled={countdown <= 0}
+            className="w-full py-4 shadow-[0_4px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.2)]"
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-slate-950"></div>
-                Authorizing Identity...
-              </>
-            ) : (
-              'Verify Authenticity & Access'
-            )}
-          </button>
+            {loading ? 'Authorizing Identity...' : 'Verify Authenticity & Access'}
+          </Button>
         </form>
 
         <div className="mt-8 text-center">
@@ -248,7 +244,7 @@ const OtpVerify = () => {
             Change Input Number
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

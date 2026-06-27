@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import BackgroundShapes from '../components/BackgroundShapes';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Button from '../components/common/Button';
 
 // Telegram Paper Plane SVG icon (brand-accurate)
 const TelegramIcon = ({ size = 48 }) => (
@@ -127,7 +130,7 @@ const TelegramSetup = () => {
     <div className="min-h-screen bg-black text-slate-100 flex items-center justify-center px-4 font-sans relative overflow-hidden">
       <BackgroundShapes />
 
-      <div className="max-w-md w-full glass-panel p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
+      <Card className="max-w-md w-full p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
 
         {/* Icon + Heading */}
         <div className="text-center mb-8">
@@ -184,31 +187,24 @@ const TelegramSetup = () => {
 
         {/* Chat ID Input Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="telegram-chat-id"
-              className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5"
-            >
-              Your Telegram Chat ID
-            </label>
-            <input
-              id="telegram-chat-id"
-              type="text"
-              inputMode="numeric"
-              pattern="-?[0-9]*"
-              placeholder="Enter the number the bot sent you"
-              value={chatId}
-              onChange={(e) => {
-                // Accept digits and an optional leading minus (for group chats)
-                const val = e.target.value.replace(/[^\d-]/g, '');
-                setChatId(val);
-              }}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3.5 text-slate-100 text-sm font-mono font-semibold transition duration-200"
-              style={chatId ? { borderColor: 'rgba(42,171,238,0.4)', boxShadow: '0 0 12px rgba(42,171,238,0.1)' } : {}}
-              disabled={loading}
-              required
-            />
-          </div>
+          <Input
+            id="telegram-chat-id"
+            label="Your Telegram Chat ID"
+            type="text"
+            inputMode="numeric"
+            pattern="-?[0-9]*"
+            placeholder="Enter the number the bot sent you"
+            value={chatId}
+            onChange={(e) => {
+              // Accept digits and an optional leading minus (for group chats)
+              const val = e.target.value.replace(/[^\d-]/g, '');
+              setChatId(val);
+            }}
+            className="font-mono"
+            style={chatId ? { borderColor: 'rgba(42,171,238,0.4)', boxShadow: '0 0 12px rgba(42,171,238,0.1)' } : {}}
+            disabled={loading}
+            required
+          />
 
           {/* Error Message */}
           {error && (
@@ -219,11 +215,12 @@ const TelegramSetup = () => {
           )}
 
           {/* CTA Button */}
-          <button
+          <Button
             id="telegram-link-btn"
             type="submit"
-            disabled={loading || !chatId.trim()}
-            className="w-full py-4 px-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 flex justify-center items-center gap-2.5 disabled:opacity-50 transform hover:-translate-y-0.5"
+            isLoading={loading}
+            disabled={!chatId.trim()}
+            className="w-full py-4"
             style={{
               background: '#2AABEE',
               color: '#fff',
@@ -238,15 +235,8 @@ const TelegramSetup = () => {
               e.currentTarget.style.boxShadow = '0 4px 20px rgba(42,171,238,0.3)';
             }}
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white" />
-                Linking Account...
-              </>
-            ) : (
-              'Link My Account — Send OTP'
-            )}
-          </button>
+            {loading ? 'Linking Account...' : 'Link My Account — Send OTP'}
+          </Button>
         </form>
 
         {/* Privacy Note */}
@@ -263,7 +253,7 @@ const TelegramSetup = () => {
             Change Mobile Number
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

@@ -3,6 +3,12 @@ import { useAuth } from '../components/AuthContext';
 import { Link } from 'react-router-dom';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Textarea from '../components/common/Textarea';
+import Button from '../components/common/Button';
+import Table from '../components/common/Table';
 
 // API Clients
 import { getProjects } from '../api/projectsApi';
@@ -406,23 +412,25 @@ const DailyProgress = () => {
           /* ========================================================
              1. CREATE DAILY REPORT PANEL
              ======================================================== */
-          <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent max-w-4xl mx-auto">
+          <Card className="p-6 md:p-8 max-w-4xl mx-auto">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/5">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-500 font-mono">JE Form · Site Visit Details</span>
                 <h2 className="text-2xl font-extrabold text-slate-100 mt-1">Log Daily Work Progress</h2>
               </div>
-              <button
+              <Button
                 onClick={() => {
                   resetForm();
                   setShowCreateFlow(false);
                 }}
-                className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-slate-200 transition hover:bg-white/10"
+                variant="secondary"
+                size="sm"
+                className="p-2.5 rounded-xl"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
 
             {/* Read-Only Top Metadata */}
@@ -442,59 +450,42 @@ const DailyProgress = () => {
                 {/* Inputs: Left Column */}
                 <div className="space-y-4">
                   {/* Active Work Order Selector */}
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                      Work Order Number <span className="text-red-400">*</span>
-                    </label>
-                    <select
-                      value={selectedWO}
-                      onChange={(e) => handleWOChange(e.target.value)}
-                      required
-                      className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition bg-black"
-                    >
-                      <option value="">-- Select Active Work Order --</option>
-                      {projects
-                        .filter(p => p.status === 'Running')
-                        .map(p => (
-                          <option key={p.work_order_no} value={p.work_order_no}>
-                            {p.work_order_no}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                  <Select
+                    label="Work Order Number"
+                    value={selectedWO}
+                    onChange={(e) => handleWOChange(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Select Active Work Order --</option>
+                    {projects
+                      .filter(p => p.status === 'Running')
+                      .map(p => (
+                        <option key={p.work_order_no} value={p.work_order_no}>
+                          {p.work_order_no}
+                        </option>
+                      ))}
+                  </Select>
 
-                  {/* Site Visit Date */}
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                      Site Visit Date <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={siteVisitDate}
-                      onChange={(e) => setSiteVisitDate(e.target.value)}
-                      required
-                      max={getTodayDateString()}
-                      className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition bg-black"
-                    />
-                  </div>
+                  <Input
+                    label="Site Visit Date"
+                    type="date"
+                    value={siteVisitDate}
+                    onChange={(e) => setSiteVisitDate(e.target.value)}
+                    required
+                    max={getTodayDateString()}
+                  />
 
-                  {/* Physical Work Progress (%) */}
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                      Physical Work Progress (%) <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max="100"
-                      value={physicalWorkProgress}
-                      onChange={(e) => setPhysicalWorkProgress(e.target.value)}
-                      placeholder="Cumulative percentage (0.00 to 100.00)"
-                      required
-                      className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-mono font-bold text-slate-100 transition bg-black"
-                    />
-                  </div>
+                  <Input
+                    label="Physical Work Progress (%)"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={physicalWorkProgress}
+                    onChange={(e) => setPhysicalWorkProgress(e.target.value)}
+                    placeholder="Cumulative percentage (0.00 to 100.00)"
+                    required
+                  />
                 </div>
 
                 {/* Geography Snapshot Display: Right Column */}
@@ -537,33 +528,22 @@ const DailyProgress = () => {
                 </div>
               </div>
 
-              {/* Textarea fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    Work Progress Details <span className="text-red-400">*</span>
-                  </label>
-                  <textarea
-                    value={workProgressDetails}
-                    onChange={(e) => setWorkProgressDetails(e.target.value)}
-                    required
-                    placeholder="Describe specific tasks completed at the site today..."
-                    rows={4}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition bg-black resize-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    Remarks After Site Visit (Optional)
-                  </label>
-                  <textarea
-                    value={remarksAfterSiteVisit}
-                    onChange={(e) => setRemarksAfterSiteVisit(e.target.value)}
-                    placeholder="Add minor site visit observations, remarks, or notifications..."
-                    rows={4}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition bg-black resize-none"
-                  />
-                </div>
+                <Textarea
+                  label="Work Progress Details"
+                  value={workProgressDetails}
+                  onChange={(e) => setWorkProgressDetails(e.target.value)}
+                  required
+                  placeholder="Describe specific tasks completed at the site today..."
+                  rows={4}
+                />
+                <Textarea
+                  label="Remarks After Site Visit (Optional)"
+                  value={remarksAfterSiteVisit}
+                  onChange={(e) => setRemarksAfterSiteVisit(e.target.value)}
+                  placeholder="Add minor site visit observations, remarks, or notifications..."
+                  rows={4}
+                />
               </div>
 
               {/* Photograph Upload Area */}
@@ -651,57 +631,56 @@ const DailyProgress = () => {
                       </p>
                       <p className="text-xs text-slate-400 font-mono truncate max-w-xs">{originalPhotoFilename}</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      className="px-4 py-2 bg-red-950/20 hover:bg-red-900/30 text-red-300 font-bold text-[10px] uppercase tracking-wider rounded-xl transition border border-red-900/30"
-                    >
+                    <Button type="button" onClick={handleRemovePhoto} size="sm" variant="danger">
                       Remove Photo
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex justify-end items-center gap-4 pt-4 border-t border-white/5">
-                <button
+              {/* Save Form Buttons */}
+              <div className="flex gap-4 justify-end pt-4 border-t border-white/5">
+                <Button
                   type="button"
                   onClick={() => {
                     resetForm();
                     setShowCreateFlow(false);
                   }}
-                  className="px-5 py-3 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
+                  variant="ghost"
+                  disabled={submitLoading || uploading}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  disabled={submitLoading || uploading}
-                  className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg disabled:opacity-40"
+                  disabled={uploading}
+                  isLoading={submitLoading}
                 >
-                  {submitLoading ? 'Submitting Report...' : 'Save Report'}
-                </button>
+                  Save Progress Report
+                </Button>
               </div>
             </form>
-          </div>
+          </Card>
         ) : activeReport ? (
           /* ========================================================
              2. VIEW REPORT DETAILS PANEL
              ======================================================== */
-          <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent max-w-4xl mx-auto">
+          <Card className="p-6 md:p-8 max-w-4xl mx-auto">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/5">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-500 font-mono">Daily Report Record Detail</span>
                 <h2 className="text-2xl font-extrabold text-slate-100 mt-1">Work Order {activeReport.work_order_no}</h2>
               </div>
-              <button
+              <Button
                 onClick={() => setActiveReport(null)}
-                className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-slate-200 transition hover:bg-white/10"
+                variant="secondary"
+                size="sm"
+                className="p-2.5 rounded-xl"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -709,7 +688,7 @@ const DailyProgress = () => {
               <div className="space-y-6">
                 
                 {/* Meta details list */}
-                <div className="glass-panel p-5 rounded-2xl border border-white/5 space-y-4">
+                <Card className="p-5 space-y-4">
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Submitted By</p>
@@ -734,7 +713,7 @@ const DailyProgress = () => {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 {/* Snapshots geographical details */}
                 <div className="p-5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 text-xs text-slate-300 space-y-3">
@@ -783,7 +762,7 @@ const DailyProgress = () => {
               {/* Photograph and Authority Remarks: Right Column */}
               <div className="space-y-6">
                 {/* Photo Viewer */}
-                <div className="glass-panel p-4 rounded-3xl border border-white/5 overflow-hidden bg-black/60">
+                <Card className="p-4 overflow-hidden bg-black/60">
                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Site Photograph</h4>
                   {activeReport.photo_signed_url ? (
                     <div className="relative group rounded-2xl overflow-hidden aspect-video border border-white/5 bg-slate-950">
@@ -805,10 +784,10 @@ const DailyProgress = () => {
                       <span className="text-[10px] uppercase font-bold tracking-widest">Photograph Unavailable</span>
                     </div>
                   )}
-                </div>
+                </Card>
 
                 {/* Authority Remarks Block */}
-                <div className="glass-panel p-5 rounded-3xl border border-white/5 space-y-4">
+                <Card className="p-5 space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-white/5">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Authority Remarks</h4>
                     {activeReport.remarks_approved_authority ? (
@@ -826,13 +805,13 @@ const DailyProgress = () => {
                       return (
                         <div className="space-y-4">
                           <div>
-                            <textarea
+                            <Textarea
                               value={authorityRemarks}
                               onChange={(e) => setAuthorityRemarks(e.target.value)}
                               disabled={!isProjectActive || savingRemarks}
                               placeholder={isProjectActive ? "Enter authority review remarks..." : "Remarks cannot be modified for this project."}
                               rows={3}
-                              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition bg-black resize-none ${(!isProjectActive || savingRemarks) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              className={(!isProjectActive || savingRemarks) ? 'opacity-40 cursor-not-allowed' : ''}
                             />
                             {remarksFormError && (
                               <p className="text-[10px] text-red-400 font-semibold mt-1">{remarksFormError}</p>
@@ -850,17 +829,15 @@ const DailyProgress = () => {
 
                           {isProjectActive && (
                             <div className="flex justify-end">
-                              <button
+                              <Button
                                 type="button"
                                 onClick={handleSaveRemarks}
-                                disabled={savingRemarks || !authorityRemarks.trim()}
-                                className="bg-white hover:bg-slate-100 text-slate-950 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition shadow disabled:opacity-40 flex items-center gap-1.5"
+                                disabled={!authorityRemarks.trim()}
+                                isLoading={savingRemarks}
+                                size="sm"
                               >
-                                {savingRemarks && (
-                                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-950" />
-                                )}
-                                {savingRemarks ? 'Saving Remarks...' : 'Save Remarks'}
-                              </button>
+                                Save Remarks
+                              </Button>
                             </div>
                           )}
 
@@ -905,19 +882,19 @@ const DailyProgress = () => {
                       <p className="text-xs text-slate-500 italic">No authority reviews or remarks have been submitted for this daily progress report record yet.</p>
                     )
                   )}
-                </div>
+                </Card>
               </div>
             </div>
             
             <div className="flex justify-end pt-6 mt-6 border-t border-white/5">
-              <button
+              <Button
                 onClick={() => setActiveReport(null)}
-                className="px-5 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 font-extrabold text-xs uppercase tracking-wider transition text-slate-300 hover:text-slate-100"
+                variant="secondary"
               >
                 Close View
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         ) : (
           /* ========================================================
              3. MAIN DASHBOARD / LIST MODE
@@ -935,21 +912,22 @@ const DailyProgress = () => {
                 </p>
               </div>
               {isJE && (
-                <button
+                <Button
                   onClick={() => setShowCreateFlow(true)}
-                  className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+                  variant="primary"
+                  className="flex items-center gap-2"
                 >
                   <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   New Daily Report
-                </button>
+                </Button>
               )}
             </div>
 
             {/* Dynamic Stat Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-              <div className="glass-panel p-5 rounded-3xl border border-white/5 flex items-center justify-between">
+              <Card className="p-5 flex items-center justify-between">
                 <div>
                   <span className="text-[9px] uppercase font-extrabold tracking-widest text-slate-500">Total Submitted Reports</span>
                   <h3 className="text-2xl font-black text-slate-100 mt-1">{loading ? '...' : stats.total}</h3>
@@ -959,8 +937,8 @@ const DailyProgress = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
                   </svg>
                 </div>
-              </div>
-              <div className="glass-panel p-5 rounded-3xl border border-white/5 flex items-center justify-between">
+              </Card>
+              <Card className="p-5 flex items-center justify-between">
                 <div>
                   <span className="text-[9px] uppercase font-extrabold tracking-widest text-slate-500">Reports This Month</span>
                   <h3 className="text-2xl font-black text-slate-100 mt-1">{loading ? '...' : stats.thisMonth}</h3>
@@ -970,8 +948,8 @@ const DailyProgress = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-              </div>
-              <div className="glass-panel p-5 rounded-3xl border border-white/5 flex items-center justify-between">
+              </Card>
+              <Card className="p-5 flex items-center justify-between">
                 <div>
                   <span className="text-[9px] uppercase font-extrabold tracking-widest text-slate-500">With Authority Remarks</span>
                   <h3 className="text-2xl font-black text-slate-100 mt-1">{loading ? '...' : stats.withRemarks}</h3>
@@ -981,213 +959,168 @@ const DailyProgress = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                   </svg>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Filter Bar */}
-            <div className="glass-panel p-5 rounded-3xl border border-white/5 mb-8 flex flex-col gap-4">
+            <Card className="p-5 mb-8 flex flex-col gap-4">
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Search and Filter Reports</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                
-                {/* Work Order select filter */}
-                <div>
-                  <select
-                    value={filterWO}
-                    onChange={(e) => setFilterWO(e.target.value)}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                  >
-                    <option value="">-- All Work Orders --</option>
-                    {projects.map(p => (
-                      <option key={p.work_order_no} value={p.work_order_no}>
-                        {p.work_order_no}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  value={filterWO}
+                  onChange={(e) => setFilterWO(e.target.value)}
+                  size="sm"
+                >
+                  <option value="">-- All Work Orders --</option>
+                  {projects.map(p => (
+                    <option key={p.work_order_no} value={p.work_order_no}>
+                      {p.work_order_no}
+                    </option>
+                  ))}
+                </Select>
 
-                {/* Date From */}
-                <div>
-                  <input
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
-                    placeholder="Date From"
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                  />
-                </div>
+                <Input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  size="sm"
+                />
 
-                {/* Date To */}
-                <div>
-                  <input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
-                    placeholder="Date To"
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                  />
-                </div>
+                <Input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  size="sm"
+                />
 
-                {/* JE (Reporter) select filter (ZO/HO/Admin only) */}
                 {isAuthority ? (
-                  <div>
-                    <select
-                      value={filterJE}
-                      onChange={(e) => setFilterJE(e.target.value)}
-                      className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                    >
-                      <option value="">-- All Reporting JEs --</option>
-                      {/* Extract unique reporter identities from reports list */}
-                      {Array.from(new Set(reports.map(r => r.created_by))).map(mobile => {
-                        const rep = reports.find(r => r.created_by === mobile);
-                        const name = rep?.created_by_name || mobile;
-                        return (
-                          <option key={mobile} value={mobile}>
-                            {name}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
+                  <Select
+                    value={filterJE}
+                    onChange={(e) => setFilterJE(e.target.value)}
+                    size="sm"
+                  >
+                    <option value="">-- All Reporting JEs --</option>
+                    {Array.from(new Set(reports.map(r => r.created_by))).map(mobile => {
+                      const rep = reports.find(r => r.created_by === mobile);
+                      const name = rep?.created_by_name || mobile;
+                      return (
+                        <option key={mobile} value={mobile}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Select>
                 ) : (
                   <div className="hidden md:block" />
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Reports List Table Grid */}
-            <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
-              <div className="p-5 border-b border-white/5 flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Reports Directory Listing</span>
-                <button
+            <Table
+              columns={[
+                ...(isAuthority ? [{
+                  key: 'created_by',
+                  header: 'JE Reporter',
+                  className: 'font-semibold text-slate-200',
+                  render: (_, report) => report.created_by_name || report.created_by
+                }] : []),
+                {
+                  key: 'work_order_no',
+                  header: 'Work Order',
+                  className: 'font-mono font-bold text-slate-200'
+                },
+                {
+                  key: 'site_visit_date',
+                  header: 'Visit Date',
+                  render: (val) => val ? new Date(val).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'N/A'
+                },
+                {
+                  key: 'physical_work_progress',
+                  header: 'Progress %',
+                  className: 'text-center font-mono font-bold text-emerald-400',
+                  render: (val) => `${val}%`
+                },
+                {
+                  key: 'work_progress_details',
+                  header: 'Work Progress Details',
+                  className: 'max-w-[200px] truncate',
+                  render: (val) => <span title={val}>{val}</span>
+                },
+                {
+                  key: 'daily_site_photo_url',
+                  header: 'Photo',
+                  align: 'center',
+                  render: (val, report) => (
+                    <div className="flex justify-center">
+                      {val ? (
+                        <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" title={report.original_photo_filename || "Photo uploaded"}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'remarks',
+                  header: 'Remarks',
+                  align: 'center',
+                  render: (_, report) => (
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                      {report.remarks_after_site_visit ? (
+                        <span className="px-2 py-0.5 bg-blue-950/20 text-blue-400 border border-blue-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_after_site_visit}>JE</span>
+                      ) : null}
+                      {report.remarks_approved_authority ? (
+                        <span className="px-2 py-0.5 bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_approved_authority}>Auth</span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-extrabold uppercase rounded-lg">None</span>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'actions',
+                  header: 'Actions',
+                  align: 'right',
+                  render: (_, report) => (
+                    <Button
+                      onClick={() => handleViewDetails(report)}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      View Details
+                    </Button>
+                  )
+                }
+              ]}
+              data={reports}
+              isLoading={loading}
+              emptyMessage="No daily progress reports matching filters."
+              className="shadow-2xl"
+              pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                total: pagination.total,
+                onPageChange: fetchData
+              }}
+              headerActions={
+                <Button
                   onClick={() => fetchData(pagination.page)}
                   title="Refresh Reports"
-                  className="p-2 rounded-xl glass-input hover:border-white/20 transition text-slate-400 hover:text-slate-200"
+                  variant="secondary"
+                  size="sm"
+                  className="p-2 rounded-xl"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                </button>
-              </div>
-
-              {loading ? (
-                /* Elegant Skeleton Table Layout */
-                <div className="p-6 space-y-4">
-                  {[...Array(5)].map((_, idx) => (
-                    <div key={idx} className="h-12 w-full bg-white/[0.02] rounded-xl border border-white/5 animate-pulse flex items-center justify-between px-4">
-                      <div className="h-3.5 w-1/4 bg-white/10 rounded" />
-                      <div className="h-3.5 w-1/6 bg-white/10 rounded" />
-                      <div className="h-3.5 w-1/12 bg-white/10 rounded" />
-                      <div className="h-3.5 w-1/5 bg-white/10 rounded" />
-                    </div>
-                  ))}
-                </div>
-              ) : reports.length === 0 ? (
-                <div className="text-center p-20 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
-                  No daily progress reports matching filters.
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-white/5 text-[9px] uppercase font-bold tracking-widest text-slate-400 bg-white/[0.01]">
-                        {isAuthority && <th className="p-4 pl-6">JE Reporter</th>}
-                        <th className="p-4 pl-6">Work Order</th>
-                        <th className="p-4">Visit Date</th>
-                        <th className="p-4 text-center">Progress %</th>
-                        <th className="p-4">Work Progress Details</th>
-                        <th className="p-4 text-center">Photo</th>
-                        <th className="p-4 text-center">Remarks</th>
-                        <th className="p-4 pr-6 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {reports.map((report) => (
-                        <tr
-                          key={report.report_id}
-                          className="hover:bg-white/[0.02] transition duration-200 text-slate-300"
-                        >
-                          {isAuthority && (
-                            <td className="p-4 pl-6 font-semibold text-slate-200">
-                              {report.created_by_name || report.created_by}
-                            </td>
-                          )}
-                          <td className="p-4 pl-6 font-mono font-bold text-slate-200">
-                            {report.work_order_no}
-                          </td>
-                          <td className="p-4">
-                            {report.site_visit_date ? new Date(report.site_visit_date).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'N/A'}
-                          </td>
-                          <td className="p-4 text-center font-mono font-bold text-emerald-400">
-                            {report.physical_work_progress}%
-                          </td>
-                          <td className="p-4 max-w-[200px] truncate" title={report.work_progress_details}>
-                            {report.work_progress_details}
-                          </td>
-                          <td className="p-4 text-center">
-                            <div className="flex justify-center">
-                              {report.daily_site_photo_url ? (
-                                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" title={report.original_photo_filename || "Photo uploaded"}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                              ) : (
-                                <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4 text-center">
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
-                              {report.remarks_after_site_visit ? (
-                                <span className="px-2 py-0.5 bg-blue-950/20 text-blue-400 border border-blue-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_after_site_visit}>JE</span>
-                              ) : null}
-                              {report.remarks_approved_authority ? (
-                                <span className="px-2 py-0.5 bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 text-[9px] font-extrabold uppercase rounded-lg" title={report.remarks_approved_authority}>Auth</span>
-                              ) : (
-                                <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-extrabold uppercase rounded-lg">None</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4 pr-6 text-right">
-                            <button
-                              onClick={() => handleViewDetails(report)}
-                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg transition border border-white/5"
-                            >
-                              View Details
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Pagination Controls */}
-              {pagination.totalPages > 1 && (
-                <div className="p-4 border-t border-white/5 flex items-center justify-between text-slate-400">
-                  <span className="text-[10px] uppercase font-bold tracking-wider">
-                    Page {pagination.page} of {pagination.totalPages} ({pagination.total} records)
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handlePageChange(pagination.page - 1)}
-                      disabled={pagination.page === 1 || loading}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 text-xs font-bold transition disabled:opacity-30"
-                    >
-                      &larr; Prev
-                    </button>
-                    <button
-                      onClick={() => handlePageChange(pagination.page + 1)}
-                      disabled={pagination.page === pagination.totalPages || loading}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 text-xs font-bold transition disabled:opacity-30"
-                    >
-                      Next &rarr;
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                </Button>
+              }
+            />
           </div>
         )}
       </main>

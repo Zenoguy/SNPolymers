@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import authApi from '../api/authApi';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Select from '../components/common/Select';
+import Textarea from '../components/common/Textarea';
+import Button from '../components/common/Button';
 
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
@@ -438,12 +443,12 @@ const EstimateForm = () => {
             </h1>
             <p className="text-xs text-slate-400 font-medium mt-1.5">Compose estimate line items and select relevant materials.</p>
           </div>
-          <Link
-            to="/estimates"
-            className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200"
+          <Button
+            onClick={() => navigate('/estimates')}
+            variant="secondary"
           >
             Cancel & Back
-          </Link>
+          </Button>
         </div>
 
         {/* Overdue alert / Countdown Timer */}
@@ -469,26 +474,24 @@ const EstimateForm = () => {
         )}
 
         {/* Header Form */}
-        <div className="glass-panel p-6 rounded-3xl mb-8 border border-white/5 space-y-6">
+        <Card className="p-6 mb-8 space-y-6">
           <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400 mb-4">Estimate Header</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Work Order Number
-              </label>
               {isEditMode ? (
-                <input
+                <Input
+                  label="Work Order Number"
                   type="text"
                   value={selectedWorkOrder}
                   readOnly
-                  className="w-full glass-input cursor-not-allowed opacity-75 focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-400 text-sm font-semibold"
+                  disabled={true}
                 />
               ) : (
-                <select
+                <Select
+                  label="Work Order Number"
                   value={selectedWorkOrder}
                   onChange={(e) => handleWorkOrderChange(e.target.value)}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-100 text-sm font-semibold"
                   disabled={isFormLockedByExpiry || submitting}
                   required
                 >
@@ -498,21 +501,17 @@ const EstimateForm = () => {
                       {p.work_order_no} ({p.zone})
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Estimate Number (Auto)
-              </label>
-              <input
-                type="text"
-                value={estimateNo}
-                readOnly
-                className="w-full glass-input cursor-not-allowed opacity-75 focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-400 text-sm font-semibold"
-              />
-            </div>
+            <Input
+              label="Estimate Number (Auto)"
+              type="text"
+              value={estimateNo}
+              readOnly
+              disabled={true}
+            />
           </div>
 
           {/* Project Metadata Preview */}
@@ -537,33 +536,29 @@ const EstimateForm = () => {
             </div>
           )}
 
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              JE Remarks / Special Instructions
-            </label>
-            <textarea
-              rows={2}
-              value={jeRemarks}
-              onChange={(e) => setJeRemarks(e.target.value)}
-              placeholder="Enter context, rate assumptions, or instructions..."
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl p-4 text-slate-100 text-sm font-semibold"
-              disabled={isFormLockedByExpiry || submitting}
-            />
-          </div>
-        </div>
+          <Textarea
+            label="JE Remarks / Special Instructions"
+            rows={2}
+            value={jeRemarks}
+            onChange={(e) => setJeRemarks(e.target.value)}
+            placeholder="Enter context, rate assumptions, or instructions..."
+            disabled={isFormLockedByExpiry || submitting}
+          />
+        </Card>
 
         {/* Cost Estimates Items Editor */}
-        <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <div className="flex justify-between items-center p-6 bg-white/[0.01] border-b border-white/5">
             <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400">Estimate Items</h3>
-            <button
+            <Button
               type="button"
               onClick={handleAddItem}
-              className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50"
+              variant="secondary"
+              size="sm"
               disabled={isFormLockedByExpiry || submitting}
             >
               Add Item
-            </button>
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
@@ -599,32 +594,32 @@ const EstimateForm = () => {
                       isRejected ? 'border-l-4 border-l-amber-500 bg-amber-500/[0.01]' : ''
                     } ${isLocked ? 'opacity-60 bg-white/[0.01] pointer-events-none' : ''}`}>
                       <td className="py-3 px-4">
-                        <select
+                        <Select
                            value={item.material_main_head}
                            onChange={(e) => handleItemChange(idx, 'material_main_head', e.target.value)}
-                           className="w-full glass-input p-2 rounded-lg text-xs"
+                           size="sm"
                            disabled={isFormLockedByExpiry || submitting || isLocked}
                         >
                           <option value="">Select Main Head</option>
                           {mainHeads.map(h => <option key={h} value={h}>{h}</option>)}
-                        </select>
+                        </Select>
                       </td>
                       <td className="py-3 px-4">
-                        <select
+                        <Select
                            value={item.material_sub_head}
                            onChange={(e) => handleItemChange(idx, 'material_sub_head', e.target.value)}
-                           className="w-full glass-input p-2 rounded-lg text-xs"
+                           size="sm"
                            disabled={isFormLockedByExpiry || submitting || isLocked || !item.material_main_head}
                         >
                           <option value="">Select Sub Head</option>
                           {item.subHeadsList?.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                        </Select>
                       </td>
                       <td className="py-3 px-4">
-                        <select
+                        <Select
                            value={item.material_details}
                            onChange={(e) => handleItemChange(idx, 'material_details', e.target.value)}
-                           className="w-full glass-input p-2 rounded-lg text-xs"
+                           size="sm"
                            disabled={isFormLockedByExpiry || submitting || isLocked || !item.material_sub_head}
                         >
                           <option value="">Select Details</option>
@@ -633,58 +628,61 @@ const EstimateForm = () => {
                               {m.name}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </td>
                       <td className="py-3 px-4">
-                        <input
+                        <Input
                           type="text"
                           value={item.unit}
                           readOnly
-                          className="w-full glass-input p-2 rounded-lg text-xs text-center font-bold text-slate-400 cursor-not-allowed"
+                          size="sm"
+                          className="text-center font-bold text-slate-400 cursor-not-allowed"
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <input
+                        <Input
                           type="number"
                           min="0.01"
                           step="any"
                           value={item.qty || ''}
                           onChange={(e) => handleItemChange(idx, 'qty', e.target.value)}
-                          className="w-full glass-input p-2 rounded-lg text-xs font-semibold text-center"
+                          size="sm"
+                          className="text-center font-semibold"
                           disabled={isFormLockedByExpiry || submitting || isLocked}
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <input
+                        <Input
                           type="number"
                           min="0.01"
                           step="any"
                           value={item.rate || ''}
                           onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
-                          className="w-full glass-input p-2 rounded-lg text-xs font-semibold text-center"
+                          size="sm"
+                          className="text-center font-semibold"
                           disabled={isFormLockedByExpiry || submitting || isLocked}
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <input
+                        <Input
                           type="text"
                           placeholder="e.g. CSR 2026"
                           value={item.rate_reference || ''}
                           onChange={(e) => handleItemChange(idx, 'rate_reference', e.target.value)}
-                          className="w-full glass-input p-2 rounded-lg text-xs"
+                          size="sm"
                           disabled={isFormLockedByExpiry || submitting || isLocked}
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <select
+                        <Select
                           value={item.source_of_purchase || ''}
                           onChange={(e) => handleItemChange(idx, 'source_of_purchase', e.target.value)}
-                          className="w-full glass-input p-2 rounded-lg text-xs"
+                          size="sm"
                           disabled={isFormLockedByExpiry || submitting || isLocked || user?.role === 'je' || user?.role === 'staff'}
                         >
                           <option value="">Select Source</option>
                           {purchaseOptions.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                        </select>
+                        </Select>
                       </td>
                       <td className="py-3 px-4 font-mono font-bold text-slate-200">
                         {formatINR(item.amount)}
@@ -714,51 +712,54 @@ const EstimateForm = () => {
             <span className="text-slate-400 font-bold uppercase tracking-widest font-mono">Gross Estimate Total</span>
             <span className="font-mono text-xl font-extrabold text-amber-500">{formatINR(calculateGrossTotal())}</span>
           </div>
-        </div>
+        </Card>
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="mt-4 flex justify-between items-center text-xs text-slate-400">
             <span>Showing items {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, items.length)} of {items.length}</span>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-slate-300 disabled:opacity-40"
+                variant="secondary"
+                size="sm"
               >
                 Prev
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-slate-300 disabled:opacity-40"
+                variant="secondary"
+                size="sm"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {/* Submit Actions */}
         <div className="mt-8 flex justify-end gap-4">
-          <button
+          <Button
             type="button"
             onClick={handleSaveDraft}
-            className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50"
+            variant="secondary"
             disabled={isFormLockedByExpiry || submitting || items.length === 0}
           >
             Save as Draft
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit}
-            className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50 shadow-lg"
-            disabled={isFormLockedByExpiry || submitting || items.length === 0}
+            isLoading={submitting}
+            disabled={isFormLockedByExpiry || items.length === 0}
+            className="shadow-lg animate-pulse"
           >
             {submitting ? 'Submitting...' : 'Submit Estimate'}
-          </button>
+          </Button>
         </div>
       </main>
     </div>

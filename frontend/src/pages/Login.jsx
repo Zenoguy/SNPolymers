@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import BackgroundShapes from '../components/BackgroundShapes';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Button from '../components/common/Button';
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState('');
@@ -49,7 +52,7 @@ const Login = () => {
       {/* Background Silhouettes & Ambient Glows */}
       <BackgroundShapes />
 
-      <div className="max-w-md w-full glass-panel p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
+      <Card className="max-w-md w-full p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10">
         
         {/* Seal and Title */}
         <div className="text-center mb-8">
@@ -67,26 +70,17 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="mobile" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
-              Authorized Mobile Number
-            </label>
-            <div className="relative rounded-xl overflow-hidden">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 font-bold text-sm select-none pointer-events-none">
-                +91
-              </span>
-              <input
-                id="mobile"
-                type="tel"
-                value={mobileNumber.replace(/^\+91/, '')}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="9876543210"
-                className="w-full glass-input focus:ring-0 outline-none rounded-xl pl-14 pr-4 py-3.5 text-slate-100 text-sm font-semibold transition duration-200"
-                required
-                disabled={loading}
-              />
-            </div>
-          </div>
+          <Input
+            id="mobile"
+            label="Authorized Mobile Number"
+            type="tel"
+            value={mobileNumber.replace(/^\+91/, '')}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            placeholder="9876543210"
+            icon={<span className="text-slate-400 font-bold text-sm select-none pointer-events-none">+91</span>}
+            required
+            disabled={loading}
+          />
 
           {error && (
             <div className="p-3.5 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 font-bold flex items-center gap-2.5 animate-headShake">
@@ -95,20 +89,13 @@ const Login = () => {
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-white hover:bg-slate-100 disabled:opacity-50 text-slate-950 text-xs font-bold uppercase tracking-wider py-4 px-4 rounded-xl shadow-[0_4px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.2)] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center gap-2"
+            isLoading={loading}
+            className="w-full py-4 shadow-[0_4px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.2)]"
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-slate-950"></div>
-                Checking Credentials...
-              </>
-            ) : (
-              'Verify Whitelist & Send OTP'
-            )}
-          </button>
+            {loading ? 'Checking Credentials...' : 'Verify Whitelist & Send OTP'}
+          </Button>
         </form>
 
         <div className="mt-8 text-center">
@@ -119,7 +106,7 @@ const Login = () => {
             Cancel and Return
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

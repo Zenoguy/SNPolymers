@@ -230,37 +230,64 @@ async function getRequisitions(req, res) {
         mobiles.push(r.approved_user_id);
         mobiles.push(r.cancelled_by);
       });
-      const userMap = await resolveDisplayNames(mobiles);
+      
+      const uniqueWOs = [...new Set(requisitions.map(r => r.work_order_no).filter(Boolean))];
+      
+      // Resolve display names and work order balances in parallel
+      const [userMap, woBalancesRes] = await Promise.all([
+        resolveDisplayNames(mobiles),
+        (req.user.role === 'je' && uniqueWOs.length > 0)
+          ? supabase
+              .from('requisitions')
+              .select('work_order_no, requisition_amount')
+              .in('work_order_no', uniqueWOs)
+              .neq('requisition_status', 'Cancelled')
+          : Promise.resolve({ data: [] })
+      ]);
 
-      for (const r of requisitions) {
+      const woBalances = {};
+      if (woBalancesRes.data) {
+        woBalancesRes.data.forEach(item => {
+          woBalances[item.work_order_no] = (woBalances[item.work_order_no] || 0) + Number(item.requisition_amount);
+        });
+      }
+
+      // Generate signed URLs and enrich all requisitions in parallel
+      const enrichmentPromises = requisitions.map(async (r) => {
         let remainingEstimateAmount = null;
         if (req.user.role === 'je' && r.estimate_amount !== null) {
-          const { data: comm } = await supabase
-            .from('requisitions')
-            .select('requisition_amount')
-            .eq('work_order_no', r.work_order_no)
-            .neq('requisition_status', 'Cancelled');
-          const commAmt = (comm || []).reduce((sum, item) => sum + Number(item.requisition_amount), 0);
+          const commAmt = woBalances[r.work_order_no] || 0;
           remainingEstimateAmount = Number(r.estimate_amount) - commAmt;
         }
 
-        // Generate signed URLs dynamically
-        let signedUrl = null;
-        let gstSignedUrl = null;
+        const urlPromises = [];
         if (r.requisition_pdf_url) {
-          const { data: signData } = await supabase.storage
-            .from('requisition-pdfs')
-            .createSignedUrl(r.requisition_pdf_url, 3600);
-          signedUrl = signData?.signedUrl || null;
-        }
-        if (r.gst_bill_pdf_url) {
-          const { data: signData } = await supabase.storage
-            .from('gst-bills')
-            .createSignedUrl(r.gst_bill_pdf_url, 3600);
-          gstSignedUrl = signData?.signedUrl || null;
+          urlPromises.push(
+            supabase.storage
+              .from('requisition-pdfs')
+              .createSignedUrl(r.requisition_pdf_url, 3600)
+              .then(res => res.data?.signedUrl || null)
+              .catch(() => null)
+          );
+        } else {
+          urlPromises.push(Promise.resolve(null));
         }
 
-        enriched.push({
+        if (r.gst_bill_pdf_url) {
+          urlPromises.push(
+            supabase.storage
+              .from('gst-bills')
+              .createSignedUrl(r.gst_bill_pdf_url, 3600)
+              .then(res => res.data?.signedUrl || null)
+              .catch(() => null)
+          );
+        } else {
+          urlPromises.push(Promise.resolve(null));
+        }
+
+        const [signedUrl, gstSignedUrl] = await Promise.all(urlPromises);
+
+        return {
           ...r,
           requester_name: userMap[r.requester_user_id] || r.requester_user_id || null,
           approved_name: userMap[r.approved_user_id] || r.approved_user_id || null,
@@ -268,8 +295,11 @@ async function getRequisitions(req, res) {
           remainingEstimateAmount,
           requisition_pdf_signed_url: signedUrl,
           gst_bill_pdf_signed_url: gstSignedUrl
-        });
-      }
+        };
+      });
+
+      const enrichedResults = await Promise.all(enrichmentPromises);
+      enriched.push(...enrichedResults);
     }
 
     return res.status(200).json({
