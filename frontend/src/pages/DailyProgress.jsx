@@ -51,6 +51,7 @@ const DailyProgress = () => {
   const [originalPhotoFilename, setOriginalPhotoFilename] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [photoMissing, setPhotoMissing] = useState(false);
 
   // Project Search Filters (Directory tab)
   const [searchWO, setSearchWO] = useState('');
@@ -161,6 +162,7 @@ const DailyProgress = () => {
       if (res.data?.success) {
         setDailySitePhotoUrl(res.data.photo_url);
         setOriginalPhotoFilename(res.data.original_filename);
+        setPhotoMissing(false);
       } else {
         throw new Error('Upload failed.');
       }
@@ -218,6 +220,7 @@ const DailyProgress = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!activeWO || !siteVisitDate || !workProgressDetails || !physicalWorkProgress || !dailySitePhotoUrl) {
+      if (!dailySitePhotoUrl) setPhotoMissing(true);
       setError('Please fill in all required fields and upload a site photo.');
       return;
     }
@@ -542,7 +545,7 @@ const DailyProgress = () => {
                       <th className="p-3 w-32 border-r border-white/5">Site Visit Date</th>
                       <th className="p-3 border-r border-white/5">Work Progress Details</th>
                       <th className="p-3 text-center w-36 border-r border-white/5">Physical Progress (%)</th>
-                      <th className="p-3 text-center w-28 border-r border-white/5">Site Photo</th>
+                      <th className="p-3 text-center w-28 border-r border-white/5">Site Photo <span className="text-red-400">*</span></th>
                       <th className="p-3 border-r border-white/5">Remarks After Site Visit</th>
                       <th className="p-3 pr-4">Remarks Approved Authority</th>
                     </tr>
@@ -650,12 +653,19 @@ const DailyProgress = () => {
                               </button>
                             </div>
                           ) : (
-                            <label
-                              htmlFor="je-photo-file-sheet"
-                              className="cursor-pointer text-[10px] font-bold uppercase tracking-widest px-2 py-1 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 rounded-lg transition inline-block text-slate-300"
-                            >
-                              Upload
-                            </label>
+                            <div className="flex flex-col items-center gap-1">
+                              <label
+                                htmlFor="je-photo-file-sheet"
+                                className={`cursor-pointer text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg transition inline-block ${
+                                  photoMissing
+                                    ? 'border border-red-500 bg-red-500/10 text-red-400 animate-pulse'
+                                    : 'border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300'
+                                }`}
+                              >
+                                Upload
+                              </label>
+                              {photoMissing && <span className="text-[8px] text-red-400 font-bold">Required</span>}
+                            </div>
                           )}
                           {uploadError && <p className="text-[8px] text-red-400 mt-1 leading-tight">{uploadError}</p>}
                         </td>
