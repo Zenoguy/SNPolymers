@@ -998,8 +998,8 @@ const RAFinalBill = () => {
                       >
                         <div>
                           <div className="flex justify-between items-start mb-3">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 font-mono">
-                              WO ID: {proj.work_order_no}
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 font-mono truncate max-w-[200px]" title={proj.department}>
+                              {proj.department}
                             </span>
                             <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
                               proj.status === 'Running' 
@@ -1010,8 +1010,8 @@ const RAFinalBill = () => {
                             </span>
                           </div>
                           
-                          <h3 className="text-sm font-extrabold text-slate-200 truncate" title={proj.department}>
-                            {proj.department}
+                          <h3 className="text-sm font-extrabold text-slate-200 font-mono" title={proj.work_order_no}>
+                            {proj.work_order_no}
                           </h3>
                           <p className="text-xs text-slate-400 mt-2 truncate-2-lines min-h-[32px]">
                             {proj.site_details}
