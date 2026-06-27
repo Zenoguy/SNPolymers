@@ -696,27 +696,39 @@ const RAFinalBill = () => {
                 </p>
               </div>
 
-              {/* Navigation Tab Switcher */}
-              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 shrink-0 self-stretch md:self-auto">
+              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full md:w-auto">
+                {/* Navigation Tab Switcher */}
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 shrink-0 self-stretch sm:self-auto">
+                  <button
+                    onClick={() => setCurrentTab('dashboard')}
+                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+                      currentTab === 'dashboard'
+                        ? 'bg-white text-slate-950 shadow-md'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Overview Dashboard
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab('directory')}
+                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+                      currentTab === 'directory'
+                        ? 'bg-white text-slate-950 shadow-md'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Projects Directory
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => setCurrentTab('dashboard')}
-                  className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
-                    currentTab === 'dashboard'
-                      ? 'bg-white text-slate-950 shadow-md'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                  onClick={() => setShowCreatePanel(true)}
+                  className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow flex items-center justify-center gap-2 shrink-0"
                 >
-                  Overview Dashboard
-                </button>
-                <button
-                  onClick={() => setCurrentTab('directory')}
-                  className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
-                    currentTab === 'directory'
-                      ? 'bg-white text-slate-950 shadow-md'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Projects Directory
+                  <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Bill Entry
                 </button>
               </div>
             </div>
