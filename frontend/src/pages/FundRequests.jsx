@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input } from '../components/ui';
 
 // Subcomponents
 import DashboardMetrics from '../components/fundRequests/DashboardMetrics';
@@ -215,15 +216,16 @@ const FundRequests = () => {
                 </p>
               </div>
               {isZoUser && (
-                <button
+                <Button
                   onClick={() => setShowCreateFlow(true)}
-                  className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+                  icon={
+                    <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  }
                 >
-                  <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
                   New Request
-                </button>
+                </Button>
               )}
             </div>
 
@@ -245,27 +247,29 @@ const FundRequests = () => {
                 <div className="p-5 border-b border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400 text-left">Fund Requests List</span>
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      <input
-                        type="text"
-                        placeholder="Search requests..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 transition w-full sm:w-48"
-                      />
-                    </div>
-                    <button
+                    <Input
+                      type="text"
+                      placeholder="Search requests..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      size="sm"
+                      iconLeft={
+                        <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      }
+                      containerClassName="w-full sm:w-48"
+                    />
+                    <Button
                       onClick={fetchData}
                       title="Refresh"
-                      className="p-2 rounded-xl glass-input hover:border-white/20 transition text-slate-400 hover:text-slate-200"
+                      variant="glass"
+                      size="sm"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

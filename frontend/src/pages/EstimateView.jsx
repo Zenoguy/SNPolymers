@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, Select, Badge, Modal } from '../components/ui';
 import authApi from '../api/authApi';
 import { exportToExcel, exportToPDF } from '../utils/exportHelpers';
 
@@ -408,50 +409,50 @@ const EstimateView = () => {
             <p className="text-xs text-slate-400 font-medium mt-1.5">Manage, audit, and audit trail logs for cost estimate entry.</p>
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={() => exportToExcel(estimate, items)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-slate-100 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+              variant="success"
             >
               Excel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => exportToPDF('printable-estimate-area', estimate.estimate_no)}
-              className="bg-rose-600 hover:bg-rose-700 text-slate-100 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+              variant="danger"
             >
               PDF
-            </button>
+            </Button>
             {canReopen && (
-              <button
+              <Button
                 onClick={handleReopenEstimate}
-                className="bg-red-600 hover:bg-red-700 text-slate-100 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200 shadow-red-950/20"
+                variant="danger"
                 disabled={submitting}
               >
                 Reopen Estimate
-              </button>
+              </Button>
             )}
             {canEditEstimate && (
-              <Link
-                to={`/estimates/${id}/edit`}
-                className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition duration-200"
+              <Button
+                onClick={() => navigate(`/estimates/${id}/edit`)}
+                variant="primary"
               >
                 Edit Draft Items
-              </Link>
+              </Button>
             )}
             {canStartZOReview && (
-              <button
+              <Button
                 onClick={handleStartReview}
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+                variant="amber"
               >
                 Start ZO Review
-              </button>
+              </Button>
             )}
             {canStartHOReview && (
-              <button
+              <Button
                 onClick={handleStartReview}
-                className="bg-indigo-500 hover:bg-indigo-600 text-slate-100 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition duration-200"
+                variant="primary"
               >
                 Start HO Review
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -802,30 +803,30 @@ const EstimateView = () => {
                   <p className="text-xs text-slate-400">Approved running total for items selected: <strong className="text-amber-500 font-mono">{formatINR(runningApprovedTotal)}</strong></p>
                 </div>
                 <div className="flex gap-3">
-                  <button
+                  <Button
                     type="button"
                     onClick={handleSaveRowApprovals}
-                    className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200"
+                    variant="secondary"
                     disabled={submitting}
                   >
                     Save Row Approvals
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setShowRevisionModal(true)}
-                    className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200"
+                    variant="amber"
                     disabled={submitting}
                   >
                     Request Revision
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleSubmitReview}
-                    className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200 shadow-lg"
+                    variant="primary"
                     disabled={submitting}
                   >
                     Submit Final Review
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -887,55 +888,48 @@ const EstimateView = () => {
 
         {/* ── REQUEST REVISION MODAL ── */}
         {showRevisionModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-all duration-300">
-            <div className="glass-panel p-6 rounded-3xl max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-white/10 relative overflow-hidden">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-sm font-extrabold uppercase tracking-widest text-slate-200">Request JE Revision</h3>
-                <button onClick={() => setShowRevisionModal(false)} className="text-slate-400 hover:text-slate-200 transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+          <Modal
+            isOpen={true}
+            onClose={() => setShowRevisionModal(false)}
+            title="Request JE Revision"
+            size="sm"
+            footer={
+              <div className="flex justify-end gap-3 w-full">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowRevisionModal(false)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  form="revision-form"
+                  disabled={submitting}
+                >
+                  Request Revision
+                </Button>
               </div>
-
-              <form onSubmit={handleRequestRevision} className="space-y-5">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">
-                    Revision Deadline duration (Hours)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="168"
-                    value={deadlineHours}
-                    onChange={(e) => setDeadlineHours(parseInt(e.target.value) || '')}
-                    className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-100 text-sm font-semibold transition"
-                    required
-                    disabled={submitting}
-                  />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Specify integer value between 1 and 168 hours (Max 7 days). Default is 24h.</span>
-                </div>
-
-                <div className="flex gap-3 justify-end mt-8">
-                  <button
-                    type="button"
-                    onClick={() => setShowRevisionModal(false)}
-                    className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md"
-                    disabled={submitting}
-                  >
-                    Request Revision
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+            }
+          >
+            <form id="revision-form" onSubmit={handleRequestRevision} className="space-y-5 text-left">
+              <div>
+                <Input
+                  label="Revision Deadline duration (Hours)"
+                  type="number"
+                  min="1"
+                  max="168"
+                  value={deadlineHours}
+                  onChange={(e) => setDeadlineHours(parseInt(e.target.value) || '')}
+                  required
+                  disabled={submitting}
+                  size="sm"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">Specify integer value between 1 and 168 hours (Max 7 days). Default is 24h.</span>
+              </div>
+            </form>
+          </Modal>
         )}
       </main>
     </div>

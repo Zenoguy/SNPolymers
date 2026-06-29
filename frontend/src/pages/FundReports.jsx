@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
 import { getReports, getDeletedReports, createReport, updateReport, deleteReport, restoreReport } from '../api/reportsApi';
 import { getProjects } from '../api/projectsApi';
 
@@ -18,16 +19,15 @@ const formatDate = (d) => (d ? new Date(d).toLocaleString('en-IN', { dateStyle: 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const cfg = {
-    Running: { dot: 'bg-emerald-400', pill: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400', label: 'Running' },
-    Closed: { dot: 'bg-red-400', pill: 'bg-red-500/10 border-red-500/25 text-red-400', label: 'Closed' },
-    'Complete Under Maintenance': { dot: 'bg-amber-400', pill: 'bg-amber-500/10 border-amber-500/25 text-amber-400', label: 'Under Maintenance' },
+    Running: { variant: 'emerald', label: 'Running' },
+    Closed: { variant: 'red', label: 'Closed' },
+    'Complete Under Maintenance': { variant: 'amber', label: 'Under Maintenance' },
   };
-  const s = cfg[status] ?? cfg['Running'];
+  const s = cfg[status] ?? { variant: 'emerald', label: status };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${s.pill}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+    <Badge variant={s.variant} showDot={true}>
       {s.label}
-    </span>
+    </Badge>
   );
 };
 
@@ -151,175 +151,130 @@ const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="glass-panel p-6 rounded-3xl max-w-lg w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
-
-        <div className="flex justify-between items-center mb-5 relative z-10">
-          <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              {isEdit ? 'Edit Record' : 'New Record'}
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              {isEdit ? 'Edit Fund Report' : 'Create Fund Report'}
-            </h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={isEdit ? 'Edit Fund Report' : 'Create Fund Report'}
+      subtitle={isEdit ? 'Edit Record' : 'New Record'}
+      size="md"
+      footer={
+        <div className="flex justify-end gap-3 w-full">
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            form="report-form"
+            disabled={submitting || isClosed}
+          >
+            {submitting ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Report'}
+          </Button>
+        </div>
+      }
+    >
+      <form id="report-form" onSubmit={handleSubmit} className="space-y-4 text-left">
+        {/* Work Order No. */}
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            Work Order No. <span className="text-red-400">*</span>
+          </label>
+          {isEdit ? (
+            <div className="glass-input rounded-xl px-4 py-3 text-sm font-mono font-semibold text-slate-500 opacity-60 cursor-not-allowed">
+              {form.work_order_no}
+              <span className="ml-2 text-[9px] font-sans uppercase tracking-wider text-slate-600">
+                (linked — immutable)
+              </span>
+            </div>
+          ) : (
+            <div className="relative">
+              <Input
+                type="text"
+                name="work_order_no"
+                value={form.work_order_no}
+                onChange={handleChange}
+                placeholder="e.g. WB_APD_101"
+                list="won-list"
+                required
+                disabled={submitting}
+                size="sm"
+              />
+              <datalist id="won-list">
+                {projects.map((p) => (
+                  <option key={p.work_order_no} value={p.work_order_no} />
+                ))}
+              </datalist>
+              {lookupLoading && (
+                <span className="absolute right-3 top-9 animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-amber-500" />
+              )}
+            </div>
+          )}
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-            {error}
-          </div>
-        )}
+        {/* Project Preview / Mutability Warning */}
+        {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
+        {masterData && !isClosed && <ProjectPreview master={masterData} />}
 
-        <form onSubmit={handleSubmit} className="relative z-10 space-y-4">
-          {/* Work Order No. */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Work Order No. <span className="text-red-400">*</span>
-            </label>
-            {isEdit ? (
-              <div className="glass-input rounded-xl px-4 py-3 text-sm font-mono font-semibold text-slate-500 opacity-60 cursor-not-allowed">
-                {form.work_order_no}
-                <span className="ml-2 text-[9px] font-sans uppercase tracking-wider text-slate-600">
-                  (linked — immutable)
-                </span>
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  name="work_order_no"
-                  value={form.work_order_no}
-                  onChange={handleChange}
-                  placeholder="e.g. WB_APD_101"
-                  list="won-list"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition"
-                />
-                <datalist id="won-list">
-                  {projects.map((p) => (
-                    <option key={p.work_order_no} value={p.work_order_no} />
-                  ))}
-                </datalist>
-                {lookupLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-amber-500" />
-                )}
-              </div>
-            )}
-          </div>
+        {/* Amount */}
+        <Input
+          label="Amount"
+          type="number"
+          name="amount"
+          value={form.amount}
+          onChange={handleChange}
+          placeholder="0.00"
+          step="0.01"
+          min="0"
+          required
+          disabled={submitting || isClosed}
+          size="sm"
+          iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
+          className="font-mono"
+        />
 
-          {/* Project Preview / Mutability Warning */}
-          {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
-          {masterData && !isClosed && <ProjectPreview master={masterData} />}
-
-          {/* Amount */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Amount (₹) <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="number"
-              name="amount"
-              value={form.amount}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              required
-              disabled={submitting || isClosed}
-              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition ${isClosed ? 'opacity-40 cursor-not-allowed' : ''}`}
-            />
-          </div>
-
-          {/* Remarks */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Remarks
-            </label>
-            <textarea
-              name="remarks"
-              value={form.remarks}
-              onChange={handleChange}
-              placeholder="Optional notes or description…"
-              rows={3}
-              disabled={submitting || isClosed}
-              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition resize-none ${isClosed ? 'opacity-40 cursor-not-allowed' : ''}`}
-            />
-          </div>
-
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || isClosed}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md disabled:opacity-50 flex items-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-                  Saving…
-                </>
-              ) : isEdit ? 'Save Changes' : 'Create Report'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Remarks */}
+        <TextArea
+          label="Remarks"
+          name="remarks"
+          value={form.remarks}
+          onChange={handleChange}
+          placeholder="Optional notes or description…"
+          rows={3}
+          disabled={submitting || isClosed}
+          size="sm"
+        />
+      </form>
+    </Modal>
   );
 };
 
-
-
 // ─── Delete Confirm Modal ─────────────────────────────────────────────────────
 const ConfirmModal = ({ message, onConfirm, onClose, danger = true }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div className="glass-panel p-6 rounded-3xl max-w-sm w-full border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${danger ? 'bg-red-500/10' : 'bg-emerald-500/10'}`}>
-          <svg className={`w-5 h-5 ${danger ? 'text-red-400' : 'text-emerald-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {danger
-              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            }
-          </svg>
-        </div>
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-100">
-          {danger ? 'Confirm Delete' : 'Confirm Restore'}
-        </h2>
-      </div>
-      <p className="text-xs text-slate-400 mb-6">{message}</p>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-slate-200 font-bold text-xs uppercase tracking-wider transition">
+  <Modal
+    isOpen={true}
+    onClose={onClose}
+    title={danger ? 'Confirm Delete' : 'Confirm Restore'}
+    size="sm"
+    footer={
+      <div className="flex justify-end gap-3 w-full">
+        <Button variant="secondary" onClick={onClose}>
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={danger ? 'danger' : 'success'}
           onClick={onConfirm}
-          className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md ${
-            danger
-              ? 'bg-red-500/90 hover:bg-red-500 text-white'
-              : 'bg-emerald-500/90 hover:bg-emerald-500 text-slate-950'
-          }`}
         >
           {danger ? 'Delete' : 'Restore'}
-        </button>
+        </Button>
       </div>
-    </div>
-  </div>
+    }
+  >
+    <p className="text-xs text-slate-400 text-left mb-4">{message}</p>
+  </Modal>
 );
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -442,16 +397,18 @@ const FundReports = () => {
               Manage disbursement records linked to project work orders. Auto-fills site data from Master Data.
             </p>
           </div>
-          <button
+          <Button
             id="btn-create-report"
             onClick={() => setModal({ type: 'create' })}
-            className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+            variant="primary"
+            icon={
+              <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
           >
-            <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
             New Report
-          </button>
+          </Button>
         </div>
 
         {/* ── Stat Cards ── */}
@@ -501,28 +458,30 @@ const FundReports = () => {
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                id="search-reports"
-                type="text"
-                placeholder="Search reports…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-medium transition w-52"
-              />
-            </div>
-            <button
+            <Input
+              id="search-reports"
+              type="text"
+              placeholder="Search reports…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="sm"
+              iconLeft={
+                <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              }
+              containerClassName="w-52"
+            />
+            <Button
               onClick={fetchAll}
               title="Refresh"
-              className="p-2.5 rounded-xl glass-input hover:border-white/20 transition-all duration-200 text-slate-400 hover:text-slate-200"
+              variant="glass"
+              size="sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 
