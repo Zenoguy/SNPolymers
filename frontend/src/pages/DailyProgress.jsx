@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
-import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { Button, Input, TextArea, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // API Clients
 import { getProjects } from '../api/projectsApi';
@@ -19,15 +20,10 @@ const DailyProgress = () => {
   
   // Tab control states: 'dashboard' or 'directory'
   const [currentTab, setCurrentTab] = useState('dashboard');
-
-  // Master lists
-  const [projects, setProjects] = useState([]);
-  const [allReports, setAllReports] = useState([]); // Global reports for dashboard feeds/stats
   const [activeWO, setActiveWO] = useState(null); // Selected project object (for spreadsheet view)
-  const [reports, setReports] = useState([]); // Chronological daily reports for the selected project (activeWO)
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const queryClient = useQueryClient();
 
   // Page layout toggles
   const [showCreateFlow, setShowCreateFlow] = useState(false);
@@ -47,7 +43,6 @@ const DailyProgress = () => {
   const [remarksFormError, setRemarksFormError] = useState('');
 
   // Photo Upload States
-  const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [dailySitePhotoUrl, setDailySitePhotoUrl] = useState('');
   const [originalPhotoFilename, setOriginalPhotoFilename] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -84,62 +79,44 @@ const DailyProgress = () => {
     return diffDays >= days;
   };
 
-  // Fetch projects directory and global reports on load
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // 1. Fetch Projects
-      const projRes = await getProjects();
-      const allProjects = projRes.data?.projects ?? [];
-      setProjects(allProjects);
-
-      // 2. Fetch Latest Global reports (limit 100 for dashboard feed)
-      const reportRes = await getProgressReports({ page: 1, limit: 100 });
-      if (reportRes.data?.success) {
-        setAllReports(reportRes.data.reports ?? []);
-      }
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError(err.response?.data?.message || 'Failed to retrieve progress tracking data.');
-    } finally {
-      setLoading(false);
+  // Fetch projects using React Query
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
     }
-  }, []);
+  });
 
-  // Fetch reports specifically for active project timeline (spreadsheet representation)
-  const fetchProjectReports = useCallback(async (workOrderNo) => {
-    setLoading(true);
-    setError('');
-    try {
-      const params = {
-        work_order_no: workOrderNo,
+  // Fetch latest global progress reports using React Query
+  const { data: allReportsData, isLoading: loadingAllReports, error: allReportsError } = useQuery({
+    queryKey: ['progressReports', 'global'],
+    queryFn: async () => {
+      const res = await getProgressReports({ page: 1, limit: 100 });
+      return res.data?.reports ?? [];
+    }
+  });
+
+  // Fetch reports specifically for active project timeline using React Query
+  const { data: projectReportsData, isLoading: loadingProjectReports, error: projectReportsError } = useQuery({
+    queryKey: ['progressReports', 'project', activeWO?.work_order_no],
+    queryFn: async () => {
+      const res = await getProgressReports({
+        work_order_no: activeWO.work_order_no,
         page: 1,
         limit: 100
-      };
-      const reportRes = await getProgressReports(params);
-      if (reportRes.data?.success) {
-        // Sort chronologically ascending (earliest first, latest at bottom)
-        const sortedAsc = (reportRes.data.reports ?? []).slice().reverse();
-        setReports(sortedAsc);
-      }
-    } catch (err) {
-      console.error('Error fetching reports for project:', err);
-      setError(err.response?.data?.message || 'Failed to retrieve progress reports.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      });
+      return (res.data?.reports ?? []).slice().reverse();
+    },
+    enabled: !!activeWO
+  });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+  const projects = projectsData || [];
+  const allReports = allReportsData || [];
+  const reports = projectReportsData || [];
+  const loading = loadingAllReports || (activeWO ? loadingProjectReports : false);
 
-  useEffect(() => {
-    if (activeWO) {
-      fetchProjectReports(activeWO.work_order_no);
-    }
-  }, [activeWO, fetchProjectReports]);
+  const displayError = error || allReportsError?.response?.data?.message || allReportsError?.message || projectReportsError?.response?.data?.message || projectReportsError?.message || '';
 
   // Auto-dismiss alerts
   useEffect(() => {
@@ -185,23 +162,19 @@ const DailyProgress = () => {
     const allowedMime = ['image/jpeg', 'image/png'];
     if (!allowedMime.includes(file.type)) {
       setUploadError('Only JPEG, JPG, PNG files are accepted.');
-      setUploadedPhoto(null);
       return;
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       setUploadError('File size must not exceed 10MB.');
-      setUploadedPhoto(null);
       return;
     }
 
-    setUploadedPhoto(file);
     performUpload(file);
   };
 
   const handleRemovePhoto = () => {
-    setUploadedPhoto(null);
     setDailySitePhotoUrl('');
     setOriginalPhotoFilename('');
     setUploadError('');
@@ -249,8 +222,7 @@ const DailyProgress = () => {
       setSuccess('Daily progress report row submitted successfully.');
       resetForm();
       setShowCreateFlow(false);
-      fetchProjectReports(activeWO.work_order_no);
-      fetchDashboardData(); // Refresh global counts
+      queryClient.invalidateQueries({ queryKey: ['progressReports'] });
     } catch (err) {
       console.error('Report submission failed:', err);
       if (err.response?.status === 409) {
@@ -299,10 +271,7 @@ const DailyProgress = () => {
       if (res.data?.success) {
         setSuccess('Authority remarks saved successfully.');
         setActiveReport(null);
-        fetchDashboardData(); // Refresh global feeds
-        if (activeWO) {
-          fetchProjectReports(activeWO.work_order_no);
-        }
+        queryClient.invalidateQueries({ queryKey: ['progressReports'] });
       }
     } catch (err) {
       console.error('Failed to save remarks:', err);
@@ -434,10 +403,10 @@ const DailyProgress = () => {
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Status Alerts */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-ping" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -459,7 +428,6 @@ const DailyProgress = () => {
               <button
                 onClick={() => {
                   setActiveWO(null);
-                  setReports([]);
                   setActiveReport(null);
                   setShowCreateFlow(false);
                 }}

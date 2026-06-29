@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
-import { Button, Input, Select, Badge, Modal } from '../components/ui';
+import { Button, Input, Modal } from '../components/ui';
 import authApi from '../api/authApi';
 import { exportToExcel, exportToPDF } from '../utils/exportHelpers';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
@@ -33,96 +34,84 @@ const EstimateView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Data States
-  const [estimate, setEstimate] = useState(null);
-  const [items, setItems] = useState([]);
-  const [summary, setSummary] = useState(null);
-  const [revisions, setRevisions] = useState([]);
-  
   // Tab control: 'items' | 'revisions'
   const [activeViewTab, setActiveViewTab] = useState('items');
 
   // Review & Decisions States (ZO & HO)
   const [rowDecisions, setRowDecisions] = useState({}); // item_id -> { approve_status: 'Approve'|'Not Approve', remarks: '' }
-  const [runningApprovedTotal, setRunningApprovedTotal] = useState(0);
-  const [purchaseOptions, setPurchaseOptions] = useState([]);
 
   // Revision Modal State
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [deadlineHours, setDeadlineHours] = useState(24);
 
   // General States
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchEstimateDetails();
-  }, [id]);
-
-  const fetchEstimateDetails = async () => {
-    setLoading(true);
-    setError('');
-    try {
+  // Fetch estimate details using React Query
+  const { data: estimateData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['estimate', id],
+    queryFn: async () => {
       const [detailRes, revisionRes, purchaseRes] = await Promise.all([
         authApi.get(`/estimates/${id}`),
         authApi.get(`/estimates/${id}/revisions`),
         authApi.get('/purchase-data').catch(() => ({ data: { options: [] } }))
       ]);
 
-      if (purchaseRes.data?.success) {
-        setPurchaseOptions(purchaseRes.data.options || []);
-      }
-
-      if (detailRes.data?.success) {
-        setEstimate(detailRes.data.estimate);
-        setItems(detailRes.data.items || []);
-        setSummary(detailRes.data.summary);
-
-        // Prepopulate row decisions if Under ZO Review or Under HO Review
-        const initialDecisions = {};
-        const isZoStage = detailRes.data.estimate.estimate_status === ESTIMATE_STATUS.UNDER_ZO_REVIEW;
-        const isHoStage = detailRes.data.estimate.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW;
-        
-        detailRes.data.items.forEach(item => {
-          initialDecisions[item.item_id] = {
-            approve_status: isZoStage ? (item.zo_office_approve || '') : isHoStage ? (item.ho_office_approve || '') : '',
-            remarks: isZoStage ? (item.zo_remarks || '') : isHoStage ? (item.ho_remarks || '') : '',
-            source_of_purchase: item.source_of_purchase || ''
-          };
-        });
-        setRowDecisions(initialDecisions);
-        calculateRunningTotal(detailRes.data.items, initialDecisions, detailRes.data.estimate.estimate_status);
-      }
-
-      if (revisionRes.data?.success) {
-        setRevisions(revisionRes.data.revisions || []);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load cost estimate details.');
-    } finally {
-      setLoading(false);
+      return {
+        estimate: detailRes.data?.estimate,
+        items: detailRes.data?.items || [],
+        summary: detailRes.data?.summary,
+        revisions: revisionRes.data?.revisions || [],
+        purchaseOptions: purchaseRes.data?.options || []
+      };
     }
-  };
+  });
 
-  const calculateRunningTotal = (itemsList, decisions, status) => {
-    const total = itemsList.reduce((acc, item) => {
-      const dec = decisions[item.item_id];
-      if (status === ESTIMATE_STATUS.UNDER_ZO_REVIEW) {
+  const estimate = estimateData?.estimate;
+  const items = useMemo(() => estimateData?.items || [], [estimateData?.items]);
+  const summary = estimateData?.summary;
+  const revisions = useMemo(() => estimateData?.revisions || [], [estimateData?.revisions]);
+  const purchaseOptions = useMemo(() => estimateData?.purchaseOptions || [], [estimateData?.purchaseOptions]);
+
+  const displayError = error || queryError?.response?.data?.message || queryError?.message || '';
+
+  // Initialize row decisions when estimateData is loaded
+  useEffect(() => {
+    if (!estimateData) return;
+    const initialDecisions = {};
+    const isZoStage = estimate?.estimate_status === ESTIMATE_STATUS.UNDER_ZO_REVIEW;
+    const isHoStage = estimate?.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW;
+    
+    items.forEach(item => {
+      initialDecisions[item.item_id] = {
+        approve_status: isZoStage ? (item.zo_office_approve || '') : isHoStage ? (item.ho_office_approve || '') : '',
+        remarks: isZoStage ? (item.zo_remarks || '') : isHoStage ? (item.ho_remarks || '') : '',
+        source_of_purchase: item.source_of_purchase || ''
+      };
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRowDecisions(initialDecisions);
+  }, [estimateData, estimate, items]);
+
+  const runningApprovedTotal = useMemo(() => {
+    return items.reduce((acc, item) => {
+      const dec = rowDecisions[item.item_id];
+      if (estimate?.estimate_status === ESTIMATE_STATUS.UNDER_ZO_REVIEW) {
         if (dec?.approve_status === 'Approve') {
           return acc + (Number(item.amount) || 0);
         }
-      } else if (status === ESTIMATE_STATUS.UNDER_HO_REVIEW) {
+      } else if (estimate?.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW) {
         if (item.zo_office_approve === 'Approve' && dec?.approve_status === 'Approve') {
           return acc + (Number(item.amount) || 0);
         }
       }
       return acc;
     }, 0);
-    setRunningApprovedTotal(total);
-  };
+  }, [items, rowDecisions, estimate]);
 
   const handleDecisionChange = (itemId, field, value) => {
     const updated = {
@@ -139,7 +128,6 @@ const EstimateView = () => {
     }
 
     setRowDecisions(updated);
-    calculateRunningTotal(items, updated, estimate.estimate_status);
   };
 
   const handleStartReview = async () => {
@@ -150,7 +138,8 @@ const EstimateView = () => {
       const res = await authApi.patch(`/estimates/${id}/review`);
       if (res.data?.success) {
         setSuccess(res.data.message || 'Review stage opened.');
-        fetchEstimateDetails();
+        queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to start review.');
@@ -194,7 +183,8 @@ const EstimateView = () => {
       });
       if (res.data?.success) {
         setSuccess('Row approvals updated successfully.');
-        fetchEstimateDetails();
+        queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save row decisions.');
@@ -241,7 +231,8 @@ const EstimateView = () => {
       const res = await authApi.post(`/estimates/${id}/submit-review`, { remarks });
       if (res.data?.success) {
         setSuccess('Review finalized successfully.');
-        fetchEstimateDetails();
+        queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to submit review.');
@@ -300,7 +291,8 @@ const EstimateView = () => {
       if (res.data?.success) {
         setSuccess('Revision cycle initiated successfully.');
         setShowRevisionModal(false);
-        fetchEstimateDetails();
+        queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to request revision.');
@@ -320,7 +312,8 @@ const EstimateView = () => {
       const res = await authApi.post(`/estimates/${id}/reopen`);
       if (res.data?.success) {
         setSuccess(res.data.message || 'Estimate reopened successfully.');
-        fetchEstimateDetails();
+        queryClient.invalidateQueries({ queryKey: ['estimate', id] });
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to reopen estimate.');
@@ -457,9 +450,9 @@ const EstimateView = () => {
           </div>
         </div>
 
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-6">
-            {error}
+            {displayError}
           </div>
         )}
 

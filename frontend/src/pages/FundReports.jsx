@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
-import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { Button, Input, TextArea, Badge, Modal } from '../components/ui';
 import { getReports, getDeletedReports, createReport, updateReport, deleteReport, restoreReport } from '../api/reportsApi';
 import { getProjects } from '../api/projectsApi';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const EMPTY_FORM = { work_order_no: '', amount: '', remarks: '' };
@@ -80,59 +80,18 @@ const ProjectPreview = ({ master }) => {
 
 // ─── Report Form Modal ────────────────────────────────────────────────────────
 const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
-  const isEdit = mode === 'edit';
   const [form, setForm] = useState(initial ?? EMPTY_FORM);
-  const [masterData, setMasterData] = useState(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [isClosed, setIsClosed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const debounceRef = useRef(null);
 
-  // Auto-fill when editing an existing report
-  useEffect(() => {
-    if (isEdit && initial?.work_order_no) {
-      const proj = projects.find((p) => p.work_order_no === initial.work_order_no);
-      if (proj) {
-        setMasterData(proj);
-        setIsClosed(proj.status === 'Closed');
-      }
-    }
-  }, [isEdit, initial, projects]);
-
-  // Debounced lookup for create mode
-  const lookupProject = useCallback(
-    (won) => {
-      clearTimeout(debounceRef.current);
-      if (!won.trim()) {
-        setMasterData(null);
-        setIsClosed(false);
-        return;
-      }
-      debounceRef.current = setTimeout(() => {
-        const proj = projects.find(
-          (p) => p.work_order_no.toLowerCase() === won.trim().toLowerCase()
-        );
-        if (proj) {
-          setMasterData(proj);
-          setIsClosed(proj.status === 'Closed');
-        } else {
-          setMasterData(null);
-          setIsClosed(false);
-        }
-        setLookupLoading(false);
-      }, 400);
-      setLookupLoading(true);
-    },
-    [projects]
+  const masterData = projects.find(
+    (p) => p.work_order_no.toLowerCase() === form.work_order_no.trim().toLowerCase()
   );
+  const isClosed = masterData?.status === 'Closed';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    if (name === 'work_order_no' && !isEdit) {
-      lookupProject(value);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -154,97 +113,71 @@ const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={isEdit ? 'Edit Fund Report' : 'Create Fund Report'}
-      subtitle={isEdit ? 'Edit Record' : 'New Record'}
+      title={mode === 'edit' ? 'Edit Fund Report' : 'Submit Fund Report'}
       size="md"
       footer={
         <div className="flex justify-end gap-3 w-full">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            disabled={submitting}
-          >
+          <Button variant="secondary" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            form="report-form"
-            disabled={submitting || isClosed}
-          >
-            {submitting ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Report'}
-          </Button>
+          {!isClosed && (
+            <Button
+              type="submit"
+              variant="primary"
+              form="report-form"
+              loading={submitting}
+            >
+              {mode === 'edit' ? 'Save Changes' : 'Submit Report'}
+            </Button>
+          )}
         </div>
       }
     >
-      <form id="report-form" onSubmit={handleSubmit} className="space-y-4 text-left">
-        {/* Work Order No. */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-            Work Order No. <span className="text-red-400">*</span>
-          </label>
-          {isEdit ? (
-            <div className="glass-input rounded-xl px-4 py-3 text-sm font-mono font-semibold text-slate-500 opacity-60 cursor-not-allowed">
-              {form.work_order_no}
-              <span className="ml-2 text-[9px] font-sans uppercase tracking-wider text-slate-600">
-                (linked — immutable)
-              </span>
-            </div>
-          ) : (
-            <div className="relative">
-              <Input
-                type="text"
-                name="work_order_no"
-                value={form.work_order_no}
-                onChange={handleChange}
-                placeholder="e.g. WB_APD_101"
-                list="won-list"
-                required
-                disabled={submitting}
-                size="sm"
-              />
-              <datalist id="won-list">
-                {projects.map((p) => (
-                  <option key={p.work_order_no} value={p.work_order_no} />
-                ))}
-              </datalist>
-              {lookupLoading && (
-                <span className="absolute right-3 top-9 animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-amber-500" />
-              )}
-            </div>
-          )}
+      <form id="report-form" onSubmit={handleSubmit} className="space-y-6 text-left">
+        {error && (
+          <div className="p-4 bg-red-950/25 border border-red-500/30 rounded-2xl text-xs text-red-300 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Input
+            label="Work Order Number"
+            name="work_order_no"
+            value={form.work_order_no}
+            onChange={handleChange}
+            placeholder="e.g. WO-2026-001"
+            required
+            disabled={mode === 'edit' || submitting}
+            size="sm"
+          />
+          <Input
+            label="Disbursed Amount (INR)"
+            name="amount"
+            type="number"
+            value={form.amount}
+            onChange={handleChange}
+            placeholder="0.00"
+            required
+            disabled={isClosed || submitting}
+            size="sm"
+          />
         </div>
 
-        {/* Project Preview / Mutability Warning */}
-        {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
-        {masterData && !isClosed && <ProjectPreview master={masterData} />}
+        <ProjectPreview master={masterData} />
 
-        {/* Amount */}
-        <Input
-          label="Amount"
-          type="number"
-          name="amount"
-          value={form.amount}
-          onChange={handleChange}
-          placeholder="0.00"
-          step="0.01"
-          min="0"
-          required
-          disabled={submitting || isClosed}
-          size="sm"
-          iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
-          className="font-mono"
-        />
-
-        {/* Remarks */}
         <TextArea
-          label="Remarks"
+          label="Payment Remarks / Reference"
           name="remarks"
           value={form.remarks}
           onChange={handleChange}
-          placeholder="Optional notes or description…"
+          placeholder="e.g., RTGS/NEFT Ref No, Date, Vendor Details..."
+          required
+          disabled={isClosed || submitting}
           rows={3}
-          disabled={submitting || isClosed}
           size="sm"
         />
       </form>
@@ -252,40 +185,46 @@ const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
   );
 };
 
-// ─── Delete Confirm Modal ─────────────────────────────────────────────────────
-const ConfirmModal = ({ message, onConfirm, onClose, danger = true }) => (
-  <Modal
-    isOpen={true}
-    onClose={onClose}
-    title={danger ? 'Confirm Delete' : 'Confirm Restore'}
-    size="sm"
-    footer={
-      <div className="flex justify-end gap-3 w-full">
-        <Button variant="secondary" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          variant={danger ? 'danger' : 'success'}
-          onClick={onConfirm}
-        >
-          {danger ? 'Delete' : 'Restore'}
-        </Button>
-      </div>
-    }
-  >
-    <p className="text-xs text-slate-400 text-left mb-4">{message}</p>
-  </Modal>
-);
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
+const ConfirmModal = ({ show, onClose, onConfirm, danger }) => {
+  if (!show) return null;
+  const title = danger ? 'Soft-Delete Report' : 'Restore Report';
+  const message = danger
+    ? 'Are you sure you want to soft-delete this fund report? Admins can restore it later.'
+    : 'Are you sure you want to restore this soft-deleted fund report?';
+
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={title}
+      size="sm"
+      footer={
+        <div className="flex justify-end gap-3 w-full">
+          <Button variant="secondary" onClick={onClose} size="sm">
+            Cancel
+          </Button>
+          <Button
+            variant={danger ? 'danger' : 'success'}
+            onClick={onConfirm}
+            size="sm"
+          >
+            {danger ? 'Delete' : 'Restore'}
+          </Button>
+        </div>
+      }
+    >
+      <p className="text-xs text-slate-400 text-left mb-4">{message}</p>
+    </Modal>
+  );
+};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const FundReports = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const queryClient = useQueryClient();
 
-  const [reports, setReports] = useState([]);
-  const [deletedReports, setDeletedReports] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [tab, setTab] = useState('active'); // 'active' | 'deleted'
@@ -293,26 +232,39 @@ const FundReports = () => {
   const [modal, setModal] = useState(null); // { type, report? }
   const [confirmModal, setConfirmModal] = useState(null); // { type, id, message }
 
-  // ── Fetch ──
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [rRes, pRes] = await Promise.all([getReports(), getProjects()]);
-      setReports(rRes.data?.reports ?? []);
-      setProjects(pRes.data?.projects ?? []);
-      if (isAdmin) {
-        const dRes = await getDeletedReports();
-        setDeletedReports(dRes.data?.reports ?? []);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load data.');
-    } finally {
-      setLoading(false);
+  // Fetch active reports using React Query
+  const { data: reportsData, isLoading: loadingReports, error: reportsError } = useQuery({
+    queryKey: ['fundReports', 'active'],
+    queryFn: async () => {
+      const res = await getReports();
+      return res.data?.reports ?? [];
     }
-  }, [isAdmin]);
+  });
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  // Fetch deleted reports using React Query
+  const { data: deletedReportsData } = useQuery({
+    queryKey: ['fundReports', 'deleted'],
+    queryFn: async () => {
+      const res = await getDeletedReports();
+      return res.data?.reports ?? [];
+    },
+    enabled: isAdmin
+  });
+
+  // Fetch projects using React Query
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
+    }
+  });
+
+  const reports = reportsData || [];
+  const deletedReports = deletedReportsData || [];
+  const projects = projectsData || [];
+  const loading = loadingReports;
+  const displayError = error || reportsError?.response?.data?.message || reportsError?.message;
 
   // Auto-dismiss success
   useEffect(() => {
@@ -323,15 +275,23 @@ const FundReports = () => {
 
   // ── Handlers ──
   const handleCreate = async (form) => {
-    await createReport(form);
-    setSuccess('Fund report created successfully.');
-    fetchAll();
+    try {
+      await createReport(form);
+      setSuccess('Fund report created successfully.');
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create report.');
+    }
   };
 
   const handleUpdate = async (form) => {
-    await updateReport(modal.report.fund_report_id, { amount: form.amount, remarks: form.remarks });
-    setSuccess('Fund report updated successfully.');
-    fetchAll();
+    try {
+      await updateReport(modal.report.fund_report_id, { amount: form.amount, remarks: form.remarks });
+      setSuccess('Fund report updated successfully.');
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update report.');
+    }
   };
 
   const handleDelete = async (id) => {
@@ -339,7 +299,7 @@ const FundReports = () => {
     try {
       await deleteReport(id);
       setSuccess('Report soft-deleted.');
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete report.');
     }
@@ -350,7 +310,7 @@ const FundReports = () => {
     try {
       await restoreReport(id);
       setSuccess('Report restored successfully.');
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to restore report.');
     }
@@ -427,10 +387,10 @@ const FundReports = () => {
         </div>
 
         {/* ── Notifications ── */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -473,7 +433,7 @@ const FundReports = () => {
               containerClassName="w-52"
             />
             <Button
-              onClick={fetchAll}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['fundReports'] })}
               title="Refresh"
               variant="glass"
               size="sm"

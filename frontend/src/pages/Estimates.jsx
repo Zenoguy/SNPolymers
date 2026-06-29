@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
@@ -42,18 +42,14 @@ const formatINR = (value) => {
   }).format(num);
 };
 
+import { useQuery } from '@tanstack/react-query';
+
 const Estimates = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [estimates, setEstimates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   
   const [hoTab, setHoTab] = useState('active'); // active | history for HO users
   const [selectedFilter, setSelectedFilter] = useState('All'); // 'All' | 'Draft'
@@ -63,14 +59,10 @@ const Estimates = () => {
   const isJE = user?.role === 'je' || user?.role === 'staff';
   const isHO = user?.role === 'ho';
 
-  useEffect(() => {
-    fetchEstimatesList();
-  }, [page, hoTab]);
-
-  const fetchEstimatesList = async () => {
-    setLoading(true);
-    setError('');
-    try {
+  // Fetch estimates list using React Query
+  const { data: estimatesData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['estimates', { page, view: isHO ? hoTab : undefined }],
+    queryFn: async () => {
       const params = {
         page,
         limit
@@ -81,26 +73,17 @@ const Estimates = () => {
       }
       
       const response = await authApi.get('/estimates', { params });
-      if (response.data?.success) {
-        setEstimates(response.data.estimates || []);
-        setTotalPages(response.data.pagination?.totalPages || 1);
-        setTotalItems(response.data.pagination?.total || 0);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch cost estimates.');
-    } finally {
-      setLoading(false);
+      return response.data;
     }
-  };
+  });
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  const estimates = estimatesData?.estimates || [];
+  const totalPages = estimatesData?.pagination?.totalPages || 1;
+  const totalItems = estimatesData?.pagination?.total || 0;
+
+  const displayError = queryError?.response?.data?.message || queryError?.message || '';
+
+
 
   const handleCardClick = (id) => {
     navigate(`/estimates/${id}`);
@@ -170,10 +153,10 @@ const Estimates = () => {
           )}
         </div>
 
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-6 flex items-center gap-2.5 shrink-0">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
 

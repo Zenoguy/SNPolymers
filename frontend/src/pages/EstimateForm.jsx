@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import { Button, Input, TextArea, Select } from '../components/ui';
 import authApi from '../api/authApi';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
@@ -26,6 +27,7 @@ const EstimateForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isEditMode = !!id;
+  const queryClient = useQueryClient();
 
   // Header State
   const [workOrders, setWorkOrders] = useState([]);
@@ -66,21 +68,35 @@ const EstimateForm = () => {
   const totalPages = Math.max(Math.ceil(items.length / itemsPerPage), 1);
 
   // General States
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [createdEstimateId, setCreatedEstimateId] = useState(null);
 
-  useEffect(() => {
-    initForm();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+  const startCountdown = (targetDate) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const updateTimer = () => {
+      const now = new Date();
+      const diffMs = targetDate - now;
+
+      if (diffMs <= 0) {
+        setTimeRemaining('Revision Deadline Expired');
+        setIsExpired(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+      } else {
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+        setTimeRemaining(`${hrs}h ${mins}m ${secs}s`);
+      }
     };
-  }, [id]);
+
+    updateTimer();
+    timerRef.current = setInterval(updateTimer, 1000);
+  };
 
   const initForm = async () => {
-    setLoading(true);
     setError('');
     try {
       // 1. Fetch catalog version, catalog data, and purchase options
@@ -167,33 +183,17 @@ const EstimateForm = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to initialize estimate form.');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const startCountdown = (targetDate) => {
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    const updateTimer = () => {
-      const now = new Date();
-      const diffMs = targetDate - now;
-
-      if (diffMs <= 0) {
-        setTimeRemaining('Revision Deadline Expired');
-        setIsExpired(true);
-        if (timerRef.current) clearInterval(timerRef.current);
-      } else {
-        const hrs = Math.floor(diffMs / 3600000);
-        const mins = Math.floor((diffMs % 3600000) / 60000);
-        const secs = Math.floor((diffMs % 60000) / 1000);
-        setTimeRemaining(`${hrs}h ${mins}m ${secs}s`);
-      }
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    initForm();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
     };
-
-    updateTimer();
-    timerRef.current = setInterval(updateTimer, 1000);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleWorkOrderChange = async (workOrderNo) => {
     setSelectedWorkOrder(workOrderNo);
@@ -343,6 +343,10 @@ const EstimateForm = () => {
       });
       if (saveRes.data?.success) {
         setSuccess('Estimate draft saved successfully.');
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
+        if (currentId) {
+          queryClient.invalidateQueries({ queryKey: ['estimate', String(currentId)] });
+        }
         setTimeout(() => navigate(`/estimates/${currentId}`), 1500);
       }
     } catch (err) {
@@ -404,6 +408,10 @@ const EstimateForm = () => {
       const submitRes = await authApi.post(`/estimates/${currentId}/submit`);
       if (submitRes.data?.success) {
         setSuccess('Estimate submitted successfully.');
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
+        if (currentId) {
+          queryClient.invalidateQueries({ queryKey: ['estimate', String(currentId)] });
+        }
         setTimeout(() => navigate(`/estimates/${currentId}`), 1500);
       }
     } catch (err) {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import { Button, Input } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Subcomponents
 import DashboardMetrics from '../components/fundRequests/DashboardMetrics';
@@ -17,8 +18,7 @@ import { getFundRequests, createFundRequest, cancelFundRequest, actOnFundRequest
 
 const FundRequests = () => {
   const { user } = useAuth();
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
@@ -40,22 +40,17 @@ const FundRequests = () => {
 
   const isZoUser = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const reqRes = await getFundRequests();
-      setRequests(reqRes.data?.fundRequests ?? []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch fund requests.');
-    } finally {
-      setLoading(false);
+  // Fetch fund requests using React Query
+  const { data: requestsData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['fundRequests'],
+    queryFn: async () => {
+      const res = await getFundRequests();
+      return res.data?.fundRequests ?? [];
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const requests = requestsData || [];
+  const displayError = error || queryError?.response?.data?.message || queryError?.message;
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -65,9 +60,13 @@ const FundRequests = () => {
   }, [success]);
 
   const handleCreate = async (formData) => {
-    await createFundRequest(formData);
-    setSuccess(`Fund request ${formData.zo_fr_no} submitted successfully.`);
-    fetchData();
+    try {
+      await createFundRequest(formData);
+      setSuccess(`Fund request ${formData.zo_fr_no} submitted successfully.`);
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create fund request.');
+    }
   };
 
   const handleCancel = async () => {
@@ -78,7 +77,7 @@ const FundRequests = () => {
       await cancelFundRequest(cancelTarget.id);
       setSuccess(`Fund request ${cancelTarget.no} cancelled successfully.`);
       setCancelTarget(null);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel fund request.');
     } finally {
@@ -92,16 +91,20 @@ const FundRequests = () => {
       await cancelFundRequest(id);
       setSuccess('Fund request cancelled successfully.');
       setActiveRequest(null);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel fund request.');
     }
   };
 
   const handleAct = async (id, actionData) => {
-    await actOnFundRequest(id, actionData);
-    setSuccess(`Fund request successfully ${actionData.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
-    fetchData();
+    try {
+      await actOnFundRequest(id, actionData);
+      setSuccess(`Fund request successfully ${actionData.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to act on fund request.');
+    }
   };
 
   const handleFilterChange = (key, value) => {
@@ -173,10 +176,10 @@ const FundRequests = () => {
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Notifications */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -191,7 +194,7 @@ const FundRequests = () => {
           <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
             <RequestDetailPanel
               user={user}
-              request={activeRequest}
+              request={requests.find(r => r.id === activeRequest?.id) || activeRequest}
               onClose={() => {
                 setActiveRequest(null);
                 setShowCreateFlow(false);
@@ -261,7 +264,7 @@ const FundRequests = () => {
                       containerClassName="w-full sm:w-48"
                     />
                     <Button
-                      onClick={fetchData}
+                      onClick={() => queryClient.invalidateQueries({ queryKey: ['fundRequests'] })}
                       title="Refresh"
                       variant="glass"
                       size="sm"

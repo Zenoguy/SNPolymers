@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1/au
 const authApi = axios.create({
   baseURL: API_URL,
   withCredentials: true, // enable carrying cookies (httpOnly session token)
+  timeout: 15000, // 15 seconds timeout to prevent indefinite hangs
   headers: {
     'Content-Type': 'application/json',
   },

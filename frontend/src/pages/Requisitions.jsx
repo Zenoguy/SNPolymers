@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
@@ -14,7 +14,8 @@ import {
   uploadRequisitionPdf,
   uploadGstBillPdf
 } from '../api/requisitionsApi';
-import { Button, Input, TextArea, Select, Badge, Modal } from '../components/ui';
+import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Helper for currency formatting
 const formatCurrency = (val) =>
@@ -73,23 +74,13 @@ const CancelConfirmModal = ({ requisitionNo, isCancelling, onConfirm, onClose })
 
 // Detail Modal for viewing requisition metadata and PDF previews
 const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
-  const [requisition, setRequisition] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        const res = await getRequisitionById(reqId);
-        setRequisition(res.data?.requisition);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to retrieve details.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDetail();
-  }, [reqId]);
+  const { data: requisition, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['requisition', reqId],
+    queryFn: async () => {
+      const res = await getRequisitionById(reqId);
+      return res.data?.requisition;
+    }
+  });
 
   if (loading) {
     return (
@@ -101,6 +92,8 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
       </Modal>
     );
   }
+
+  const error = queryError?.response?.data?.message || queryError?.message;
 
   if (error || !requisition) {
     return (
@@ -1015,15 +1008,12 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
 };
 
 // Main Requisitions Page Component
+// Main Requisitions Page Component
 const Requisitions = () => {
   const { user } = useAuth();
   const isCreator = ['je', 'admin'].includes(user?.role);
+  const queryClient = useQueryClient();
 
-  const [requisitions, setRequisitions] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [estimates, setEstimates] = useState([]);
-  const [mainHeads, setMainHeads] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -1038,32 +1028,46 @@ const Requisitions = () => {
   const [currentTab, setCurrentTab] = useState(user?.role === 'je' ? 'all' : 'pending');
   const [actionTargetReq, setActionTargetReq] = useState(null);
 
-  // Fetch all core datasets
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [reqRes, projRes, estRes, categoriesRes] = await Promise.all([
-        getRequisitions(),
-        getProjects(),
-        getEstimates(),
-        getMaterialCategories()
-      ]);
-      setRequisitions(reqRes.data?.requisitions ?? []);
-      setProjects(projRes.data?.projects ?? []);
-      setEstimates(estRes.data?.estimates ?? []);
-      setMainHeads(categoriesRes.data?.mainHeads ?? []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load requisitions data.');
-    } finally {
-      setLoading(false);
+  // Fetch all core datasets using React Query
+  const { data: requisitionsData, isLoading: loadingRequisitions, error: requisitionsError } = useQuery({
+    queryKey: ['requisitions'],
+    queryFn: async () => {
+      const res = await getRequisitions();
+      return res.data?.requisitions ?? [];
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchAll();
-  }, [fetchAll]);
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
+    }
+  });
+
+  const { data: estimatesData } = useQuery({
+    queryKey: ['estimates'],
+    queryFn: async () => {
+      const res = await getEstimates();
+      return res.data?.estimates ?? [];
+    }
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['materialCategories'],
+    queryFn: async () => {
+      const res = await getMaterialCategories();
+      return res.data?.mainHeads ?? [];
+    }
+  });
+
+  const requisitions = requisitionsData || [];
+  const projects = projectsData || [];
+  const estimates = estimatesData || [];
+  const mainHeads = categoriesData || [];
+  const loading = loadingRequisitions;
+
+  const displayError = error || requisitionsError?.response?.data?.message || requisitionsError?.message || '';
 
   // Success auto-dismiss
   useEffect(() => {
@@ -1074,16 +1078,25 @@ const Requisitions = () => {
 
   // Create requisition save callback
   const handleCreate = async (payload) => {
-    await createRequisition(payload);
-    setSuccess(`Requisition ${payload.requisition_no} submitted successfully.`);
-    fetchAll();
+    try {
+      await createRequisition(payload);
+      setSuccess(`Requisition ${payload.requisition_no} submitted successfully.`);
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create requisition.');
+    }
   };
 
   // M6b Approve/Hold action callback
   const handleAct = async (id, actionPayload) => {
-    await actOnRequisition(id, actionPayload);
-    setSuccess(`Requisition successfully ${actionPayload.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
-    fetchAll();
+    try {
+      await actOnRequisition(id, actionPayload);
+      setSuccess(`Requisition successfully ${actionPayload.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['requisition', id] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to act on requisition.');
+    }
   };
 
   // Cancel requisition confirm callback
@@ -1097,7 +1110,8 @@ const Requisitions = () => {
       setCancelTarget(null);
       // Close detail view if open
       setActiveReqId(null);
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['requisition', cancelTarget.id] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel requisition.');
     } finally {
@@ -1187,10 +1201,10 @@ const Requisitions = () => {
         </div>
 
         {/* Notifications */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 animate-pulse text-left">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -1241,7 +1255,7 @@ const Requisitions = () => {
             <Button
               variant="glass"
               size="sm"
-              onClick={fetchAll}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['requisitions'] })}
               title="Refresh"
               icon={
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

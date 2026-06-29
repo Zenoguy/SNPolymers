@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { Link } from 'react-router-dom';
 import BackgroundShapes from '../components/BackgroundShapes';
 import authApi from '../api/authApi';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { useQuery } from '@tanstack/react-query';
 
 const formatTimeAgo = (dateStr) => {
   if (!dateStr) return 'N/A';
@@ -26,47 +27,47 @@ const formatTimeAgo = (dateStr) => {
 };
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
-  const [overview, setOverview] = useState({
+  const { user } = useAuth();
+
+  // Fetch dashboard overview and recent activities using React Query
+  const { data: overviewData } = useQuery({
+    queryKey: ['dashboardOverview'],
+    queryFn: async () => {
+      const res = await authApi.get('/projects/dashboard/overview');
+      return res.data;
+    },
+    refetchInterval: 30000, // Polling every 30 seconds
+  });
+
+  const overview = overviewData?.overview || {
     totalProjects: 20,
     running: 14,
     closed: 3,
     maintenance: 3,
     lastUpdatedProject: 'WB_APD_101',
-    lastUpdatedAt: new Date(Date.now() - 2 * 60 * 1000).toISOString()
+    lastUpdatedAt: '2026-06-30T02:00:00.000Z'
+  };
+
+  const activities = overviewData?.recentActivity || [];
+
+  // Fetch estimates overview using React Query
+  const { data: estimatesData } = useQuery({
+    queryKey: ['estimatesOverview'],
+    queryFn: async () => {
+      const res = await authApi.get('/estimates?limit=100');
+      return res.data;
+    },
+    refetchInterval: 30000, // Polling every 30 seconds
   });
-  const [activities, setActivities] = useState([]);
-  const [loadingOverview, setLoadingOverview] = useState(true);
-  const [estimatesOverview, setEstimatesOverview] = useState({ total: 0, pending: 0 });
 
-  useEffect(() => {
-    const fetchOverview = async () => {
-      try {
-        const res = await authApi.get('/projects/dashboard/overview');
-        if (res.data?.success) {
-          setOverview(res.data.overview);
-          setActivities(res.data.recentActivity || []);
-        }
-
-        const estRes = await authApi.get('/estimates?limit=100');
-        if (estRes.data?.success) {
-          const total = estRes.data.pagination.total || 0;
-          const pending = estRes.data.estimates.filter(
-            e => !['Final Approved', 'Rejected by ZO', 'Rejected by HO'].includes(e.estimate_status)
-          ).length;
-          setEstimatesOverview({ total, pending });
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard overview:', err);
-      } finally {
-        setLoadingOverview(false);
-      }
-    };
-
-    fetchOverview();
-    const interval = setInterval(fetchOverview, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const estimatesOverview = useMemo(() => {
+    if (!estimatesData) return { total: 0, pending: 0 };
+    const total = estimatesData.pagination?.total || 0;
+    const pending = (estimatesData.estimates || []).filter(
+      e => !['Final Approved', 'Rejected by ZO', 'Rejected by HO'].includes(e.estimate_status)
+    ).length;
+    return { total, pending };
+  }, [estimatesData]);
 
   return (
     <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">

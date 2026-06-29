@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProjects } from '../api/projectsApi';
 import {
   getBills,
@@ -41,24 +42,13 @@ const formatDateTime = (dateStr) => {
 
 const RAFinalBill = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   // Tab control states: 'dashboard' or 'directory'
   const [currentTab, setCurrentTab] = useState('dashboard');
   
   // Active Project (Work Order Bill Sheet View)
   const [activeWO, setActiveWO] = useState(null); // Selected project metadata object
-  const [projectBills, setProjectBills] = useState([]); // Bills list for the selected project
-  const [loadingProjectBills, setLoadingProjectBills] = useState(false);
-  const [projectSummaryData, setProjectSummaryData] = useState({
-    work_order_value: 0,
-    previous_bill_amount: 0,
-    dropdown_options: []
-  });
-
-  // Master lists
-  const [bills, setBills] = useState([]); // Global bills for overview dashboard
-  const [projects, setProjects] = useState([]); // Directory projects list
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -74,8 +64,6 @@ const RAFinalBill = () => {
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalBillsCount, setTotalBillsCount] = useState(0);
 
   // Directory Search Filters
   const [dirSearchWO, setDirSearchWO] = useState('');
@@ -118,18 +106,19 @@ const RAFinalBill = () => {
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Overall Stats
-  const [stats, setStats] = useState({
-    totalBills: 0,
-    totalBilledAmount: 0,
-    finalBillsCount: 0
+  // Fetch projects using React Query
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
+    }
   });
 
-  // Fetch all bills for list view
-  const fetchBillsList = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
+  // Fetch paginated bills list using React Query
+  const { data: billsData, isLoading: loadingBills, error: billsError } = useQuery({
+    queryKey: ['bills', { page, filterWO, filterType, filterDateFrom, filterDateTo }],
+    queryFn: async () => {
       const params = {
         page,
         limit: 10,
@@ -139,86 +128,75 @@ const RAFinalBill = () => {
         date_to: filterDateTo || undefined
       };
       const res = await getBills(params);
-      if (res.data?.success) {
-        setBills(res.data.bills ?? []);
-        setTotalPages(res.data.pagination.totalPages || 1);
-        setTotalBillsCount(res.data.pagination.total || 0);
-      }
-    } catch (err) {
-      console.error('Failed to fetch bills:', err);
-      setError(err.response?.data?.message || 'Failed to retrieve bill list.');
-    } finally {
-      setLoading(false);
+      return res.data;
     }
-  }, [page, filterWO, filterType, filterDateFrom, filterDateTo]);
+  });
 
-  // Fetch projects directory and global summary stats
-  const fetchInitialData = useCallback(async () => {
-    try {
-      const projRes = await getProjects();
-      if (projRes.data?.projects) {
-        setProjects(projRes.data.projects);
-      }
-      
-      // Fetch stats by retrieving all bills
-      const statsRes = await getBills({ limit: 1000 });
-      if (statsRes.data?.success) {
-        const all = statsRes.data.bills || [];
-        const totalAmt = all.reduce((sum, b) => sum + Number(b.bill_amount_with_gst || 0), 0);
-        const finalCount = all.filter(b => b.payment_type === 'Final Bill').length;
-        setStats({
-          totalBills: all.length,
-          totalBilledAmount: totalAmt,
-          finalBillsCount: finalCount
-        });
-      }
-    } catch (err) {
-      console.error('Failed to load initial data:', err);
+  // Fetch stats (all bills) using React Query
+  const { data: statsBillsData } = useQuery({
+    queryKey: ['bills', 'stats'],
+    queryFn: async () => {
+      const res = await getBills({ limit: 1000 });
+      return res.data?.bills ?? [];
     }
-  }, []);
+  });
 
-  // Fetch reports specifically for an active project timeline (spreadsheet representation)
-  const fetchProjectBillSheet = useCallback(async (workOrderNo) => {
-    setLoadingProjectBills(true);
-    try {
-      // 1. Fetch bills filtered for this work order
-      const billsRes = await getBills({ work_order_no: workOrderNo, limit: 200 });
-      if (billsRes.data?.success) {
-        // Sort chronologically ascending (earliest first, latest at bottom)
-        const sortedAsc = (billsRes.data.bills ?? []).slice().reverse();
-        setProjectBills(sortedAsc);
-      }
+  // Fetch bills for active project timeline using React Query
+  const { data: projectBillsData, isLoading: loadingProjBills } = useQuery({
+    queryKey: ['bills', 'project', activeWO?.work_order_no],
+    queryFn: async () => {
+      const res = await getBills({ work_order_no: activeWO.work_order_no, limit: 200 });
+      return (res.data?.bills ?? []).slice().reverse();
+    },
+    enabled: !!activeWO
+  });
 
-      // 2. Fetch live metrics
-      const summaryRes = await getBillSummary(workOrderNo);
-      if (summaryRes.data?.success) {
-        setProjectSummaryData({
-          work_order_value: summaryRes.data.work_order_value,
-          previous_bill_amount: summaryRes.data.previous_bill_amount,
-          dropdown_options: summaryRes.data.dropdown_options
-        });
-      }
-    } catch (err) {
-      console.error('Failed to retrieve project bill sheet:', err);
-      setError('Failed to retrieve project bill ledger.');
-    } finally {
-      setLoadingProjectBills(false);
-    }
-  }, []);
+  // Fetch bill summary for active project using React Query
+  const { data: projectSummaryResData, isLoading: loadingProjSummary } = useQuery({
+    queryKey: ['billSummary', activeWO?.work_order_no],
+    queryFn: async () => {
+      const res = await getBillSummary(activeWO.work_order_no);
+      return res.data;
+    },
+    enabled: !!activeWO
+  });
 
+  const projects = projectsData || [];
+  const bills = billsData?.bills || [];
+  const totalPages = billsData?.pagination?.totalPages || 1;
+  const totalBillsCount = billsData?.pagination?.total || 0;
+
+  const stats = useMemo(() => {
+    const all = statsBillsData || [];
+    const totalAmt = all.reduce((sum, b) => sum + Number(b.bill_amount_with_gst || 0), 0);
+    const finalCount = all.filter(b => b.payment_type === 'Final Bill').length;
+    return {
+      totalBills: all.length,
+      totalBilledAmount: totalAmt,
+      finalBillsCount: finalCount
+    };
+  }, [statsBillsData]);
+
+  const projectBills = projectBillsData || [];
+  const projectSummaryData = useMemo(() => {
+    return {
+      work_order_value: projectSummaryResData?.work_order_value || 0,
+      previous_bill_amount: projectSummaryResData?.previous_bill_amount || 0,
+      dropdown_options: projectSummaryResData?.dropdown_options || []
+    };
+  }, [projectSummaryResData]);
+
+  const loading = loadingBills;
+  const loadingProjectBills = loadingProjBills || loadingProjSummary;
+
+  const displayError = error || billsError?.response?.data?.message || billsError?.message || '';
+
+  // Success auto-dismiss
   useEffect(() => {
-    fetchBillsList();
-  }, [fetchBillsList]);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
-
-  useEffect(() => {
-    if (activeWO) {
-      fetchProjectBillSheet(activeWO.work_order_no);
-    }
-  }, [activeWO, fetchProjectBillSheet]);
+    if (!success) return;
+    const timer = setTimeout(() => setSuccess(''), 5000);
+    return () => clearTimeout(timer);
+  }, [success]);
 
   // Handle Work Order selection change (Within Create Panel)
   const handleWorkOrderChange = async (e) => {
@@ -423,13 +401,8 @@ const RAFinalBill = () => {
       if (res.data?.success) {
         setSuccess('Bill entry saved successfully.');
         handleCancel();
-        
-        // Refresh appropriate tables
-        fetchBillsList();
-        fetchInitialData();
-        if (activeWO) {
-          fetchProjectBillSheet(activeWO.work_order_no);
-        }
+        queryClient.invalidateQueries({ queryKey: ['bills'] });
+        queryClient.invalidateQueries({ queryKey: ['billSummary'] });
       }
     } catch (err) {
       console.error('Failed to save bill entry:', err);
@@ -497,10 +470,10 @@ const RAFinalBill = () => {
 
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         {/* Status Alerts */}
-        {error && (
-          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg animate-fadeIn">
+        {displayError && (
+          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg text-left">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-ping" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -804,7 +777,7 @@ const RAFinalBill = () => {
                       Reset Filters
                     </Button>
                     <Button
-                      onClick={fetchBillsList}
+                      onClick={() => queryClient.invalidateQueries({ queryKey: ['bills'] })}
                       size="sm"
                     >
                       Apply Filter
