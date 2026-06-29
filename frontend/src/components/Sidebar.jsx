@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useTheme } from './ThemeContext';
 
 export const MobileHeader = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -34,6 +36,21 @@ export const MobileHeader = () => {
             </Link>
           )}
           <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-slate-100 transition"
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {theme === 'light' ? (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            )}
+          </button>
+          <button
             onClick={logout}
             className="text-[10px] bg-red-950/20 border border-red-900/30 text-red-400 font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg"
           >
@@ -47,6 +64,7 @@ export const MobileHeader = () => {
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const currentPath = location.pathname;
   const isAdmin = user?.role === 'admin';
@@ -241,6 +259,46 @@ const Sidebar = () => {
       {/* Operator Profile and Logout */}
       {user && (
         <div className="border-t border-white/5 pt-6 mt-auto">
+          {/* Theme Toggle Button */}
+          {isCollapsed ? (
+            <button
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-slate-100 transition-all duration-300 mb-4 mx-auto"
+            >
+              {theme === 'light' ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-slate-100 text-xs font-bold uppercase tracking-wider transition-all duration-300 mb-4"
+            >
+              {theme === 'light' ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                  Dark Mode
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                  </svg>
+                  Light Mode
+                </>
+              )}
+            </button>
+          )}
+
           {isCollapsed ? (
             <div className="flex flex-col items-center gap-4">
               <div

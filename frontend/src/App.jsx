@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext';
+import { ThemeProvider } from './components/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -35,55 +36,57 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify-otp" element={<OtpVerify />} />
-          <Route path="/telegram-setup" element={<TelegramSetup />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/verify-otp" element={<OtpVerify />} />
+            <Route path="/telegram-setup" element={<TelegramSetup />} />
 
-          {/* Protected Routes (All Phase 2 Roles) */}
-          <Route element={<ProtectedRoute allowedRoles={['staff', 'admin', 'je', 'zo', 'ho']} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/fund-reports" element={<FundReports />} />
-            <Route path="/materials" element={<MaterialMaster />} />
-            <Route path="/estimates" element={<Estimates />} />
-            <Route path="/estimates/new" element={<EstimateForm />} />
-            <Route path="/estimates/:id" element={<EstimateView />} />
-            <Route path="/estimates/:id/edit" element={<EstimateForm />} />
-          </Route>
+            {/* Protected Routes (All Phase 2 Roles) */}
+            <Route element={<ProtectedRoute allowedRoles={['staff', 'admin', 'je', 'zo', 'ho']} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/fund-reports" element={<FundReports />} />
+              <Route path="/materials" element={<MaterialMaster />} />
+              <Route path="/estimates" element={<Estimates />} />
+              <Route path="/estimates/new" element={<EstimateForm />} />
+              <Route path="/estimates/:id" element={<EstimateView />} />
+              <Route path="/estimates/:id/edit" element={<EstimateForm />} />
+            </Route>
 
-          {/* Requisitions & Daily Work Progress Protected Routes (JE, ZO, HO, Admin) */}
-          <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
-            <Route path="/requisitions" element={<Requisitions />} />
-            <Route path="/daily-progress" element={<DailyProgress />} />
-          </Route>
+            {/* Requisitions & Daily Work Progress Protected Routes (JE, ZO, HO, Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
+              <Route path="/requisitions" element={<Requisitions />} />
+              <Route path="/daily-progress" element={<DailyProgress />} />
+            </Route>
 
-          {/* Fund Requests Protected Routes (ZO, HO, Admin) */}
-          <Route element={<ProtectedRoute allowedRoles={['zo', 'staff', 'ho', 'admin']} />}>
-            <Route path="/fund-requests" element={<FundRequests />} />
-          </Route>
+            {/* Fund Requests Protected Routes (ZO, HO, Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['zo', 'staff', 'ho', 'admin']} />}>
+              <Route path="/fund-requests" element={<FundRequests />} />
+            </Route>
 
-          {/* RA/Final Bills Protected Routes (ZO, HO, Admin) */}
-          <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
-            <Route path="/ra-final-bills" element={<RAFinalBill />} />
-          </Route>
+            {/* RA/Final Bills Protected Routes (ZO, HO, Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
+              <Route path="/ra-final-bills" element={<RAFinalBill />} />
+            </Route>
 
-          {/* Admin Protected Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/admin/sessions" element={<AuditLog />} />
-            <Route path="/admin/master-data" element={<MasterData />} />
-            <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
-          </Route>
+            {/* Admin Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/sessions" element={<AuditLog />} />
+              <Route path="/admin/master-data" element={<MasterData />} />
+              <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
+            </Route>
 
-          {/* Fallback Catch All */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+            {/* Fallback Catch All */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

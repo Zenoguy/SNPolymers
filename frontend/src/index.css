@@ -113,3 +113,143 @@
   }
 }
 
+/* ─── Light Mode Styles & Overrides ────────────────────────────────────────── */
+body.light {
+  background-color: #f8fafc;
+  color: #0f172a;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
+}
+
+body.light ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.24);
+}
+
+/* Glassmorphism Panel overrides */
+body.light .glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+/* Hoverable Glass Card overrides */
+body.light .glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.05),
+    0 0 25px rgba(99, 102, 241, 0.02),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Glassmorphic inputs overrides */
+body.light .glass-input {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+
+body.light .glass-input:focus {
+  background: #ffffff;
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 
+    0 0 15px rgba(245, 158, 11, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+body.light .glass-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Floating navigation specific glass overrides */
+body.light .glass-nav {
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Dynamic Glow effects for active cards overrides */
+body.light .glow-border-active {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.03),
+    0 0 20px rgba(245, 158, 11, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+/* Text and Background Contrast Overrides */
+body.light {
+  font-weight: 500;
+}
+
+body.light .text-slate-100,
+body.light .text-slate-200,
+body.light .text-slate-300,
+body.light .text-white {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+body.light .text-slate-400,
+body.light .text-slate-500 {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+body.light .border-white\/5,
+body.light .border-white\/10,
+body.light .border-white\/15,
+body.light .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Force dark page wrappers to show the light body background */
+body.light .bg-black {
+  background-color: transparent !important;
+}
+body.light .bg-slate-950 {
+  background-color: transparent !important;
+}
+
+/* Override white primary buttons to dark slate for readability */
+body.light .bg-white {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+body.light .bg-white:hover {
+  background-color: #1e293b !important;
+}
+body.light .bg-white svg {
+  stroke: #ffffff !important;
+}
+body.light .bg-white span {
+  color: #ffffff !important;
+}
+
+body.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+body.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light .bg-white\/\[0\.01\],
+body.light .bg-white\/\[0\.02\],
+body.light .bg-white\/\[0\.025\] {
+  background-color: rgba(0, 0, 0, 0.015) !important;
+}
+
