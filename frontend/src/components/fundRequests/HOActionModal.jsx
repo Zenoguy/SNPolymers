@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const HOActionModal = ({ user, request, onClose, onSave }) => {
   const [action, setAction] = useState('Approve'); // 'Approve' | 'Hold'
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(request?.zo_fr_amount || '');
   const [account, setAccount] = useState('');
   const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  // Default amount to requested amount for convenience
-  useEffect(() => {
-    if (request) {
-      setAmount(request.zo_fr_amount);
-    }
-  }, [request]);
 
   const handleActionChange = (e) => {
     const act = e.target.value;

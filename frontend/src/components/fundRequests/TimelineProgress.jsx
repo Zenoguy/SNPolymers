@@ -40,12 +40,12 @@ const TimelineProgress = ({ status }) => {
         {/* Connector Line */}
         <div className="absolute left-4 right-4 h-0.5 bg-slate-800 -translate-y-2 pointer-events-none z-0" />
 
-        {stages.map((stage, idx) => {
+        {stages.map((stage) => {
           const state = getStageState(stage.key);
           
           let circleClass = "bg-slate-900 border-slate-700 text-slate-600";
           let labelClass = "text-slate-500";
-          let checkIcon = null;
+          let checkIcon;
 
           if (state === 'completed') {
             circleClass = "bg-emerald-500/20 border-emerald-500 text-emerald-400 z-10 scale-110";

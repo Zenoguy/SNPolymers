@@ -49,14 +49,11 @@ const MaterialMaster = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
+      setPage(1);
     }, 400);
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Reset page when search or filters change
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, mainHeadFilter, subHeadFilter, activeFilter]);
 
   // Fetch unique categories for filtering dropdowns using React Query
   const { data: categoriesData } = useQuery({
@@ -114,15 +111,7 @@ const MaterialMaster = () => {
   const materials = materialsData?.materials || [];
   const totalItems = materialsData?.pagination?.totalItems || 0;
   const totalPages = materialsData?.pagination?.totalPages || 1;
-
-  // Sync query error with error state
-  useEffect(() => {
-    if (queryError) {
-      setErrorMsg('Failed to load Material Master items. Please try again.');
-    } else {
-      setErrorMsg('');
-    }
-  }, [queryError]);
+  const displayErrorMsg = errorMsg || (queryError ? 'Failed to load Material Master items. Please try again.' : '');
 
   // Prefetch the next page of results
   useEffect(() => {
@@ -308,9 +297,9 @@ const MaterialMaster = () => {
             {successMsg}
           </div>
         )}
-        {errorMsg && (
+        {displayErrorMsg && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-xl animate-fade-in">
-            {errorMsg}
+            {displayErrorMsg}
           </div>
         )}
 

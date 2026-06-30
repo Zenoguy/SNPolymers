@@ -32,7 +32,6 @@ const RequestDetailPanel = ({
   const isZoOrAdmin = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
 
   // State values
-  const [selectedProject, setSelectedProject] = useState(null);
   const [zoFrNo, setZoFrNo] = useState('');
   const [zoFrAmount, setZoFrAmount] = useState('');
   const [zoRemarks, setZoRemarks] = useState('');
@@ -51,54 +50,54 @@ const RequestDetailPanel = ({
 
   // Load request details if viewing
   useEffect(() => {
-    if (request) {
-      setZoFrNo(request.zo_fr_no);
-      setZoFrAmount(request.zo_fr_amount);
-      setZoRemarks(request.zo_remarks || '');
-      setHoRemarks(request.ho_remarks || '');
-      
-      // Load comments
-      const feed = [];
-      if (request.zo_remarks) {
-        const author = request.zo_name ? `${request.zo_name} (ZO)` : 'ZO User';
-        feed.push({ author, text: request.zo_remarks, type: 'zo' });
+    Promise.resolve().then(() => {
+      if (request) {
+        setZoFrNo(request.zo_fr_no);
+        setZoFrAmount(request.zo_fr_amount);
+        setZoRemarks(request.zo_remarks || '');
+        setHoRemarks(request.ho_remarks || '');
+        
+        // Load comments
+        const feed = [];
+        if (request.zo_remarks) {
+          const author = request.zo_name ? `${request.zo_name} (ZO)` : 'ZO User';
+          feed.push({ author, text: request.zo_remarks, type: 'zo' });
+        }
+        if (request.ho_remarks) {
+          const author = request.approve_ho_name ? `${request.approve_ho_name} (HO)` : 'HO User';
+          feed.push({ author, text: request.ho_remarks, type: 'ho' });
+        }
+        setComments(feed);
+      } else {
+        // Clear forms
+        setZoFrNo('');
+        setZoFrAmount('');
+        setZoRemarks('');
+        setComments([]);
       }
-      if (request.ho_remarks) {
-        const author = request.approve_ho_name ? `${request.approve_ho_name} (HO)` : 'HO User';
-        feed.push({ author, text: request.ho_remarks, type: 'ho' });
-      }
-      setComments(feed);
-    } else {
-      // Clear forms
-      setZoFrNo('');
-      setZoFrAmount('');
-      setZoRemarks('');
-      setComments([]);
-    }
+    });
   }, [request]);
 
   // Set default HO approved amount matching requested amount
   useEffect(() => {
     if (request && isPending) {
-      setHoAmount(request.zo_fr_amount);
+      Promise.resolve().then(() => {
+        setHoAmount(request.zo_fr_amount);
+      });
     }
   }, [request, isPending]);
 
   // Clear HO inputs when action changes to Hold (per process flow specs)
   useEffect(() => {
     if (hoAction === 'Hold') {
-      setHoRemarks('');
-      setHoAmount('');
-      setHoAccount('');
+      Promise.resolve().then(() => {
+        setHoRemarks('');
+        setHoAmount('');
+        setHoAccount('');
+      });
     }
   }, [hoAction]);
 
-  // Handle project selection in creation mode
-  const handleProjectSelect = (e) => {
-    const pNo = e.target.value;
-    const proj = projects.find(p => p.work_order_no === pNo);
-    setSelectedProject(proj);
-  };
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();

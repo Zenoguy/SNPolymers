@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
       }
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -23,7 +23,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    checkAuth();
+    Promise.resolve().then(() => {
+      checkAuth();
+    });
 
     const handleAuthFailure = () => {
       setUser(null);

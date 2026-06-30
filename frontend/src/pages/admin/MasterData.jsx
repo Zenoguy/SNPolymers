@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
 import { getProjects, createProject, updateProject, updateProjectStatus } from '../../api/projectsApi';
@@ -325,7 +324,9 @@ const MasterData = () => {
   }, []);
 
   useEffect(() => {
-    fetchProjects();
+    Promise.resolve().then(() => {
+      fetchProjects();
+    });
   }, [fetchProjects]);
 
   // Auto-dismiss success banner
