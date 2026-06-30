@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, TextArea, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // API Clients
 import { getProjects } from '../api/projectsApi';
@@ -18,15 +20,10 @@ const DailyProgress = () => {
   
   // Tab control states: 'dashboard' or 'directory'
   const [currentTab, setCurrentTab] = useState('dashboard');
-
-  // Master lists
-  const [projects, setProjects] = useState([]);
-  const [allReports, setAllReports] = useState([]); // Global reports for dashboard feeds/stats
   const [activeWO, setActiveWO] = useState(null); // Selected project object (for spreadsheet view)
-  const [reports, setReports] = useState([]); // Chronological daily reports for the selected project (activeWO)
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const queryClient = useQueryClient();
 
   // Page layout toggles
   const [showCreateFlow, setShowCreateFlow] = useState(false);
@@ -46,7 +43,6 @@ const DailyProgress = () => {
   const [remarksFormError, setRemarksFormError] = useState('');
 
   // Photo Upload States
-  const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [dailySitePhotoUrl, setDailySitePhotoUrl] = useState('');
   const [originalPhotoFilename, setOriginalPhotoFilename] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -83,62 +79,44 @@ const DailyProgress = () => {
     return diffDays >= days;
   };
 
-  // Fetch projects directory and global reports on load
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // 1. Fetch Projects
-      const projRes = await getProjects();
-      const allProjects = projRes.data?.projects ?? [];
-      setProjects(allProjects);
-
-      // 2. Fetch Latest Global reports (limit 100 for dashboard feed)
-      const reportRes = await getProgressReports({ page: 1, limit: 100 });
-      if (reportRes.data?.success) {
-        setAllReports(reportRes.data.reports ?? []);
-      }
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError(err.response?.data?.message || 'Failed to retrieve progress tracking data.');
-    } finally {
-      setLoading(false);
+  // Fetch projects using React Query
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
     }
-  }, []);
+  });
 
-  // Fetch reports specifically for active project timeline (spreadsheet representation)
-  const fetchProjectReports = useCallback(async (workOrderNo) => {
-    setLoading(true);
-    setError('');
-    try {
-      const params = {
-        work_order_no: workOrderNo,
+  // Fetch latest global progress reports using React Query
+  const { data: allReportsData, isLoading: loadingAllReports, error: allReportsError } = useQuery({
+    queryKey: ['progressReports', 'global'],
+    queryFn: async () => {
+      const res = await getProgressReports({ page: 1, limit: 100 });
+      return res.data?.reports ?? [];
+    }
+  });
+
+  // Fetch reports specifically for active project timeline using React Query
+  const { data: projectReportsData, isLoading: loadingProjectReports, error: projectReportsError } = useQuery({
+    queryKey: ['progressReports', 'project', activeWO?.work_order_no],
+    queryFn: async () => {
+      const res = await getProgressReports({
+        work_order_no: activeWO.work_order_no,
         page: 1,
         limit: 100
-      };
-      const reportRes = await getProgressReports(params);
-      if (reportRes.data?.success) {
-        // Sort chronologically ascending (earliest first, latest at bottom)
-        const sortedAsc = (reportRes.data.reports ?? []).slice().reverse();
-        setReports(sortedAsc);
-      }
-    } catch (err) {
-      console.error('Error fetching reports for project:', err);
-      setError(err.response?.data?.message || 'Failed to retrieve progress reports.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      });
+      return (res.data?.reports ?? []).slice().reverse();
+    },
+    enabled: !!activeWO
+  });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+  const projects = projectsData || [];
+  const allReports = allReportsData || [];
+  const reports = projectReportsData || [];
+  const loading = loadingAllReports || (activeWO ? loadingProjectReports : false);
 
-  useEffect(() => {
-    if (activeWO) {
-      fetchProjectReports(activeWO.work_order_no);
-    }
-  }, [activeWO, fetchProjectReports]);
+  const displayError = error || allReportsError?.response?.data?.message || allReportsError?.message || projectReportsError?.response?.data?.message || projectReportsError?.message || '';
 
   // Auto-dismiss alerts
   useEffect(() => {
@@ -184,23 +162,19 @@ const DailyProgress = () => {
     const allowedMime = ['image/jpeg', 'image/png'];
     if (!allowedMime.includes(file.type)) {
       setUploadError('Only JPEG, JPG, PNG files are accepted.');
-      setUploadedPhoto(null);
       return;
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       setUploadError('File size must not exceed 10MB.');
-      setUploadedPhoto(null);
       return;
     }
 
-    setUploadedPhoto(file);
     performUpload(file);
   };
 
   const handleRemovePhoto = () => {
-    setUploadedPhoto(null);
     setDailySitePhotoUrl('');
     setOriginalPhotoFilename('');
     setUploadError('');
@@ -248,8 +222,7 @@ const DailyProgress = () => {
       setSuccess('Daily progress report row submitted successfully.');
       resetForm();
       setShowCreateFlow(false);
-      fetchProjectReports(activeWO.work_order_no);
-      fetchDashboardData(); // Refresh global counts
+      queryClient.invalidateQueries({ queryKey: ['progressReports'] });
     } catch (err) {
       console.error('Report submission failed:', err);
       if (err.response?.status === 409) {
@@ -298,10 +271,7 @@ const DailyProgress = () => {
       if (res.data?.success) {
         setSuccess('Authority remarks saved successfully.');
         setActiveReport(null);
-        fetchDashboardData(); // Refresh global feeds
-        if (activeWO) {
-          fetchProjectReports(activeWO.work_order_no);
-        }
+        queryClient.invalidateQueries({ queryKey: ['progressReports'] });
       }
     } catch (err) {
       console.error('Failed to save remarks:', err);
@@ -433,10 +403,10 @@ const DailyProgress = () => {
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Status Alerts */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-ping" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -458,7 +428,6 @@ const DailyProgress = () => {
               <button
                 onClick={() => {
                   setActiveWO(null);
-                  setReports([]);
                   setActiveReport(null);
                   setShowCreateFlow(false);
                 }}
@@ -480,43 +449,24 @@ const DailyProgress = () => {
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div className="flex-grow w-full">
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Selected Work Order</label>
-                  <div className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs font-bold text-emerald-400 font-mono">
+                  <div className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs font-bold text-emerald-400 font-mono text-left">
                     {activeWO.work_order_no}
                   </div>
                 </div>
                 <div className="shrink-0 flex items-center gap-2 mt-4 sm:mt-0">
-                  <span className={`px-3 py-1.5 border text-[10px] font-extrabold uppercase rounded-xl ${
-                    activeWO.status === 'Running'
-                      ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30'
-                      : 'bg-red-950/20 text-red-400 border-red-900/30'
-                  }`}>
+                  <Badge variant={activeWO.status === 'Running' ? 'emerald' : 'red'} showDot={false}>
                     Project Status: {activeWO.status === 'Running' ? 'Active' : activeWO.status}
-                  </span>
+                  </Badge>
                 </div>
               </div>
 
               {/* Geo inputs row */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <label className="block text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">State</label>
-                  <input type="text" disabled value={activeWO.state} className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed" />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">District</label>
-                  <input type="text" disabled value={activeWO.district} className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed" />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">Area Code (Zone)</label>
-                  <input type="text" disabled value={activeWO.zone || 'N/A'} className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed" />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">Department</label>
-                  <input type="text" disabled value={activeWO.department} className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed truncate" title={activeWO.department} />
-                </div>
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">Site Details</label>
-                  <input type="text" disabled value={activeWO.site_details} className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed truncate" title={activeWO.site_details} />
-                </div>
+                <Input label="State" disabled value={activeWO.state} size="sm" />
+                <Input label="District" disabled value={activeWO.district} size="sm" />
+                <Input label="Area Code (Zone)" disabled value={activeWO.zone || 'N/A'} size="sm" />
+                <Input label="Department" disabled value={activeWO.department} size="sm" className="truncate" title={activeWO.department} />
+                <Input label="Site Details" disabled value={activeWO.site_details} size="sm" className="truncate" title={activeWO.site_details} containerClassName="col-span-2 md:col-span-1" />
               </div>
             </div>
 
@@ -537,174 +487,174 @@ const DailyProgress = () => {
                 )}
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/5 text-[9px] uppercase font-bold tracking-widest text-slate-400 bg-white/[0.02]">
-                      <th className="p-3 text-center w-12 border-r border-white/5">Sl No.</th>
-                      <th className="p-3 w-32 border-r border-white/5">Site Visit Date</th>
-                      <th className="p-3 border-r border-white/5">Work Progress Details</th>
-                      <th className="p-3 text-center w-36 border-r border-white/5">Physical Progress (%)</th>
-                      <th className="p-3 text-center w-28 border-r border-white/5">Site Photo <span className="text-red-400">*</span></th>
-                      <th className="p-3 border-r border-white/5">Remarks After Site Visit</th>
-                      <th className="p-3 pr-4">Remarks Approved Authority</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {reports.map((report, idx) => (
-                      <tr
-                        key={report.report_id}
-                        onClick={() => handleViewDetails(report)}
-                        className="hover:bg-white/[0.02] cursor-pointer transition duration-150 text-slate-300"
-                      >
-                        <td className="p-3 text-center font-mono font-semibold border-r border-white/5 text-slate-500">
-                          {idx + 1}
-                        </td>
-                        <td className="p-3 font-semibold border-r border-white/5 text-slate-200">
-                          {report.site_visit_date ? new Date(report.site_visit_date).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'N/A'}
-                        </td>
-                        <td className="p-3 border-r border-white/5 truncate max-w-[200px]" title={report.work_progress_details}>
-                          {report.work_progress_details}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-emerald-400 border-r border-white/5">
-                          {report.physical_work_progress}%
-                        </td>
-                        <td className="p-3 text-center border-r border-white/5">
-                          <div className="flex justify-center items-center gap-1 text-[10px] text-emerald-400 font-bold font-mono">
-                            <svg className="w-3.5 h-3.5 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>View</span>
-                          </div>
-                        </td>
-                        <td className="p-3 border-r border-white/5 truncate max-w-[150px]" title={report.remarks_after_site_visit || ''}>
-                          {report.remarks_after_site_visit || <span className="text-slate-600 italic">None</span>}
-                        </td>
-                        <td className="p-3 pr-4 truncate max-w-[180px]" title={report.remarks_approved_authority || ''}>
-                          {report.remarks_approved_authority ? (
-                            <span className="text-slate-300">{report.remarks_approved_authority}</span>
-                          ) : (
-                            <span className="text-slate-600 italic">Pending review</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+            <Table className="text-xs">
+              <TableHeader className="bg-white/[0.02] text-slate-400">
+                <TableRow hover={false} className="text-[9px]">
+                  <TableCell isHeader={true} align="center" className="w-12 border-r border-white/5" size="sm">Sl No.</TableCell>
+                  <TableCell isHeader={true} className="w-32 border-r border-white/5" size="sm">Site Visit Date</TableCell>
+                  <TableCell isHeader={true} className="border-r border-white/5" size="sm">Work Progress Details</TableCell>
+                  <TableCell isHeader={true} align="center" className="w-36 border-r border-white/5" size="sm">Physical Progress (%)</TableCell>
+                  <TableCell isHeader={true} align="center" className="w-28 border-r border-white/5" size="sm">Site Photo <span className="text-red-400">*</span></TableCell>
+                  <TableCell isHeader={true} className="border-r border-white/5" size="sm">Remarks After Site Visit</TableCell>
+                  <TableCell isHeader={true} className="pr-4" size="sm">Remarks Approved Authority</TableCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reports.map((report, idx) => (
+                  <TableRow
+                    key={report.report_id}
+                    onClick={() => handleViewDetails(report)}
+                    interactive={true}
+                    className="text-slate-300 text-left"
+                  >
+                    <TableCell align="center" className="font-mono font-semibold border-r border-white/5 text-slate-500" size="sm">
+                      {idx + 1}
+                    </TableCell>
+                    <TableCell className="font-semibold border-r border-white/5 text-slate-200" size="sm">
+                      {report.site_visit_date ? new Date(report.site_visit_date).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'N/A'}
+                    </TableCell>
+                    <TableCell className="border-r border-white/5 truncate max-w-[200px]" title={report.work_progress_details} size="sm">
+                      {report.work_progress_details}
+                    </TableCell>
+                    <TableCell align="center" className="font-mono font-bold text-emerald-400 border-r border-white/5" size="sm">
+                      {report.physical_work_progress}%
+                    </TableCell>
+                    <TableCell align="center" className="border-r border-white/5" size="sm">
+                      <div className="flex justify-center items-center gap-1 text-[10px] text-emerald-400 font-bold font-mono">
+                        <svg className="w-3.5 h-3.5 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>View</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="border-r border-white/5 truncate max-w-[150px]" title={report.remarks_after_site_visit || ''} size="sm">
+                      {report.remarks_after_site_visit || <span className="text-slate-600 italic">None</span>}
+                    </TableCell>
+                    <TableCell className="pr-4 truncate max-w-[180px]" title={report.remarks_approved_authority || ''} size="sm">
+                      {report.remarks_approved_authority ? (
+                        <span className="text-slate-300">{report.remarks_approved_authority}</span>
+                      ) : (
+                        <span className="text-slate-600 italic">Pending review</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-                    {/* Inline input form row for JE */}
-                    {showCreateFlow && (
-                      <tr className="bg-emerald-500/[0.02] border-t border-b border-emerald-500/20">
-                        <td className="p-3 text-center font-mono font-bold border-r border-emerald-500/20 text-emerald-400">
-                          {reports.length + 1}
-                        </td>
-                        <td className="p-3 border-r border-emerald-500/20">
-                          <input
-                            type="date"
-                            required
-                            value={siteVisitDate}
-                            max={getTodayDateString()}
-                            onChange={(e) => setSiteVisitDate(e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-100 outline-none focus:border-emerald-500"
-                          />
-                        </td>
-                        <td className="p-3 border-r border-emerald-500/20">
-                          <textarea
-                            required
-                            rows={2}
-                            value={workProgressDetails}
-                            placeholder="Describe work done today..."
-                            onChange={(e) => setWorkProgressDetails(e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 outline-none focus:border-emerald-500 resize-none"
-                          />
-                        </td>
-                        <td className="p-3 border-r border-emerald-500/20">
-                          <input
-                            type="number"
-                            required
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            value={physicalWorkProgress}
-                            placeholder="%"
-                            onChange={(e) => setPhysicalWorkProgress(e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-slate-100 outline-none focus:border-emerald-500 text-center"
-                          />
-                        </td>
-                        <td className="p-3 border-r border-emerald-500/20 text-center">
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            accept="image/jpeg,image/png"
-                            onChange={handlePhotoSelect}
-                            className="hidden"
-                            id="je-photo-file-sheet"
-                          />
-                          
-                          {uploading ? (
-                            <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-emerald-500 inline-block" />
-                          ) : dailySitePhotoUrl ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="text-[9px] text-emerald-400 font-extrabold">Uploaded ✓</span>
-                              <button
-                                type="button"
-                                onClick={handleRemovePhoto}
-                                className="text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 font-bold"
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <label
-                                htmlFor="je-photo-file-sheet"
-                                className={`cursor-pointer text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg transition inline-block ${
-                                  photoMissing
-                                    ? 'border border-red-500 bg-red-500/10 text-red-400 animate-pulse'
-                                    : 'border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300'
-                                }`}
-                              >
-                                Upload
-                              </label>
-                              {photoMissing && <span className="text-[8px] text-red-400 font-bold">Required</span>}
-                            </div>
-                          )}
-                          {uploadError && <p className="text-[8px] text-red-400 mt-1 leading-tight">{uploadError}</p>}
-                        </td>
-                        <td className="p-3 border-r border-emerald-500/20">
-                          <textarea
-                            rows={2}
-                            value={remarksAfterSiteVisit}
-                            placeholder="Observations remarks..."
-                            onChange={(e) => setRemarksAfterSiteVisit(e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 outline-none focus:border-emerald-500 resize-none"
-                          />
-                        </td>
-                        <td className="p-3 text-slate-500 italic text-[11px]">
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                resetForm();
-                                setShowCreateFlow(false);
-                              }}
-                              className="text-[10px] uppercase font-bold text-slate-400 hover:text-slate-200 px-2 py-1"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleSubmit}
-                              disabled={submitLoading || uploading}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-lg transition shadow disabled:opacity-40"
-                            >
-                              {submitLoading ? 'Saving...' : 'Save'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                {/* Inline input form row for JE */}
+                {showCreateFlow && (
+                  <TableRow hover={false} className="bg-emerald-500/[0.02] border-t border-b border-emerald-500/20 text-left">
+                    <TableCell align="center" className="font-mono font-bold border-r border-emerald-500/20 text-emerald-400" size="sm">
+                      {reports.length + 1}
+                    </TableCell>
+                    <TableCell className="border-r border-emerald-500/20" size="sm">
+                      <Input
+                        type="date"
+                        required
+                        value={siteVisitDate}
+                        max={getTodayDateString()}
+                        onChange={(e) => setSiteVisitDate(e.target.value)}
+                        size="sm"
+                      />
+                    </TableCell>
+                    <TableCell className="border-r border-emerald-500/20" size="sm">
+                      <TextArea
+                        required
+                        rows={2}
+                        value={workProgressDetails}
+                        placeholder="Describe work done today..."
+                        onChange={(e) => setWorkProgressDetails(e.target.value)}
+                        size="sm"
+                      />
+                    </TableCell>
+                    <TableCell className="border-r border-emerald-500/20" size="sm">
+                      <Input
+                        type="number"
+                        required
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={physicalWorkProgress}
+                        placeholder="%"
+                        onChange={(e) => setPhysicalWorkProgress(e.target.value)}
+                        size="sm"
+                        className="text-center font-mono font-bold"
+                      />
+                    </TableCell>
+                    <TableCell align="center" className="border-r border-emerald-500/20" size="sm">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/jpeg,image/png"
+                        onChange={handlePhotoSelect}
+                        className="hidden"
+                        id="je-photo-file-sheet"
+                      />
+                      
+                      {uploading ? (
+                        <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-emerald-500 inline-block" />
+                      ) : dailySitePhotoUrl ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-[9px] text-emerald-400 font-extrabold">Uploaded ✓</span>
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            onClick={handleRemovePhoto}
+                            className="text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 font-bold"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Button
+                            variant="glass"
+                            size="xs"
+                            className={photoMissing ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' : ''}
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            Upload
+                          </Button>
+                          {photoMissing && <span className="text-[8px] text-red-400 font-bold">Required</span>}
+                        </div>
+                      )}
+                      {uploadError && <p className="text-[8px] text-red-400 mt-1 leading-tight">{uploadError}</p>}
+                    </TableCell>
+                    <TableCell className="border-r border-emerald-500/20" size="sm">
+                      <TextArea
+                        rows={2}
+                        value={remarksAfterSiteVisit}
+                        placeholder="Observations remarks..."
+                        onChange={(e) => setRemarksAfterSiteVisit(e.target.value)}
+                        size="sm"
+                      />
+                    </TableCell>
+                    <TableCell size="sm">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="secondary"
+                          size="xs"
+                          onClick={() => {
+                            resetForm();
+                            setShowCreateFlow(false);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="success"
+                          size="xs"
+                          onClick={handleSubmit}
+                          loading={submitLoading}
+                          disabled={uploading}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
 
               {/* Aggregated spreadsheet summary metrics */}
               <div className="p-4 border-t border-white/5 bg-emerald-950/5 border-l border-r border-b rounded-b-3xl">
@@ -1078,33 +1028,27 @@ const DailyProgress = () => {
                 <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col gap-4">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Filter Work Orders Directory</span>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <input
-                        type="text"
-                        value={searchWO}
-                        onChange={(e) => setSearchWO(e.target.value)}
-                        placeholder="Search Work Order Number..."
-                        className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={searchDept}
-                        onChange={(e) => setSearchDept(e.target.value)}
-                        placeholder="Filter by Department..."
-                        className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={searchZone}
-                        onChange={(e) => setSearchZone(e.target.value)}
-                        placeholder="Filter by Zone/Area..."
-                        className="w-full glass-input focus:ring-0 outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-200 bg-black border border-white/5"
-                      />
-                    </div>
+                    <Input
+                      type="text"
+                      value={searchWO}
+                      onChange={(e) => setSearchWO(e.target.value)}
+                      placeholder="Search Work Order Number..."
+                      size="sm"
+                    />
+                    <Input
+                      type="text"
+                      value={searchDept}
+                      onChange={(e) => setSearchDept(e.target.value)}
+                      placeholder="Filter by Department..."
+                      size="sm"
+                    />
+                    <Input
+                      type="text"
+                      value={searchZone}
+                      onChange={(e) => setSearchZone(e.target.value)}
+                      placeholder="Filter by Zone/Area..."
+                      size="sm"
+                    />
                   </div>
                 </div>
 
@@ -1128,58 +1072,52 @@ const DailyProgress = () => {
                       No projects matching directory filters.
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="border-b border-white/5 text-[9px] uppercase font-bold tracking-widest text-slate-400 bg-white/[0.01]">
-                            <th className="p-4 pl-6">Work Order No</th>
-                            <th className="p-4">Department</th>
-                            <th className="p-4">Zone (Area)</th>
-                            <th className="p-4">State / District</th>
-                            <th className="p-4 text-center">Status</th>
-                            <th className="p-4 pr-6 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {filteredProjects.map((project) => (
-                            <tr
-                              key={project.work_order_no}
-                              className="hover:bg-white/[0.02] transition duration-200 text-slate-300"
-                            >
-                              <td className="p-4 pl-6 font-mono font-bold text-slate-200">
-                                {project.work_order_no}
-                              </td>
-                              <td className="p-4 font-semibold text-slate-300 truncate max-w-[200px]" title={project.department}>
-                                {project.department}
-                              </td>
-                              <td className="p-4 font-mono font-semibold text-slate-300">
-                                {project.zone || 'N/A'}
-                              </td>
-                              <td className="p-4">
-                                {project.state} / {project.district}
-                              </td>
-                              <td className="p-4 text-center">
-                                <span className={`px-2 py-0.5 border text-[9px] font-extrabold uppercase rounded-lg ${
-                                  project.status === 'Running'
-                                    ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30'
-                                    : 'bg-red-950/20 text-red-400 border-red-900/30'
-                                }`}>
-                                  {project.status === 'Running' ? 'Active' : project.status}
-                                </span>
-                              </td>
-                              <td className="p-4 pr-6 text-right">
-                                <button
-                                  onClick={() => setActiveWO(project)}
-                                  className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-950 hover:shadow-lg font-extrabold text-[10px] uppercase tracking-wider rounded-lg transition transform hover:-translate-y-0.5"
-                                >
-                                  View Ledger Sheet
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <Table>
+                      <TableHeader className="bg-white/[0.01]">
+                        <TableRow hover={false} className="text-[9px]">
+                          <TableCell isHeader={true} className="pl-6" size="sm">Work Order No</TableCell>
+                          <TableCell isHeader={true} size="sm">Department</TableCell>
+                          <TableCell isHeader={true} size="sm">Zone (Area)</TableCell>
+                          <TableCell isHeader={true} size="sm">State / District</TableCell>
+                          <TableCell isHeader={true} align="center" size="sm">Status</TableCell>
+                          <TableCell isHeader={true} className="pr-6" align="right" size="sm">Actions</TableCell>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProjects.map((project) => (
+                          <TableRow
+                            key={project.work_order_no}
+                            className="text-slate-300 text-left"
+                          >
+                            <TableCell className="pl-6 font-mono font-bold text-slate-200" size="sm">
+                              {project.work_order_no}
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-300 truncate max-w-[200px]" title={project.department} size="sm">
+                              {project.department}
+                            </TableCell>
+                            <TableCell className="font-mono font-semibold text-slate-300" size="sm">
+                              {project.zone || 'N/A'}
+                            </TableCell>
+                            <TableCell size="sm">
+                              {project.state} / {project.district}
+                            </TableCell>
+                            <TableCell align="center" size="sm">
+                              <Badge variant={project.status === 'Running' ? 'emerald' : 'red'} showDot={false}>
+                                {project.status === 'Running' ? 'Active' : project.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="pr-6" align="right" size="sm">
+                              <Button
+                                onClick={() => setActiveWO(project)}
+                                size="xs"
+                              >
+                                View Ledger Sheet
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   )}
                 </div>
               </div>
@@ -1189,148 +1127,137 @@ const DailyProgress = () => {
 
         {/* DETAIL MODAL FOR LIVE ACTIVITY FEEDS & REVIEW QUEUE */}
         {activeReport && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-scaleUp">
-              
-              <div className="flex justify-between items-center pb-3 mb-4 border-b border-white/5">
-                <div>
-                  <span className="text-[9px] uppercase font-bold tracking-widest text-emerald-500 font-mono">Daily Log Entry details</span>
-                  <h3 className="text-base font-extrabold text-slate-100">Site visit date: {new Date(activeReport.site_visit_date).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</h3>
-                </div>
-                <button
+          <Modal
+            isOpen={!!activeReport}
+            onClose={() => setActiveReport(null)}
+            title={`Site visit date: ${new Date(activeReport.site_visit_date).toLocaleDateString('en-IN', { dateStyle: 'medium' })}`}
+            subtitle="Daily Log Entry details"
+            size="lg"
+            footer={
+              <div className="flex justify-end w-full">
+                <Button
+                  variant="glass"
                   onClick={() => setActiveReport(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-200 transition"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {loadingDetail ? (
-                <div className="py-12 flex flex-col items-center justify-center text-slate-500 text-xs font-bold uppercase tracking-widest">
-                  <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-500 mb-2" />
-                  Retrieving detail parameters...
-                </div>
-              ) : (
-                <div className="space-y-4 text-xs">
-                  
-                  {/* Photo Viewer */}
-                  <div>
-                    <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">Site visit photo</span>
-                    {activeReport.photo_signed_url ? (
-                      <div className="relative group rounded-xl overflow-hidden aspect-video border border-white/5 bg-slate-950 mt-1 max-h-[220px]">
-                        <img
-                          src={activeReport.photo_signed_url}
-                          alt="Site Visit"
-                          className="w-full h-full object-contain cursor-zoom-in"
-                          onClick={() => window.open(activeReport.photo_signed_url, '_blank')}
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-32 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-xl bg-slate-900/20 mt-1">
-                        <span className="text-[10px] uppercase font-bold tracking-widest">Photo Unavailable</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info details */}
-                  <div className="grid grid-cols-2 gap-4 bg-white/[0.01] p-3 border border-white/5 rounded-xl">
-                    <div>
-                      <p className="text-[9px] uppercase text-slate-500 font-extrabold">Work Order No</p>
-                      <p className="text-slate-200 font-bold font-mono mt-0.5">{activeReport.work_order_no}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase text-slate-500 font-extrabold">Logged By & Progress</p>
-                      <p className="text-slate-200 font-bold mt-0.5">
-                        {activeReport.created_by_name || activeReport.created_by} &bull; <span className="text-emerald-400 font-mono font-bold">{activeReport.physical_work_progress}%</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Geographical snapshot information */}
-                  <div className="bg-indigo-500/5 border border-indigo-500/10 p-3 rounded-xl space-y-1">
-                    <p className="text-[8px] uppercase tracking-widest font-extrabold text-indigo-400">Locked Geographical Metadata</p>
-                    <p className="text-[10px] text-slate-300">
-                      <strong>Location:</strong> {activeReport.site_details} ({activeReport.district}, {activeReport.state} - Zone {activeReport.area_code})
-                    </p>
-                    <p className="text-[10px] text-slate-300">
-                      <strong>Department:</strong> {activeReport.department}
-                    </p>
-                  </div>
-
-                  {/* Work details */}
-                  <div>
-                    <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">Work details</span>
-                    <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
-                      {activeReport.work_progress_details}
-                    </div>
-                  </div>
-
-                  {/* JE observations */}
-                  {activeReport.remarks_after_site_visit && (
-                    <div>
-                      <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">JE remarks/observations</span>
-                      <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
-                        {activeReport.remarks_after_site_visit}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Authority Remarks block */}
-                  <div className="border border-white/5 p-4 rounded-2xl bg-white/[0.01] space-y-3">
-                    <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider block border-b border-white/5 pb-1">ZO/HO review remarks</span>
-                    {isAuthority ? (
-                      <div className="space-y-3">
-                        <textarea
-                          value={authorityRemarks}
-                          onChange={(e) => setAuthorityRemarks(e.target.value)}
-                          placeholder="Add review remarks..."
-                          rows={2}
-                          className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500 resize-none"
-                        />
-                        {remarksFormError && <p className="text-[10px] text-red-400 font-semibold">{remarksFormError}</p>}
-                        
-                        <div className="flex justify-end">
-                          <button
-                            type="button"
-                            onClick={handleSaveRemarks}
-                            disabled={savingRemarks || !authorityRemarks.trim()}
-                            className="bg-white hover:bg-slate-100 text-slate-950 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition disabled:opacity-40"
-                          >
-                            {savingRemarks ? 'Saving...' : 'Save Remarks'}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      activeReport.remarks_approved_authority ? (
-                        <div className="space-y-2">
-                          <p className="p-3 bg-emerald-950/5 border border-emerald-900/10 rounded-xl text-slate-300 italic">
-                            "{activeReport.remarks_approved_authority}"
-                          </p>
-                          <p className="text-[9px] text-slate-500">
-                            Reviewed By: {activeReport.approved_by_name || activeReport.approved_user_id} on {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleString('en-IN') : 'N/A'}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-slate-500 italic text-[11px]">No review remarks submitted yet.</p>
-                      )
-                    )}
-                  </div>
-
-                </div>
-              )}
-
-              <div className="flex justify-end pt-4 mt-4 border-t border-white/5">
-                <button
-                  onClick={() => setActiveReport(null)}
-                  className="px-4 py-2 border border-white/10 hover:bg-white/5 text-[10px] font-extrabold uppercase rounded-xl transition text-slate-300"
                 >
                   Close Details
-                </button>
+                </Button>
               </div>
-            </div>
-          </div>
+            }
+          >
+            {loadingDetail ? (
+              <div className="py-12 flex flex-col items-center justify-center text-slate-500 text-xs font-bold uppercase tracking-widest">
+                <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-500 mb-2" />
+                Retrieving detail parameters...
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs text-left">
+                
+                {/* Photo Viewer */}
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">Site visit photo</span>
+                  {activeReport.photo_signed_url ? (
+                    <div className="relative group rounded-xl overflow-hidden aspect-video border border-white/5 bg-slate-950 mt-1 max-h-[220px]">
+                      <img
+                        src={activeReport.photo_signed_url}
+                        alt="Site Visit"
+                        className="w-full h-full object-contain cursor-zoom-in"
+                        onClick={() => window.open(activeReport.photo_signed_url, '_blank')}
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-32 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-xl bg-slate-900/20 mt-1">
+                      <span className="text-[10px] uppercase font-bold tracking-widest">Photo Unavailable</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info details */}
+                <div className="grid grid-cols-2 gap-4 bg-white/[0.01] p-3 border border-white/5 rounded-xl">
+                  <div>
+                    <p className="text-[9px] uppercase text-slate-500 font-extrabold">Work Order No</p>
+                    <p className="text-slate-200 font-bold font-mono mt-0.5">{activeReport.work_order_no}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase text-slate-500 font-extrabold">Logged By & Progress</p>
+                    <p className="text-slate-200 font-bold mt-0.5">
+                      {activeReport.created_by_name || activeReport.created_by} &bull; <span className="text-emerald-400 font-mono font-bold">{activeReport.physical_work_progress}%</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Geographical snapshot information */}
+                <div className="bg-indigo-500/5 border border-indigo-500/10 p-3 rounded-xl space-y-1">
+                  <p className="text-[8px] uppercase tracking-widest font-extrabold text-indigo-400">Locked Geographical Metadata</p>
+                  <p className="text-[10px] text-slate-300">
+                    <strong>Location:</strong> {activeReport.site_details} ({activeReport.district}, {activeReport.state} - Zone {activeReport.area_code})
+                  </p>
+                  <p className="text-[10px] text-slate-300">
+                    <strong>Department:</strong> {activeReport.department}
+                  </p>
+                </div>
+
+                {/* Work details */}
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">Work details</span>
+                  <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
+                    {activeReport.work_progress_details}
+                  </div>
+                </div>
+
+                {/* JE observations */}
+                {activeReport.remarks_after_site_visit && (
+                  <div>
+                    <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider">JE remarks/observations</span>
+                    <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
+                      {activeReport.remarks_after_site_visit}
+                    </div>
+                  </div>
+                )}
+
+                {/* Authority Remarks block */}
+                <div className="border border-white/5 p-4 rounded-2xl bg-white/[0.01] space-y-3">
+                  <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider block border-b border-white/5 pb-1">ZO/HO review remarks</span>
+                  {isAuthority ? (
+                    <div className="space-y-3">
+                      <TextArea
+                        value={authorityRemarks}
+                        onChange={(e) => setAuthorityRemarks(e.target.value)}
+                        placeholder="Add review remarks..."
+                        rows={2}
+                        size="sm"
+                      />
+                      {remarksFormError && <p className="text-[10px] text-red-400 font-semibold">{remarksFormError}</p>}
+                      
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleSaveRemarks}
+                          disabled={!authorityRemarks.trim()}
+                          loading={savingRemarks}
+                          size="sm"
+                        >
+                          Save Remarks
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    activeReport.remarks_approved_authority ? (
+                      <div className="space-y-2">
+                        <p className="p-3 bg-emerald-950/5 border border-emerald-900/10 rounded-xl text-slate-300 italic">
+                          "{activeReport.remarks_approved_authority}"
+                        </p>
+                        <p className="text-[9px] text-slate-500">
+                          Reviewed By: {activeReport.approved_by_name || activeReport.approved_user_id} on {activeReport.approval_date ? new Date(activeReport.approval_date).toLocaleString('en-IN') : 'N/A'}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 italic text-[11px]">No review remarks submitted yet.</p>
+                    )
+                  )}
+                </div>
+
+              </div>
+            )}
+          </Modal>
         )}
       </main>
     </div>

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Subcomponents
 import DashboardMetrics from '../components/fundRequests/DashboardMetrics';
@@ -16,8 +18,7 @@ import { getFundRequests, createFundRequest, cancelFundRequest, actOnFundRequest
 
 const FundRequests = () => {
   const { user } = useAuth();
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
@@ -39,22 +40,17 @@ const FundRequests = () => {
 
   const isZoUser = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const reqRes = await getFundRequests();
-      setRequests(reqRes.data?.fundRequests ?? []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch fund requests.');
-    } finally {
-      setLoading(false);
+  // Fetch fund requests using React Query
+  const { data: requestsData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['fundRequests'],
+    queryFn: async () => {
+      const res = await getFundRequests();
+      return res.data?.fundRequests ?? [];
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const requests = requestsData || [];
+  const displayError = error || queryError?.response?.data?.message || queryError?.message;
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -64,9 +60,13 @@ const FundRequests = () => {
   }, [success]);
 
   const handleCreate = async (formData) => {
-    await createFundRequest(formData);
-    setSuccess(`Fund request ${formData.zo_fr_no} submitted successfully.`);
-    fetchData();
+    try {
+      await createFundRequest(formData);
+      setSuccess(`Fund request ${formData.zo_fr_no} submitted successfully.`);
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create fund request.');
+    }
   };
 
   const handleCancel = async () => {
@@ -77,7 +77,7 @@ const FundRequests = () => {
       await cancelFundRequest(cancelTarget.id);
       setSuccess(`Fund request ${cancelTarget.no} cancelled successfully.`);
       setCancelTarget(null);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel fund request.');
     } finally {
@@ -91,16 +91,20 @@ const FundRequests = () => {
       await cancelFundRequest(id);
       setSuccess('Fund request cancelled successfully.');
       setActiveRequest(null);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel fund request.');
     }
   };
 
   const handleAct = async (id, actionData) => {
-    await actOnFundRequest(id, actionData);
-    setSuccess(`Fund request successfully ${actionData.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
-    fetchData();
+    try {
+      await actOnFundRequest(id, actionData);
+      setSuccess(`Fund request successfully ${actionData.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
+      queryClient.invalidateQueries({ queryKey: ['fundRequests'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to act on fund request.');
+    }
   };
 
   const handleFilterChange = (key, value) => {
@@ -172,10 +176,10 @@ const FundRequests = () => {
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Notifications */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -190,7 +194,7 @@ const FundRequests = () => {
           <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
             <RequestDetailPanel
               user={user}
-              request={activeRequest}
+              request={requests.find(r => r.id === activeRequest?.id) || activeRequest}
               onClose={() => {
                 setActiveRequest(null);
                 setShowCreateFlow(false);
@@ -215,15 +219,16 @@ const FundRequests = () => {
                 </p>
               </div>
               {isZoUser && (
-                <button
+                <Button
                   onClick={() => setShowCreateFlow(true)}
-                  className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+                  icon={
+                    <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  }
                 >
-                  <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
                   New Request
-                </button>
+                </Button>
               )}
             </div>
 
@@ -245,27 +250,29 @@ const FundRequests = () => {
                 <div className="p-5 border-b border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400 text-left">Fund Requests List</span>
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      <input
-                        type="text"
-                        placeholder="Search requests..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 transition w-full sm:w-48"
-                      />
-                    </div>
-                    <button
-                      onClick={fetchData}
+                    <Input
+                      type="text"
+                      placeholder="Search requests..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      size="sm"
+                      iconLeft={
+                        <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      }
+                      containerClassName="w-full sm:w-48"
+                    />
+                    <Button
+                      onClick={() => queryClient.invalidateQueries({ queryKey: ['fundRequests'] })}
                       title="Refresh"
-                      className="p-2 rounded-xl glass-input hover:border-white/20 transition text-slate-400 hover:text-slate-200"
+                      variant="glass"
+                      size="sm"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

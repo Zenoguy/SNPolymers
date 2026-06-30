@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import authApi from '../../api/authApi';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
@@ -34,10 +33,6 @@ const AdminPanel = () => {
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [clearingTelegram, setClearingTelegram] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -51,6 +46,12 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchUsers();
+    });
+  }, []);
 
   const handleAddUser = async (e) => {
     e.preventDefault();

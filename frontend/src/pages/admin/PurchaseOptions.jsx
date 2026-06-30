@@ -20,10 +20,6 @@ const PurchaseOptions = () => {
   const [editPurchaseName, setEditPurchaseName] = useState('');
   const [editPurchaseSubmitting, setEditPurchaseSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchPurchaseOptions();
-  }, []);
-
   const fetchPurchaseOptions = async () => {
     setLoadingPurchase(true);
     setError('');
@@ -38,6 +34,12 @@ const PurchaseOptions = () => {
       setLoadingPurchase(false);
     }
   };
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchPurchaseOptions();
+    });
+  }, []);
 
   const handleAddPurchaseOption = async (e) => {
     e.preventDefault();

@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, TextArea, Select } from '../components/ui';
 import authApi from '../api/authApi';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
@@ -25,6 +27,7 @@ const EstimateForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isEditMode = !!id;
+  const queryClient = useQueryClient();
 
   // Header State
   const [workOrders, setWorkOrders] = useState([]);
@@ -65,21 +68,35 @@ const EstimateForm = () => {
   const totalPages = Math.max(Math.ceil(items.length / itemsPerPage), 1);
 
   // General States
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [createdEstimateId, setCreatedEstimateId] = useState(null);
 
-  useEffect(() => {
-    initForm();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+  const startCountdown = (targetDate) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const updateTimer = () => {
+      const now = new Date();
+      const diffMs = targetDate - now;
+
+      if (diffMs <= 0) {
+        setTimeRemaining('Revision Deadline Expired');
+        setIsExpired(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+      } else {
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+        setTimeRemaining(`${hrs}h ${mins}m ${secs}s`);
+      }
     };
-  }, [id]);
+
+    updateTimer();
+    timerRef.current = setInterval(updateTimer, 1000);
+  };
 
   const initForm = async () => {
-    setLoading(true);
     setError('');
     try {
       // 1. Fetch catalog version, catalog data, and purchase options
@@ -166,33 +183,17 @@ const EstimateForm = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to initialize estimate form.');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const startCountdown = (targetDate) => {
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    const updateTimer = () => {
-      const now = new Date();
-      const diffMs = targetDate - now;
-
-      if (diffMs <= 0) {
-        setTimeRemaining('Revision Deadline Expired');
-        setIsExpired(true);
-        if (timerRef.current) clearInterval(timerRef.current);
-      } else {
-        const hrs = Math.floor(diffMs / 3600000);
-        const mins = Math.floor((diffMs % 3600000) / 60000);
-        const secs = Math.floor((diffMs % 60000) / 1000);
-        setTimeRemaining(`${hrs}h ${mins}m ${secs}s`);
-      }
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    initForm();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
     };
-
-    updateTimer();
-    timerRef.current = setInterval(updateTimer, 1000);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleWorkOrderChange = async (workOrderNo) => {
     setSelectedWorkOrder(workOrderNo);
@@ -342,6 +343,10 @@ const EstimateForm = () => {
       });
       if (saveRes.data?.success) {
         setSuccess('Estimate draft saved successfully.');
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
+        if (currentId) {
+          queryClient.invalidateQueries({ queryKey: ['estimate', String(currentId)] });
+        }
         setTimeout(() => navigate(`/estimates/${currentId}`), 1500);
       }
     } catch (err) {
@@ -403,6 +408,10 @@ const EstimateForm = () => {
       const submitRes = await authApi.post(`/estimates/${currentId}/submit`);
       if (submitRes.data?.success) {
         setSuccess('Estimate submitted successfully.');
+        queryClient.invalidateQueries({ queryKey: ['estimates'] });
+        if (currentId) {
+          queryClient.invalidateQueries({ queryKey: ['estimate', String(currentId)] });
+        }
         setTimeout(() => navigate(`/estimates/${currentId}`), 1500);
       }
     } catch (err) {
@@ -438,12 +447,12 @@ const EstimateForm = () => {
             </h1>
             <p className="text-xs text-slate-400 font-medium mt-1.5">Compose estimate line items and select relevant materials.</p>
           </div>
-          <Link
-            to="/estimates"
-            className="bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200"
+          <Button
+            onClick={() => navigate('/estimates')}
+            variant="secondary"
           >
             Cancel & Back
-          </Link>
+          </Button>
         </div>
 
         {/* Overdue alert / Countdown Timer */}
@@ -474,21 +483,19 @@ const EstimateForm = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Work Order Number
-              </label>
+              </span>
               {isEditMode ? (
-                <input
+                <Input
                   type="text"
                   value={selectedWorkOrder}
-                  readOnly
-                  className="w-full glass-input cursor-not-allowed opacity-75 focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-400 text-sm font-semibold"
+                  disabled
                 />
               ) : (
-                <select
+                <Select
                   value={selectedWorkOrder}
                   onChange={(e) => handleWorkOrderChange(e.target.value)}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-100 text-sm font-semibold"
                   disabled={isFormLockedByExpiry || submitting}
                   required
                 >
@@ -498,19 +505,18 @@ const EstimateForm = () => {
                       {p.work_order_no} ({p.zone})
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Estimate Number (Auto)
-              </label>
-              <input
+              </span>
+              <Input
                 type="text"
                 value={estimateNo}
-                readOnly
-                className="w-full glass-input cursor-not-allowed opacity-75 focus:ring-0 outline-none rounded-xl px-4 py-3 text-slate-400 text-sm font-semibold"
+                disabled
               />
             </div>
           </div>
@@ -538,15 +544,12 @@ const EstimateForm = () => {
           )}
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              JE Remarks / Special Instructions
-            </label>
-            <textarea
+            <TextArea
+              label="JE Remarks / Special Instructions"
               rows={2}
               value={jeRemarks}
               onChange={(e) => setJeRemarks(e.target.value)}
               placeholder="Enter context, rate assumptions, or instructions..."
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl p-4 text-slate-100 text-sm font-semibold"
               disabled={isFormLockedByExpiry || submitting}
             />
           </div>
@@ -556,14 +559,15 @@ const EstimateForm = () => {
         <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
           <div className="flex justify-between items-center p-6 bg-white/[0.01] border-b border-white/5">
             <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400">Estimate Items</h3>
-            <button
+            <Button
               type="button"
               onClick={handleAddItem}
-              className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50"
+              variant="secondary"
+              size="sm"
               disabled={isFormLockedByExpiry || submitting}
             >
               Add Item
-            </button>
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
@@ -721,44 +725,46 @@ const EstimateForm = () => {
           <div className="mt-4 flex justify-between items-center text-xs text-slate-400">
             <span>Showing items {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, items.length)} of {items.length}</span>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-slate-300 disabled:opacity-40"
+                size="sm"
+                variant="secondary"
               >
                 Prev
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-slate-300 disabled:opacity-40"
+                size="sm"
+                variant="secondary"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {/* Submit Actions */}
         <div className="mt-8 flex justify-end gap-4">
-          <button
+          <Button
             type="button"
             onClick={handleSaveDraft}
-            className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50"
+            variant="secondary"
             disabled={isFormLockedByExpiry || submitting || items.length === 0}
           >
             Save as Draft
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit}
-            className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition disabled:opacity-50 shadow-lg"
+            variant="primary"
             disabled={isFormLockedByExpiry || submitting || items.length === 0}
           >
             {submitting ? 'Submitting...' : 'Submit Estimate'}
-          </button>
+          </Button>
         </div>
       </main>
     </div>

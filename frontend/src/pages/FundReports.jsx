@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, TextArea, Badge, Modal } from '../components/ui';
 import { getReports, getDeletedReports, createReport, updateReport, deleteReport, restoreReport } from '../api/reportsApi';
 import { getProjects } from '../api/projectsApi';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const EMPTY_FORM = { work_order_no: '', amount: '', remarks: '' };
@@ -18,16 +19,15 @@ const formatDate = (d) => (d ? new Date(d).toLocaleString('en-IN', { dateStyle: 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const cfg = {
-    Running: { dot: 'bg-emerald-400', pill: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400', label: 'Running' },
-    Closed: { dot: 'bg-red-400', pill: 'bg-red-500/10 border-red-500/25 text-red-400', label: 'Closed' },
-    'Complete Under Maintenance': { dot: 'bg-amber-400', pill: 'bg-amber-500/10 border-amber-500/25 text-amber-400', label: 'Under Maintenance' },
+    Running: { variant: 'emerald', label: 'Running' },
+    Closed: { variant: 'red', label: 'Closed' },
+    'Complete Under Maintenance': { variant: 'amber', label: 'Under Maintenance' },
   };
-  const s = cfg[status] ?? cfg['Running'];
+  const s = cfg[status] ?? { variant: 'emerald', label: status };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${s.pill}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+    <Badge variant={s.variant} showDot={true}>
       {s.label}
-    </span>
+    </Badge>
   );
 };
 
@@ -80,59 +80,18 @@ const ProjectPreview = ({ master }) => {
 
 // ─── Report Form Modal ────────────────────────────────────────────────────────
 const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
-  const isEdit = mode === 'edit';
   const [form, setForm] = useState(initial ?? EMPTY_FORM);
-  const [masterData, setMasterData] = useState(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [isClosed, setIsClosed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const debounceRef = useRef(null);
 
-  // Auto-fill when editing an existing report
-  useEffect(() => {
-    if (isEdit && initial?.work_order_no) {
-      const proj = projects.find((p) => p.work_order_no === initial.work_order_no);
-      if (proj) {
-        setMasterData(proj);
-        setIsClosed(proj.status === 'Closed');
-      }
-    }
-  }, [isEdit, initial, projects]);
-
-  // Debounced lookup for create mode
-  const lookupProject = useCallback(
-    (won) => {
-      clearTimeout(debounceRef.current);
-      if (!won.trim()) {
-        setMasterData(null);
-        setIsClosed(false);
-        return;
-      }
-      debounceRef.current = setTimeout(() => {
-        const proj = projects.find(
-          (p) => p.work_order_no.toLowerCase() === won.trim().toLowerCase()
-        );
-        if (proj) {
-          setMasterData(proj);
-          setIsClosed(proj.status === 'Closed');
-        } else {
-          setMasterData(null);
-          setIsClosed(false);
-        }
-        setLookupLoading(false);
-      }, 400);
-      setLookupLoading(true);
-    },
-    [projects]
+  const masterData = projects.find(
+    (p) => p.work_order_no.toLowerCase() === form.work_order_no.trim().toLowerCase()
   );
+  const isClosed = masterData?.status === 'Closed';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    if (name === 'work_order_no' && !isEdit) {
-      lookupProject(value);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -151,186 +110,121 @@ const ReportFormModal = ({ mode, initial, projects, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="glass-panel p-6 rounded-3xl max-w-lg w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
-
-        <div className="flex justify-between items-center mb-5 relative z-10">
-          <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              {isEdit ? 'Edit Record' : 'New Record'}
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              {isEdit ? 'Edit Fund Report' : 'Create Fund Report'}
-            </h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={mode === 'edit' ? 'Edit Fund Report' : 'Submit Fund Report'}
+      size="md"
+      footer={
+        <div className="flex justify-end gap-3 w-full">
+          <Button variant="secondary" onClick={onClose} disabled={submitting}>
+            Cancel
+          </Button>
+          {!isClosed && (
+            <Button
+              type="submit"
+              variant="primary"
+              form="report-form"
+              loading={submitting}
+            >
+              {mode === 'edit' ? 'Save Changes' : 'Submit Report'}
+            </Button>
+          )}
         </div>
-
+      }
+    >
+      <form id="report-form" onSubmit={handleSubmit} className="space-y-6 text-left">
         {error && (
-          <div className="mb-4 p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+          <div className="p-4 bg-red-950/25 border border-red-500/30 rounded-2xl text-xs text-red-300 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="relative z-10 space-y-4">
-          {/* Work Order No. */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Work Order No. <span className="text-red-400">*</span>
-            </label>
-            {isEdit ? (
-              <div className="glass-input rounded-xl px-4 py-3 text-sm font-mono font-semibold text-slate-500 opacity-60 cursor-not-allowed">
-                {form.work_order_no}
-                <span className="ml-2 text-[9px] font-sans uppercase tracking-wider text-slate-600">
-                  (linked — immutable)
-                </span>
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  name="work_order_no"
-                  value={form.work_order_no}
-                  onChange={handleChange}
-                  placeholder="e.g. WB_APD_101"
-                  list="won-list"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition"
-                />
-                <datalist id="won-list">
-                  {projects.map((p) => (
-                    <option key={p.work_order_no} value={p.work_order_no} />
-                  ))}
-                </datalist>
-                {lookupLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-amber-500" />
-                )}
-              </div>
-            )}
-          </div>
+        {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
 
-          {/* Project Preview / Mutability Warning */}
-          {isClosed && <MutabilityWarning workOrderNo={form.work_order_no} />}
-          {masterData && !isClosed && <ProjectPreview master={masterData} />}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Input
+            label="Work Order Number"
+            name="work_order_no"
+            value={form.work_order_no}
+            onChange={handleChange}
+            placeholder="e.g. WO-2026-001"
+            required
+            disabled={mode === 'edit' || submitting}
+            size="sm"
+          />
+          <Input
+            label="Disbursed Amount (INR)"
+            name="amount"
+            type="number"
+            value={form.amount}
+            onChange={handleChange}
+            placeholder="0.00"
+            required
+            disabled={isClosed || submitting}
+            size="sm"
+          />
+        </div>
 
-          {/* Amount */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Amount (₹) <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="number"
-              name="amount"
-              value={form.amount}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              required
-              disabled={submitting || isClosed}
-              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition ${isClosed ? 'opacity-40 cursor-not-allowed' : ''}`}
-            />
-          </div>
+        <ProjectPreview master={masterData} />
 
-          {/* Remarks */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Remarks
-            </label>
-            <textarea
-              name="remarks"
-              value={form.remarks}
-              onChange={handleChange}
-              placeholder="Optional notes or description…"
-              rows={3}
-              disabled={submitting || isClosed}
-              className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 transition resize-none ${isClosed ? 'opacity-40 cursor-not-allowed' : ''}`}
-            />
-          </div>
-
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || isClosed}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md disabled:opacity-50 flex items-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-                  Saving…
-                </>
-              ) : isEdit ? 'Save Changes' : 'Create Report'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <TextArea
+          label="Payment Remarks / Reference"
+          name="remarks"
+          value={form.remarks}
+          onChange={handleChange}
+          placeholder="e.g., RTGS/NEFT Ref No, Date, Vendor Details..."
+          required
+          disabled={isClosed || submitting}
+          rows={3}
+          size="sm"
+        />
+      </form>
+    </Modal>
   );
 };
 
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
+const ConfirmModal = ({ show, onClose, onConfirm, danger }) => {
+  if (!show) return null;
+  const title = danger ? 'Soft-Delete Report' : 'Restore Report';
+  const message = danger
+    ? 'Are you sure you want to soft-delete this fund report? Admins can restore it later.'
+    : 'Are you sure you want to restore this soft-deleted fund report?';
 
-
-// ─── Delete Confirm Modal ─────────────────────────────────────────────────────
-const ConfirmModal = ({ message, onConfirm, onClose, danger = true }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div className="glass-panel p-6 rounded-3xl max-w-sm w-full border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${danger ? 'bg-red-500/10' : 'bg-emerald-500/10'}`}>
-          <svg className={`w-5 h-5 ${danger ? 'text-red-400' : 'text-emerald-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {danger
-              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            }
-          </svg>
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={title}
+      size="sm"
+      footer={
+        <div className="flex justify-end gap-3 w-full">
+          <Button variant="secondary" onClick={onClose} size="sm">
+            Cancel
+          </Button>
+          <Button
+            variant={danger ? 'danger' : 'success'}
+            onClick={onConfirm}
+            size="sm"
+          >
+            {danger ? 'Delete' : 'Restore'}
+          </Button>
         </div>
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-100">
-          {danger ? 'Confirm Delete' : 'Confirm Restore'}
-        </h2>
-      </div>
-      <p className="text-xs text-slate-400 mb-6">{message}</p>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-slate-200 font-bold text-xs uppercase tracking-wider transition">
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md ${
-            danger
-              ? 'bg-red-500/90 hover:bg-red-500 text-white'
-              : 'bg-emerald-500/90 hover:bg-emerald-500 text-slate-950'
-          }`}
-        >
-          {danger ? 'Delete' : 'Restore'}
-        </button>
-      </div>
-    </div>
-  </div>
-);
+      }
+    >
+      <p className="text-xs text-slate-400 text-left mb-4">{message}</p>
+    </Modal>
+  );
+};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const FundReports = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const queryClient = useQueryClient();
 
-  const [reports, setReports] = useState([]);
-  const [deletedReports, setDeletedReports] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [tab, setTab] = useState('active'); // 'active' | 'deleted'
@@ -338,26 +232,39 @@ const FundReports = () => {
   const [modal, setModal] = useState(null); // { type, report? }
   const [confirmModal, setConfirmModal] = useState(null); // { type, id, message }
 
-  // ── Fetch ──
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [rRes, pRes] = await Promise.all([getReports(), getProjects()]);
-      setReports(rRes.data?.reports ?? []);
-      setProjects(pRes.data?.projects ?? []);
-      if (isAdmin) {
-        const dRes = await getDeletedReports();
-        setDeletedReports(dRes.data?.reports ?? []);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load data.');
-    } finally {
-      setLoading(false);
+  // Fetch active reports using React Query
+  const { data: reportsData, isLoading: loadingReports, error: reportsError } = useQuery({
+    queryKey: ['fundReports', 'active'],
+    queryFn: async () => {
+      const res = await getReports();
+      return res.data?.reports ?? [];
     }
-  }, [isAdmin]);
+  });
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  // Fetch deleted reports using React Query
+  const { data: deletedReportsData } = useQuery({
+    queryKey: ['fundReports', 'deleted'],
+    queryFn: async () => {
+      const res = await getDeletedReports();
+      return res.data?.reports ?? [];
+    },
+    enabled: isAdmin
+  });
+
+  // Fetch projects using React Query
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
+    }
+  });
+
+  const reports = reportsData || [];
+  const deletedReports = deletedReportsData || [];
+  const projects = projectsData || [];
+  const loading = loadingReports;
+  const displayError = error || reportsError?.response?.data?.message || reportsError?.message;
 
   // Auto-dismiss success
   useEffect(() => {
@@ -368,15 +275,23 @@ const FundReports = () => {
 
   // ── Handlers ──
   const handleCreate = async (form) => {
-    await createReport(form);
-    setSuccess('Fund report created successfully.');
-    fetchAll();
+    try {
+      await createReport(form);
+      setSuccess('Fund report created successfully.');
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create report.');
+    }
   };
 
   const handleUpdate = async (form) => {
-    await updateReport(modal.report.fund_report_id, { amount: form.amount, remarks: form.remarks });
-    setSuccess('Fund report updated successfully.');
-    fetchAll();
+    try {
+      await updateReport(modal.report.fund_report_id, { amount: form.amount, remarks: form.remarks });
+      setSuccess('Fund report updated successfully.');
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update report.');
+    }
   };
 
   const handleDelete = async (id) => {
@@ -384,7 +299,7 @@ const FundReports = () => {
     try {
       await deleteReport(id);
       setSuccess('Report soft-deleted.');
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete report.');
     }
@@ -395,7 +310,7 @@ const FundReports = () => {
     try {
       await restoreReport(id);
       setSuccess('Report restored successfully.');
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['fundReports'] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to restore report.');
     }
@@ -442,16 +357,18 @@ const FundReports = () => {
               Manage disbursement records linked to project work orders. Auto-fills site data from Master Data.
             </p>
           </div>
-          <button
+          <Button
             id="btn-create-report"
             onClick={() => setModal({ type: 'create' })}
-            className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+            variant="primary"
+            icon={
+              <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
           >
-            <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
             New Report
-          </button>
+          </Button>
         </div>
 
         {/* ── Stat Cards ── */}
@@ -470,10 +387,10 @@ const FundReports = () => {
         </div>
 
         {/* ── Notifications ── */}
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
@@ -501,28 +418,30 @@ const FundReports = () => {
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                id="search-reports"
-                type="text"
-                placeholder="Search reports…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-medium transition w-52"
-              />
-            </div>
-            <button
-              onClick={fetchAll}
+            <Input
+              id="search-reports"
+              type="text"
+              placeholder="Search reports…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="sm"
+              iconLeft={
+                <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              }
+              containerClassName="w-52"
+            />
+            <Button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['fundReports'] })}
               title="Refresh"
-              className="p-2.5 rounded-xl glass-input hover:border-white/20 transition-all duration-200 text-slate-400 hover:text-slate-200"
+              variant="glass"
+              size="sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 

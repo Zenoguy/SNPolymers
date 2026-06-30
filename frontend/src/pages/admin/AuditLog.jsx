@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import authApi from '../../api/authApi';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
@@ -13,11 +12,6 @@ const AuditLog = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [usersList, setUsersList] = useState([]);
-
-  useEffect(() => {
-    fetchLogs();
-    fetchUsersList();
-  }, []);
 
   const fetchUsersList = async () => {
     try {
@@ -49,6 +43,14 @@ const AuditLog = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchLogs();
+      fetchUsersList();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleApplyFilters = (e) => {
     e.preventDefault();

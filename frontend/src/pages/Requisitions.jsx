@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
@@ -14,6 +14,8 @@ import {
   uploadRequisitionPdf,
   uploadGstBillPdf
 } from '../api/requisitionsApi';
+import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Helper for currency formatting
 const formatCurrency = (val) =>
@@ -26,100 +28,88 @@ const formatDate = (d) =>
 // Colored status badge component
 const StatusBadge = ({ status }) => {
   const cfg = {
-    Pending: { dot: 'bg-amber-400', pill: 'bg-amber-500/10 border-amber-500/25 text-amber-400', label: 'Pending' },
-    Approved: { dot: 'bg-emerald-400', pill: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400', label: 'Approved' },
-    Hold: { dot: 'bg-orange-400', pill: 'bg-orange-500/10 border-orange-500/25 text-orange-400', label: 'Hold' },
-    Cancelled: { dot: 'bg-slate-400', pill: 'bg-slate-500/10 border-slate-500/25 text-slate-400', label: 'Cancelled' },
+    Pending: { variant: 'amber', label: 'Pending' },
+    Approved: { variant: 'emerald', label: 'Approved' },
+    Hold: { variant: 'orange', label: 'Hold' },
+    Cancelled: { variant: 'slate', label: 'Cancelled' },
   };
   const s = cfg[status] ?? cfg['Pending'];
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${s.pill}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+    <Badge variant={s.variant} showDot={true}>
       {s.label}
-    </span>
+    </Badge>
   );
 };
 
 // Modal for confirming cancellation
 const CancelConfirmModal = ({ requisitionNo, isCancelling, onConfirm, onClose }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-    <div className="glass-panel p-6 rounded-3xl max-w-sm w-full border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-500/10">
-          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </div>
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-100">
-          Confirm Cancel
-        </h2>
-      </div>
-      <p className="text-xs text-slate-400 mb-6">
-        Are you sure you want to cancel requisition <span className="font-mono font-bold text-slate-200">{requisitionNo}</span>? This action is permanent.
-      </p>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onClose} disabled={isCancelling} className="px-4 py-2 text-slate-400 hover:text-slate-200 font-bold text-xs uppercase tracking-wider transition">
+  <Modal
+    isOpen={true}
+    onClose={onClose}
+    title="Confirm Cancel"
+    size="sm"
+    footer={
+      <>
+        <Button variant="secondary" onClick={onClose} disabled={isCancelling} size="sm">
           Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isCancelling}
-          className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md bg-red-500/90 hover:bg-red-500 text-white flex items-center gap-1.5"
-        >
-          {isCancelling ? (
-            <>
-              <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-              Cancelling…
-            </>
-          ) : 'Yes, Cancel'}
-        </button>
+        </Button>
+        <Button variant="danger" onClick={onConfirm} loading={isCancelling} size="sm">
+          Yes, Cancel
+        </Button>
+      </>
+    }
+  >
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-500/10">
+        <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
       </div>
     </div>
-  </div>
+    <p className="text-xs text-slate-400 mb-2">
+      Are you sure you want to cancel requisition <span className="font-mono font-bold text-slate-200">{requisitionNo}</span>? This action is permanent.
+    </p>
+  </Modal>
 );
 
 // Detail Modal for viewing requisition metadata and PDF previews
 const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
-  const [requisition, setRequisition] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        const res = await getRequisitionById(reqId);
-        setRequisition(res.data?.requisition);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to retrieve details.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDetail();
-  }, [reqId]);
+  const { data: requisition, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['requisition', reqId],
+    queryFn: async () => {
+      const res = await getRequisitionById(reqId);
+      return res.data?.requisition;
+    }
+  });
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div className="glass-panel p-10 rounded-3xl flex flex-col items-center justify-center">
+      <Modal isOpen={true} onClose={null} size="sm">
+        <div className="flex flex-col items-center justify-center p-6">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
           <span className="text-xs text-slate-400 mt-4 uppercase tracking-widest font-bold">Loading Details…</span>
         </div>
-      </div>
+      </Modal>
     );
   }
 
+  const error = queryError?.response?.data?.message || queryError?.message;
+
   if (error || !requisition) {
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div className="glass-panel p-6 rounded-3xl max-w-sm w-full border border-white/10">
-          <h2 className="text-sm font-extrabold text-red-400 uppercase mb-3">Error</h2>
-          <p className="text-xs text-slate-400 mb-6">{error || 'Requisition not found.'}</p>
-          <button onClick={onClose} className="w-full py-2 bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold uppercase rounded-xl transition">
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title="Error"
+        size="sm"
+        footer={
+          <Button variant="glass" size="sm" onClick={onClose} className="w-full">
             Close
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      >
+        <p className="text-xs text-slate-400 mb-2">{error || 'Requisition not found.'}</p>
+      </Modal>
     );
   }
 
@@ -167,24 +157,42 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-4xl w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 my-8 relative flex flex-col md:flex-row gap-6">
-        
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Requisition Details"
+      subtitle={`Requisition ID: ${requisition.requisition_no}`}
+      size="xl"
+      footer={
+        <>
+          {showCancel && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => onCancelClick(requisition.requisition_id, requisition.requisition_no)}
+            >
+              Cancel Requisition
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onClose}
+          >
+            Close Details
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Left Side: Metadata */}
-        <div className="flex-1 space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-                Requisition ID: {requisition.requisition_no}
-              </span>
-              <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-                Requisition Details
-              </h2>
-            </div>
+        <div className="flex-1 space-y-4 text-left">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Metadata</h3>
             <StatusBadge status={requisition.requisition_status} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl max-h-[420px] overflow-y-auto">
+          <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl max-h-[420px] overflow-y-auto no-scrollbar">
             {detailRows.map((row) => (
               <div key={row.label} className={row.label === 'Bank Details' || row.label === 'Expenditure Remarks' || row.label === 'Site Details' || row.label === 'Authority Remarks' ? 'col-span-2' : ''}>
                 <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{row.label}</p>
@@ -194,28 +202,10 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
               </div>
             ))}
           </div>
-
-          <div className="flex justify-between items-center pt-2">
-            {showCancel ? (
-              <button
-                onClick={() => onCancelClick(requisition.requisition_id, requisition.requisition_no)}
-                className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-red-950/40 hover:bg-red-950/60 border border-red-900/30 text-red-400 transition"
-              >
-                Cancel Requisition
-              </button>
-            ) : <div />}
-            
-            <button
-              onClick={onClose}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition"
-            >
-              Close Details
-            </button>
-          </div>
         </div>
 
         {/* Right Side: Document Previews */}
-        <div className="w-full md:w-96 flex flex-col gap-4 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
+        <div className="w-full md:w-96 flex flex-col gap-4 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6 text-left">
           <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Attached Documents</h3>
           
           {/* Requisition PDF Card */}
@@ -231,7 +221,7 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
                 href={requisition.requisition_pdf_signed_url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-3 py-2 bg-white/5 hover:bg-white/10 text-center rounded-xl text-[10px] uppercase tracking-wider font-extrabold border border-white/5 transition block"
+                className="mt-3 py-2 bg-white/5 hover:bg-white/10 text-center rounded-xl text-[10px] uppercase tracking-wider font-extrabold border border-white/5 transition block text-slate-300 hover:text-slate-100"
               >
                 Open Requisition PDF
               </a>
@@ -254,7 +244,7 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
                   href={requisition.gst_bill_pdf_signed_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 py-2 bg-white/5 hover:bg-white/10 text-center rounded-xl text-[10px] uppercase tracking-wider font-extrabold border border-white/5 transition block"
+                  className="mt-3 py-2 bg-white/5 hover:bg-white/10 text-center rounded-xl text-[10px] uppercase tracking-wider font-extrabold border border-white/5 transition block text-slate-300 hover:text-slate-100"
                 >
                   Open GST Bill PDF
                 </a>
@@ -264,9 +254,8 @@ const RequisitionDetailModal = ({ reqId, onClose, user, onCancelClick }) => {
             </div>
           )}
         </div>
-
       </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -325,144 +314,110 @@ const ActionModal = ({ requisition, onClose, onSave }) => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden my-8">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+  const footerButtons = (
+    <>
+      <Button
+        variant="secondary"
+        onClick={onClose}
+        disabled={submitting}
+        size="sm"
+      >
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        form="workflow-action-form"
+        variant={approveType === 'Approve' ? 'primary' : 'danger'}
+        loading={submitting}
+        size="sm"
+      >
+        Save Approval ({approveType})
+      </Button>
+    </>
+  );
 
-        <div className="flex justify-between items-center mb-6 relative z-10">
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Take Workflow Action"
+      subtitle={`Requisition NO: ${requisition.requisition_no}`}
+      footer={footerButtons}
+      size="md"
+    >
+      {error && (
+        <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      <form id="workflow-action-form" onSubmit={handleSubmit} className="space-y-4 text-left">
+        {/* Read-Only Info */}
+        <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              Requisition NO: {requisition.requisition_no}
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              Take Workflow Action
-            </h2>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Requested Amount</p>
+            <p className="text-xs font-mono font-bold text-amber-400 mt-0.5">{formatCurrency(requisition.requisition_amount)}</p>
           </div>
-          <button onClick={onClose} disabled={submitting} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Material Head</p>
+            <p className="text-xs font-semibold text-slate-300 mt-0.5">{requisition.material_main_head}</p>
+          </div>
+          <div className="col-span-2 border-t border-white/5 pt-2 flex justify-between text-[11px] text-slate-400 font-semibold">
+            <span>Approver: {approverName}</span>
+            <span>Date: {systemDateStr}</span>
+          </div>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-            {error}
+        {/* Action Choice */}
+        <Select
+          label="Action"
+          value={approveType}
+          onChange={(e) => setApproveType(e.target.value)}
+          required
+          disabled={submitting}
+        >
+          <option value="Approve">Approve</option>
+          <option value="Hold">Hold</option>
+        </Select>
+
+        {/* Approved Amount (Approve Only) */}
+        {approveType === 'Approve' && (
+          <div className="space-y-4">
+            <Input
+              label="Approved Amount (₹)"
+              type="number"
+              value={approvedAmount}
+              onChange={(e) => setApprovedAmount(e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              min="0.01"
+              required
+              disabled={submitting}
+            />
+
+            {/* Live Computed Approved Balance */}
+            {approvedAmount !== '' && (
+              <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex justify-between items-center text-xs">
+                <span className="text-slate-400 font-medium">Approved Balance:</span>
+                <span className="font-mono font-bold text-slate-200">{formatCurrency(liveApprovedBalance)}</span>
+              </div>
+            )}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-          {/* Read-Only Info */}
-          <div className="grid grid-cols-2 gap-3.5 bg-white/[0.01] border border-white/5 p-4 rounded-2xl">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Requested Amount</p>
-              <p className="text-xs font-mono font-bold text-amber-400 mt-0.5">{formatCurrency(requisition.requisition_amount)}</p>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Material Head</p>
-              <p className="text-xs font-semibold text-slate-300 mt-0.5">{requisition.material_main_head}</p>
-            </div>
-            <div className="col-span-2 border-t border-white/5 pt-2 flex justify-between text-[11px] text-slate-400 font-semibold">
-              <span>Approver: {approverName}</span>
-              <span>Date: {systemDateStr}</span>
-            </div>
-          </div>
-
-          {/* Action Choice */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Action <span className="text-red-400">*</span>
-            </label>
-            <select
-              value={approveType}
-              onChange={(e) => setApproveType(e.target.value)}
-              required
-              disabled={submitting}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-            >
-              <option value="Approve">Approve</option>
-              <option value="Hold">Hold</option>
-            </select>
-          </div>
-
-          {/* Approved Amount (Approve Only) */}
-          {approveType === 'Approve' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Approved Amount (₹) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={approvedAmount}
-                  onChange={(e) => setApprovedAmount(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition"
-                />
-              </div>
-
-              {/* Live Computed Approved Balance */}
-              {approvedAmount !== '' && (
-                <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex justify-between items-center text-xs">
-                  <span className="text-slate-400 font-medium">Approved Balance:</span>
-                  <span className="font-mono font-bold text-slate-200">{formatCurrency(liveApprovedBalance)}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Remarks (Required for both Approve and Hold) */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Remarks / Comments <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              placeholder={`Enter the reason for placing on ${approveType === 'Approve' ? 'approval' : 'hold'}…`}
-              rows={3}
-              required
-              disabled={submitting}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className={`px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md flex items-center gap-1.5 ${
-                approveType === 'Approve'
-                  ? 'bg-white hover:bg-slate-100 text-slate-950'
-                  : 'bg-orange-500 hover:bg-orange-600 text-white'
-              }`}
-            >
-              {submitting ? (
-                <>
-                  <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-                  Saving…
-                </>
-              ) : `Save Approval (${approveType})`}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Remarks (Required for both Approve and Hold) */}
+        <TextArea
+          label="Remarks / Comments"
+          value={remarks}
+          onChange={(e) => setRemarks(e.target.value)}
+          placeholder={`Enter the reason for placing on ${approveType === 'Approve' ? 'approval' : 'hold'}…`}
+          rows={3}
+          required
+          disabled={submitting}
+        />
+      </form>
+    </Modal>
   );
 };
 
@@ -703,410 +658,362 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
     }
   };
 
+  // Render Footer Buttons dynamically based on Step
+  const getFooterButtons = () => {
+    if (step === 1) {
+      return (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setStep(2)}
+          className="ml-auto"
+        >
+          Next Step &rarr;
+        </Button>
+      );
+    }
+    if (step === 2) {
+      return (
+        <>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setStep(1)}
+          >
+            &larr; Back
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              if (!selectedWO) {
+                setError('Please select a Work Order.');
+                return;
+              }
+              setError('');
+              setStep(3);
+            }}
+            disabled={!selectedWO}
+          >
+            Next Step &rarr;
+          </Button>
+        </>
+      );
+    }
+    return (
+      <>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setStep(2)}
+          disabled={submitting}
+        >
+          &larr; Back
+        </Button>
+        <Button
+          type="submit"
+          form="requisition-creation-form"
+          variant="primary"
+          size="sm"
+          loading={submitting}
+          disabled={submitting || isUploadingReq || isUploadingGst}
+        >
+          Save Requisition
+        </Button>
+      </>
+    );
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="glass-panel p-6 rounded-3xl max-w-lg w-full shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/10 relative overflow-hidden my-8">
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
-
-        <div className="flex justify-between items-center mb-6 relative z-10">
-          <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono">
-              Step {step} of 3
-            </span>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-100 mt-0.5">
-              Create Requisition
-            </h2>
-          </div>
-          <button onClick={onClose} disabled={submitting} className="text-slate-400 hover:text-slate-200 transition-colors p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Requisition"
+      subtitle={`Step ${step} of 3`}
+      footer={getFooterButtons()}
+      size="md"
+    >
+      {error && (
+        <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+          {error}
         </div>
+      )}
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-            {error}
-          </div>
-        )}
-
-        {/* ──────── STEP 1: USER DETAILS (AUTO-FILLED) ──────── */}
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="bg-white/[0.01] border border-white/5 p-5 rounded-2xl space-y-3.5">
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In User</p>
-                <p className="text-xs font-semibold text-slate-200 mt-0.5">{username}</p>
-              </div>
-              <div className="border-t border-white/5 pt-3.5">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Creation Date (System Timestamp)</p>
-                <p className="text-xs font-semibold text-slate-200 mt-0.5">{systemDateStr}</p>
-              </div>
-            </div>
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md flex items-center gap-1.5"
-              >
-                Next Step &rarr;
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ──────── STEP 2: MASTER DATA SELECTION ──────── */}
-        {step === 2 && (
-          <div className="space-y-4">
+      {/* ──────── STEP 1: USER DETAILS (AUTO-FILLED) ──────── */}
+      {step === 1 && (
+        <div className="space-y-4 text-left">
+          <div className="bg-white/[0.01] border border-white/5 p-5 rounded-2xl space-y-3.5">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Work Order No. <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={selectedWO}
-                onChange={(e) => setSelectedWO(e.target.value)}
-                className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-              >
-                <option value="">-- Choose Work Order --</option>
-                {filteredProjects.map((p) => (
-                  <option key={p.work_order_no} value={p.work_order_no}>
-                    {p.work_order_no} ({p.approvedEst.estimate_no})
-                  </option>
-                ))}
-              </select>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In User</p>
+              <p className="text-xs font-semibold text-slate-200 mt-0.5">{username}</p>
             </div>
+            <div className="border-t border-white/5 pt-3.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Creation Date (System Timestamp)</p>
+              <p className="text-xs font-semibold text-slate-200 mt-0.5">{systemDateStr}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
-            {projectMetadata && (
-              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-3">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-1">
-                  &darr; Auto-populated geographic and estimate snapshots
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Estimate No.</p>
-                    <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.estimate_no}</p>
+      {/* ──────── STEP 2: MASTER DATA SELECTION ──────── */}
+      {step === 2 && (
+        <div className="space-y-4 text-left">
+          <Select
+            label="Work Order No."
+            value={selectedWO}
+            onChange={(e) => setSelectedWO(e.target.value)}
+            required
+          >
+            <option value="">-- Choose Work Order --</option>
+            {filteredProjects.map((p) => (
+              <option key={p.work_order_no} value={p.work_order_no}>
+                {p.work_order_no} ({p.approvedEst.estimate_no})
+              </option>
+            ))}
+          </Select>
+
+          {projectMetadata && (
+            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-3">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-1">
+                &darr; Auto-populated geographic and estimate snapshots
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Estimate No.</p>
+                  <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.estimate_no}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Estimate Amount</p>
+                  <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
+                    {projectMetadata.estimateAmount !== null ? formatCurrency(projectMetadata.estimateAmount) : 'No Approved Estimate'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">State / District</p>
+                  <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.state} / {projectMetadata.district}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Area Code / Department</p>
+                  <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.area_code} / {projectMetadata.department}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Site Details</p>
+                  <p className="text-xs font-semibold text-slate-300 mt-0.5 whitespace-pre-line">{projectMetadata.site_details}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ──────── STEP 3: REQUISITION DETAILS & UPLOADS ──────── */}
+      {step === 3 && (
+        <form id="requisition-creation-form" onSubmit={handleSubmit} className="space-y-4 text-left">
+          <Input
+            label="Requisition Number"
+            type="text"
+            value={requisitionNo}
+            onChange={(e) => setRequisitionNo(e.target.value.replace(/[^A-Za-z0-9_\-.]/g, ''))}
+            placeholder="e.g. REQ-WO-001"
+            required
+            disabled={requisitionPdfUrl !== '' || submitting}
+            helperText={requisitionPdfUrl ? "Requisition number is locked while PDF is uploaded." : ""}
+          />
+
+          <Select
+            label="Material Main Head"
+            value={materialHead}
+            onChange={(e) => setMaterialHead(e.target.value)}
+            required
+            disabled={submitting}
+          >
+            <option value="">-- Select Material Head --</option>
+            {mainHeads.map((head) => (
+              <option key={head} value={head}>
+                {head}
+              </option>
+            ))}
+          </Select>
+
+          {/* Requisition PDF Upload */}
+          <div className="p-4 border border-white/5 rounded-2xl bg-white/[0.01] space-y-2">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Upload Requisition PDF <span className="text-red-400">*</span>
+            </label>
+            {!requisitionPdfUrl ? (
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  disabled={!requisitionNo.trim() || isUploadingReq || submitting}
+                  onChange={handleRequisitionPdfSelect}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-white/10 file:text-slate-300 file:cursor-pointer hover:file:bg-white/20 transition file:disabled:opacity-40"
+                />
+                {!requisitionNo.trim() && (
+                  <p className="text-[9px] text-slate-500 font-semibold">Enter a Requisition Number first to enable upload.</p>
+                )}
+                {isUploadingReq && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-amber-500" />
+                    <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Uploading ({reqUploadProgress}%)…</span>
                   </div>
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Estimate Amount</p>
-                    <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
-                      {projectMetadata.estimateAmount !== null ? formatCurrency(projectMetadata.estimateAmount) : 'No Approved Estimate'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">State / District</p>
-                    <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.state} / {projectMetadata.district}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Zone / Dept.</p>
-                    <p className="text-xs font-semibold text-slate-300 mt-0.5 truncate">{projectMetadata.zone} / {projectMetadata.department}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Site Details</p>
-                    <p className="text-xs font-semibold text-slate-300 mt-0.5">{projectMetadata.site_details}</p>
-                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl">
+                <div className="flex items-center gap-2 truncate">
+                  <span className="text-emerald-400 text-xs">✓</span>
+                  <span className="text-[11px] font-semibold text-slate-200 truncate">{requisitionPdf?.name || 'Requisition PDF Uploaded'}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {requisitionPdfPreview && (
+                    <Button
+                      variant="glass"
+                      size="xs"
+                      onClick={() => window.open(requisitionPdfPreview, '_blank')}
+                    >
+                      Preview
+                    </Button>
+                  )}
+                  <Button
+                    variant="danger"
+                    size="xs"
+                    onClick={handleClearRequisitionPdf}
+                  >
+                    Clear
+                  </Button>
                 </div>
               </div>
             )}
-
-            <div className="flex justify-between items-center pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-              >
-                &larr; Back
-              </button>
-              <button
-                type="button"
-                disabled={!selectedWO}
-                onClick={() => setStep(3)}
-                className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md flex items-center gap-1.5 disabled:opacity-40"
-              >
-                Next Step &rarr;
-              </button>
-            </div>
           </div>
-        )}
 
-        {/* ──────── STEP 3: CREATOR INPUT FORM ──────── */}
-        {step === 3 && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="max-h-[380px] overflow-y-auto pr-1 space-y-4 scroll-smooth">
-              
-              {/* Requisition NO. */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Requisition Number <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={requisitionNo}
-                  onChange={(e) => setRequisitionNo(e.target.value.replace(/[^A-Za-z0-9_\-.]/g, ''))}
-                  placeholder="e.g. REQ-WO-001"
-                  required
-                  disabled={requisitionPdfUrl !== '' || submitting}
-                  className={`w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition ${requisitionPdfUrl !== '' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-                {requisitionPdfUrl && (
-                  <p className="text-[9px] text-amber-500 font-semibold mt-1">Requisition number is locked while PDF is uploaded.</p>
-                )}
+          <Input
+            label="Requisition Amount (₹)"
+            type="number"
+            value={reqAmount}
+            onChange={(e) => setReqAmount(e.target.value)}
+            placeholder="0.00"
+            step="0.01"
+            min="0.01"
+            required
+            disabled={submitting}
+          />
+
+          {/* Advisory Balance Display */}
+          {projectMetadata && projectMetadata.estimateAmount !== null && (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-2">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400">
+                Advisory Estimate Balance indicator
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="text-slate-400">Estimate Limit:</div>
+                <div className="text-slate-200 font-mono text-right">{formatCurrency(projectMetadata.estimateAmount)}</div>
+                <div className="text-slate-400">Advisory Remaining:</div>
+                <div className="text-amber-400 font-mono font-semibold text-right">{formatCurrency(advisoryRemaining)}</div>
               </div>
+              <p className="text-[9px] text-slate-500 font-semibold border-t border-amber-500/10 pt-1.5 leading-relaxed">
+                * Values are advisory and computed based on currently loaded requisitions in state. The backend remains the source of truth.
+              </p>
+            </div>
+          )}
 
-              {/* Material Main Head */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Material Main Head <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={materialHead}
-                  onChange={(e) => setMaterialHead(e.target.value)}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-                >
-                  <option value="">-- Select Material Head --</option>
-                  {mainHeads.map((head) => (
-                    <option key={head} value={head}>
-                      {head}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <Select
+            label="GST Bill Included?"
+            value={gstBill}
+            onChange={(e) => handleGstToggle(e.target.value)}
+            required
+            disabled={submitting}
+          >
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </Select>
 
-              {/* Requisition PDF Upload */}
-              <div className="p-4 border border-white/5 rounded-2xl bg-white/[0.01]">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Upload Requisition PDF <span className="text-red-400">*</span>
-                </label>
-                {!requisitionPdfUrl ? (
-                  <div className="space-y-2">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      disabled={!requisitionNo.trim() || isUploadingReq || submitting}
-                      onChange={handleRequisitionPdfSelect}
-                      className="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-white/10 file:text-slate-300 file:cursor-pointer hover:file:bg-white/20 transition file:disabled:opacity-40"
-                    />
-                    {!requisitionNo.trim() && (
-                      <p className="text-[9px] text-slate-500 font-semibold">Enter a Requisition Number first to enable upload.</p>
-                    )}
-                    {isUploadingReq && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-amber-500" />
-                        <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Uploading ({reqUploadProgress}%)…</span>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl">
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="text-emerald-400 text-xs">✓</span>
-                      <span className="text-[11px] font-semibold text-slate-200 truncate">{requisitionPdf?.name || 'Requisition PDF Uploaded'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {requisitionPdfPreview && (
-                        <a
-                          href={requisitionPdfPreview}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] uppercase font-bold tracking-wider rounded-lg transition"
-                        >
-                          Preview
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleClearRequisitionPdf}
-                        className="p-1.5 bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-900/20 rounded-lg text-[9px] uppercase font-bold transition"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Requisition Amount */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Requisition Amount (₹) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={reqAmount}
-                  onChange={(e) => setReqAmount(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition"
-                />
-
-                {/* Advisory Balance Display */}
-                {projectMetadata && projectMetadata.estimateAmount !== null && (
-                  <div className="mt-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-2">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400">
-                      Advisory Estimate Balance indicator
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div className="text-slate-400">Estimate Limit:</div>
-                      <div className="text-slate-200 font-mono text-right">{formatCurrency(projectMetadata.estimateAmount)}</div>
-                      <div className="text-slate-400">Advisory Remaining:</div>
-                      <div className="text-amber-400 font-mono font-semibold text-right">{formatCurrency(advisoryRemaining)}</div>
-                    </div>
-                    <p className="text-[9px] text-slate-500 font-semibold border-t border-amber-500/10 pt-1.5 leading-relaxed">
-                      * Values are advisory and computed based on currently loaded requisitions in state. The backend remains the source of truth.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* GST Bill Toggle */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  GST Bill Included? <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={gstBill}
-                  onChange={(e) => handleGstToggle(e.target.value)}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-200 transition"
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-
-              {/* GST Bill PDF Upload */}
-              {gstBill === 'Yes' && (
-                <div className="p-4 border border-white/5 rounded-2xl bg-white/[0.01]">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    Upload GST Invoice PDF <span className="text-red-400">*</span>
-                  </label>
-                  {!gstPdfUrl ? (
-                    <div className="space-y-2">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        disabled={!requisitionNo.trim() || isUploadingGst || submitting}
-                        onChange={handleGstPdfSelect}
-                        className="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-white/10 file:text-slate-300 file:cursor-pointer hover:file:bg-white/20 transition file:disabled:opacity-40"
-                      />
-                      {!requisitionNo.trim() && (
-                        <p className="text-[9px] text-slate-500 font-semibold">Enter a Requisition Number first to enable upload.</p>
-                      )}
-                      {isUploadingGst && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-amber-500" />
-                          <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Uploading ({gstUploadProgress}%)…</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl">
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="text-emerald-400 text-xs">✓</span>
-                        <span className="text-[11px] font-semibold text-slate-200 truncate">{gstPdf?.name || 'GST PDF Uploaded'}</span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {gstPdfPreview && (
-                          <a
-                            href={gstPdfPreview}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] uppercase font-bold tracking-wider rounded-lg transition"
-                          >
-                            Preview
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          onClick={handleClearGstPdf}
-                          className="p-1.5 bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-900/20 rounded-lg text-[9px] uppercase font-bold transition"
-                        >
-                          Clear
-                        </button>
-                      </div>
+          {/* GST Bill PDF Upload */}
+          {gstBill === 'Yes' && (
+            <div className="p-4 border border-white/5 rounded-2xl bg-white/[0.01] space-y-2">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Upload GST Invoice PDF <span className="text-red-400">*</span>
+              </label>
+              {!gstPdfUrl ? (
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    disabled={!requisitionNo.trim() || isUploadingGst || submitting}
+                    onChange={handleGstPdfSelect}
+                    className="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-white/10 file:text-slate-300 file:cursor-pointer hover:file:bg-white/20 transition file:disabled:opacity-40"
+                  />
+                  {!requisitionNo.trim() && (
+                    <p className="text-[9px] text-slate-500 font-semibold">Enter a Requisition Number first to enable upload.</p>
+                  )}
+                  {isUploadingGst && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-amber-500" />
+                      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Uploading ({gstUploadProgress}%)…</span>
                     </div>
                   )}
                 </div>
+              ) : (
+                <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="text-emerald-400 text-xs">✓</span>
+                    <span className="text-[11px] font-semibold text-slate-200 truncate">{gstPdf?.name || 'GST PDF Uploaded'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {gstPdfPreview && (
+                      <Button
+                        variant="glass"
+                        size="xs"
+                        onClick={() => window.open(gstPdfPreview, '_blank')}
+                      >
+                        Preview
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger"
+                      size="xs"
+                      onClick={handleClearGstPdf}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
               )}
-
-              {/* Bank Details */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Bank Details <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  value={bankDetails}
-                  onChange={(e) => setBankDetails(e.target.value)}
-                  placeholder="Enter payee bank name, branch, account number, and IFSC code…"
-                  rows={2}
-                  required
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-                />
-              </div>
-
-              {/* Remarks */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Expenditure Head Remarks (Optional)
-                </label>
-                <textarea
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Optional notes or head of expenditure remarks…"
-                  rows={2}
-                  disabled={submitting}
-                  className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 transition resize-none"
-                />
-              </div>
-
             </div>
+          )}
 
-            <div className="flex justify-between items-center pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 font-extrabold text-xs uppercase tracking-wider transition"
-              >
-                &larr; Back
-              </button>
-              <button
-                type="submit"
-                disabled={submitting || isUploadingReq || isUploadingGst}
-                className="bg-white hover:bg-slate-100 text-slate-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md disabled:opacity-50 flex items-center gap-1.5"
-              >
-                {submitting ? (
-                  <>
-                    <span className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-slate-800" />
-                    Saving…
-                  </>
-                ) : 'Save Requisition'}
-              </button>
-            </div>
-          </form>
-        )}
+          <TextArea
+            label="Bank Details"
+            value={bankDetails}
+            onChange={(e) => setBankDetails(e.target.value)}
+            placeholder="Enter payee bank name, branch, account number, and IFSC code…"
+            rows={2}
+            required
+            disabled={submitting}
+          />
 
-      </div>
-    </div>
+          <TextArea
+            label="Expenditure Head Remarks (Optional)"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder="Optional notes or head of expenditure remarks…"
+            rows={2}
+            disabled={submitting}
+          />
+        </form>
+      )}
+    </Modal>
   );
 };
 
 // Main Requisitions Page Component
+// Main Requisitions Page Component
 const Requisitions = () => {
   const { user } = useAuth();
   const isCreator = ['je', 'admin'].includes(user?.role);
+  const queryClient = useQueryClient();
 
-  const [requisitions, setRequisitions] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [estimates, setEstimates] = useState([]);
-  const [mainHeads, setMainHeads] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -1121,32 +1028,82 @@ const Requisitions = () => {
   const [currentTab, setCurrentTab] = useState(user?.role === 'je' ? 'all' : 'pending');
   const [actionTargetReq, setActionTargetReq] = useState(null);
 
-  // Fetch all core datasets
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [reqRes, projRes, estRes, categoriesRes] = await Promise.all([
-        getRequisitions(),
-        getProjects(),
-        getEstimates(),
-        getMaterialCategories()
-      ]);
-      setRequisitions(reqRes.data?.requisitions ?? []);
-      setProjects(projRes.data?.projects ?? []);
-      setEstimates(estRes.data?.estimates ?? []);
-      setMainHeads(categoriesRes.data?.mainHeads ?? []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load requisitions data.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Projects Directory States
+  const [activeWO, setActiveWO] = useState(null);
+  const [dirSearchWO, setDirSearchWO] = useState('');
+  const [dirSearchDept, setDirSearchDept] = useState('');
+  const [dirSearchZone, setDirSearchZone] = useState('');
+  const [dirFilterStatus, setDirFilterStatus] = useState('');
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchAll();
-  }, [fetchAll]);
+  // Fetch all core datasets using React Query
+  const { data: requisitionsData, isLoading: loadingRequisitions, error: requisitionsError } = useQuery({
+    queryKey: ['requisitions'],
+    queryFn: async () => {
+      const res = await getRequisitions();
+      return res.data?.requisitions ?? [];
+    }
+  });
+
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.data?.projects ?? [];
+    }
+  });
+
+  const { data: estimatesData } = useQuery({
+    queryKey: ['estimates'],
+    queryFn: async () => {
+      const res = await getEstimates();
+      return res.data?.estimates ?? [];
+    }
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['materialCategories'],
+    queryFn: async () => {
+      const res = await getMaterialCategories();
+      return res.data?.mainHeads ?? [];
+    }
+  });
+
+  const requisitions = requisitionsData || [];
+  const projects = projectsData || [];
+  const estimates = estimatesData || [];
+  const mainHeads = categoriesData || [];
+  const loading = loadingRequisitions;
+
+  // Filter projects list for the directory tab
+  const getFilteredProjects = () => {
+    let list = [...projects];
+
+    const wo = dirSearchWO.toLowerCase().trim();
+    if (wo) {
+      list = list.filter(p => p.work_order_no?.toLowerCase().includes(wo));
+    }
+
+    const dept = dirSearchDept.toLowerCase().trim();
+    if (dept) {
+      list = list.filter(p => p.department?.toLowerCase().includes(dept));
+    }
+
+    const zone = dirSearchZone.toLowerCase().trim();
+    if (zone) {
+      list = list.filter(p => p.area_code?.toLowerCase().includes(zone) || p.zone?.toLowerCase().includes(zone));
+    }
+
+    const status = dirFilterStatus;
+    if (status) {
+      list = list.filter(p => p.status === status);
+    }
+
+    return list;
+  };
+
+  const filteredProjects = getFilteredProjects();
+
+  const displayError = error || requisitionsError?.response?.data?.message || requisitionsError?.message || '';
 
   // Success auto-dismiss
   useEffect(() => {
@@ -1157,16 +1114,25 @@ const Requisitions = () => {
 
   // Create requisition save callback
   const handleCreate = async (payload) => {
-    await createRequisition(payload);
-    setSuccess(`Requisition ${payload.requisition_no} submitted successfully.`);
-    fetchAll();
+    try {
+      await createRequisition(payload);
+      setSuccess(`Requisition ${payload.requisition_no} submitted successfully.`);
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create requisition.');
+    }
   };
 
   // M6b Approve/Hold action callback
   const handleAct = async (id, actionPayload) => {
-    await actOnRequisition(id, actionPayload);
-    setSuccess(`Requisition successfully ${actionPayload.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
-    fetchAll();
+    try {
+      await actOnRequisition(id, actionPayload);
+      setSuccess(`Requisition successfully ${actionPayload.action === 'Approve' ? 'approved' : 'placed on hold'}.`);
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['requisition', id] });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to act on requisition.');
+    }
   };
 
   // Cancel requisition confirm callback
@@ -1180,7 +1146,8 @@ const Requisitions = () => {
       setCancelTarget(null);
       // Close detail view if open
       setActiveReqId(null);
-      fetchAll();
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['requisition', cancelTarget.id] });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to cancel requisition.');
     } finally {
@@ -1240,15 +1207,17 @@ const Requisitions = () => {
             </p>
           </div>
           {isCreator && (
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white hover:bg-slate-100 text-slate-950 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 shrink-0 transform hover:-translate-y-0.5"
+              size="sm"
+              icon={
+                <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              }
             >
-              <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
               New Requisition
-            </button>
+            </Button>
           )}
         </div>
 
@@ -1260,7 +1229,7 @@ const Requisitions = () => {
             { label: 'Approved Requests', value: approvedCount, accent: 'from-emerald-500/20 to-emerald-500/5', border: 'border-emerald-500/20' },
             { label: 'Hold / Cancelled', value: holdOrCancelCount, accent: 'from-red-500/20 to-red-500/5', border: 'border-red-500/20' },
           ].map(({ label, value, accent, border }) => (
-            <div key={label} className={`glass-panel rounded-2xl p-5 border ${border} bg-gradient-to-br ${accent}`}>
+            <div key={label} className={`glass-panel rounded-2xl p-5 border ${border} bg-gradient-to-br ${accent} text-left`}>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
               <p className="font-black text-slate-100 mt-1.5 text-3xl tabular-nums">{value}</p>
             </div>
@@ -1268,157 +1237,437 @@ const Requisitions = () => {
         </div>
 
         {/* Notifications */}
-        {error && (
-          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 animate-pulse">
+        {displayError && (
+          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 animate-pulse text-left">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
         {success && (
-          <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl text-xs text-emerald-300 mb-5 flex items-center gap-2.5">
+          <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl text-xs text-emerald-300 mb-5 flex items-center gap-2.5 text-left">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             {success}
           </div>
         )}
 
-        {/* Search Bar, Tabs & Refresh */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
-          {['zo', 'ho', 'admin'].includes(user?.role) ? (
-            <div className="flex items-center gap-1 glass-panel p-1 rounded-xl border border-white/5">
-              {[
-                { id: 'pending', label: 'Pending Queue' },
-                { id: 'all', label: 'All Requisitions' }
-              ].map((t) => (
+        {/* Active Project specific ledger or Main dashboard views */}
+        {activeWO ? (
+          <div className="space-y-6 animate-fadeIn text-left">
+            {/* Header / Back button */}
+            <div className="flex justify-between items-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setActiveWO(null)}
+              >
+                &larr; Back to Projects Directory
+              </Button>
+              <Badge variant={activeWO.status === 'Running' ? 'emerald' : activeWO.status === 'Closed' ? 'red' : 'amber'}>
+                Status: {activeWO.status}
+              </Badge>
+            </div>
+
+            {/* Project Metadata Snapshots */}
+            <div className="glass-panel p-5 rounded-3xl border border-white/5 space-y-4">
+              <span className="text-[9px] uppercase font-black tracking-widest text-amber-500 font-mono block">Project Snapshot Metadata</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Input label="State / District" disabled value={`${activeWO.state} / ${activeWO.district}`} size="sm" />
+                <Input label="Area Code (Zone)" disabled value={activeWO.area_code || 'N/A'} size="sm" />
+                <Input label="Department" disabled value={activeWO.department} size="sm" />
+                <Input label="Work Order No." disabled value={activeWO.work_order_no} size="sm" className="font-mono" />
+              </div>
+              <TextArea
+                label="Site Details"
+                disabled
+                value={activeWO.site_details}
+                rows={2}
+                size="sm"
+              />
+            </div>
+
+            {/* Requisitions for this WO */}
+            <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
+              <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Requisitions Ledger for {activeWO.work_order_no}</span>
+                <span className="text-[10px] font-mono font-bold text-amber-500">
+                  Total: {requisitions.filter(r => r.work_order_no === activeWO.work_order_no).length} records
+                </span>
+              </div>
+              
+              {requisitions.filter(r => r.work_order_no === activeWO.work_order_no).length === 0 ? (
+                <div className="text-center p-20 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
+                  No requisitions submitted for this work order yet.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow hover={false}>
+                      {['Requisition No.', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
+                        <TableCell key={h} isHeader={true}>
+                          {h}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {requisitions.filter(r => r.work_order_no === activeWO.work_order_no).map((req) => {
+                      const isPending = req.requisition_status === 'Pending';
+                      const isOwner = req.requester_user_id === user?.mobile_number;
+                      const isAdmin = user?.role === 'admin';
+                      const canCancel = isPending && (isOwner || isAdmin);
+                      return (
+                        <TableRow key={req.requisition_id}>
+                          <TableCell className="font-mono font-semibold text-slate-100">
+                            {req.requisition_no}
+                          </TableCell>
+                          <TableCell className="text-slate-300 font-semibold">
+                            {req.material_main_head}
+                          </TableCell>
+                          <TableCell className="font-mono font-bold text-amber-500">
+                            {formatCurrency(req.requisition_amount)}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={req.requisition_status} />
+                          </TableCell>
+                          <TableCell className="text-[11px] text-slate-500">
+                            {formatDate(req.created_at)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+                              <Button
+                                variant="glass"
+                                size="xs"
+                                onClick={() => setActiveReqId(req.requisition_id)}
+                              >
+                                View Details
+                              </Button>
+                              {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                                <Button
+                                  variant="glass"
+                                  size="xs"
+                                  className="text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20"
+                                  onClick={() => setActionTargetReq(req)}
+                                >
+                                  Take Action
+                                </Button>
+                              )}
+                              {canCancel && (
+                                <Button
+                                  variant="danger"
+                                  size="xs"
+                                  onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
+                                >
+                                  Cancel
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+
+              {/* Aggregated ledger summary metrics for this WO */}
+              <div className="p-4 border-t border-white/5 bg-amber-950/5 border-l border-r border-b rounded-b-3xl">
+                <span className="text-[9px] uppercase font-black tracking-widest text-amber-400 font-mono">Ledger Aggregated Summary Metrics</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 text-center">
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Total Requested</p>
+                    <p className="text-xs font-mono font-extrabold text-slate-100 mt-2">
+                      {formatCurrency(
+                        requisitions
+                          .filter(r => r.work_order_no === activeWO.work_order_no && r.requisition_status !== 'Cancelled')
+                          .reduce((sum, r) => sum + Number(r.requisition_amount), 0)
+                      )}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Pending Approval</p>
+                    <p className="text-xs font-mono font-extrabold text-amber-500 mt-2">
+                      {formatCurrency(
+                        requisitions
+                          .filter(r => r.work_order_no === activeWO.work_order_no && r.requisition_status === 'Pending')
+                          .reduce((sum, r) => sum + Number(r.requisition_amount), 0)
+                      )}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Approved Value</p>
+                    <p className="text-xs font-mono font-extrabold text-emerald-400 mt-2">
+                      {formatCurrency(
+                        requisitions
+                          .filter(r => r.work_order_no === activeWO.work_order_no && r.requisition_status === 'Approved')
+                          .reduce((sum, r) => sum + Number(r.approved_amount ?? r.requisition_amount), 0)
+                      )}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Hold / Cancelled</p>
+                    <p className="text-xs font-mono font-extrabold text-red-400 mt-2">
+                      {formatCurrency(
+                        requisitions
+                          .filter(r => r.work_order_no === activeWO.work_order_no && ['Hold', 'Cancelled'].includes(r.requisition_status))
+                          .reduce((sum, r) => sum + Number(r.requisition_amount), 0)
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Search Bar, Tabs & Refresh */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+              <div className="flex items-center gap-1 glass-panel p-1 rounded-xl border border-white/5">
+                {['zo', 'ho', 'admin'].includes(user?.role) && (
+                  <button
+                    onClick={() => setCurrentTab('pending')}
+                    className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                      currentTab === 'pending'
+                        ? 'bg-white/10 text-slate-100 border border-white/10'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Pending Queue ({requisitions.filter(r => r.requisition_status === 'Pending').length})
+                  </button>
+                )}
                 <button
-                  key={t.id}
-                  onClick={() => setCurrentTab(t.id)}
+                  onClick={() => setCurrentTab('all')}
                   className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
-                    currentTab === t.id
+                    currentTab === 'all'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  {t.label} ({t.id === 'pending' ? requisitions.filter(r => r.requisition_status === 'Pending').length : requisitions.length})
+                  All Requisitions ({requisitions.length})
                 </button>
-              ))}
-            </div>
-          ) : (
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Requisitions List</span>
-          )}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search requisitions…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 transition w-48 sm:w-60 font-semibold"
-              />
-            </div>
-            <button
-              onClick={fetchAll}
-              title="Refresh"
-              className="p-2.5 rounded-xl glass-input hover:border-white/20 transition text-slate-400 hover:text-slate-200"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Requisitions List Table */}
-        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
-          {loading ? (
-            <div className="flex items-center justify-center p-24">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
-            </div>
-          ) : filteredRequisitions.length === 0 ? (
-            <div className="text-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
-              No requisitions matching parameters.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-[9px] uppercase tracking-widest text-slate-500">
-                    {['Requisition No.', 'Work Order', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
-                      <th key={h} className="py-4 px-5 font-extrabold whitespace-nowrap">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-xs text-slate-300">
-                  {filteredRequisitions.map((req) => {
-                    const isPending = req.requisition_status === 'Pending';
-                    const isOwner = req.requester_user_id === user?.mobile_number;
-                    const isAdmin = user?.role === 'admin';
-                    const canCancel = isPending && (isOwner || isAdmin);
-                    return (
-                      <tr key={req.requisition_id} className="hover:bg-white/[0.025] transition-colors duration-200 group">
-                        <td className="py-4 px-5 font-mono font-semibold text-slate-100 whitespace-nowrap">
-                          {req.requisition_no}
-                        </td>
-                        <td className="py-4 px-5 font-mono text-slate-400 whitespace-nowrap">
-                          {req.work_order_no}
-                        </td>
-                        <td className="py-4 px-5 text-slate-300 font-semibold whitespace-nowrap">
-                          {req.material_main_head}
-                        </td>
-                        <td className="py-4 px-5 font-mono font-bold text-amber-500 whitespace-nowrap">
-                          {formatCurrency(req.requisition_amount)}
-                        </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
-                          <StatusBadge status={req.requisition_status} />
-                        </td>
-                        <td className="py-4 px-5 text-[11px] text-slate-500 whitespace-nowrap">
-                          {formatDate(req.created_at)}
-                        </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
-                          <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
-                            {/* View details */}
-                            <button
-                              onClick={() => setActiveReqId(req.requisition_id)}
-                              className="px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                            >
-                              View Details
-                            </button>
-
-                            {/* Take Action Button (ZO/HO/Admin for Pending rows only) */}
-                            {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
-                              <button
-                                onClick={() => setActionTargetReq(req)}
-                                className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                              >
-                                Take Action
-                              </button>
-                            )}
-                            
-                            {/* Cancel Button */}
-                            {canCancel && (
-                              <button
-                                onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
-                                className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all font-bold text-[10px] uppercase tracking-wider"
-                              >
-                                Cancel
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="px-5 py-3 border-t border-white/5 bg-white/[0.01] text-[10px] text-slate-600 font-mono">
-                Showing {filteredRequisitions.length} of {requisitions.length} records
+                <button
+                  onClick={() => setCurrentTab('directory')}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    currentTab === 'directory'
+                      ? 'bg-white/10 text-slate-100 border border-white/10'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Projects Directory ({projects.length})
+                </button>
               </div>
-            </div>
-          )}
-        </div>
 
+              {currentTab !== 'directory' && (
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="text"
+                    placeholder="Search requisitions…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    size="sm"
+                    iconLeft={
+                      <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    }
+                    containerClassName="w-48 sm:w-60"
+                  />
+                  <Button
+                    variant="glass"
+                    size="sm"
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ['requisitions'] })}
+                    title="Refresh"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
+            {currentTab === 'directory' ? (
+              <div className="space-y-6 animate-fadeIn">
+                {/* Search filters */}
+                <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col gap-4 text-left">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Filter Work Orders Directory</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <Input
+                      type="text"
+                      value={dirSearchWO}
+                      onChange={(e) => setDirSearchWO(e.target.value)}
+                      placeholder="Search Work Order..."
+                      size="sm"
+                      label="Work Order No"
+                    />
+                    <Input
+                      type="text"
+                      value={dirSearchDept}
+                      onChange={(e) => setDirSearchDept(e.target.value)}
+                      placeholder="Filter by Department..."
+                      size="sm"
+                      label="Department"
+                    />
+                    <Input
+                      type="text"
+                      value={dirSearchZone}
+                      onChange={(e) => setDirSearchZone(e.target.value)}
+                      placeholder="Filter by Zone/Area..."
+                      size="sm"
+                      label="Zone / Area"
+                    />
+                    <Select
+                      value={dirFilterStatus}
+                      onChange={(e) => setDirFilterStatus(e.target.value)}
+                      size="sm"
+                      label="Project Status"
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="Running">Running</option>
+                      <option value="Closed">Closed</option>
+                      <option value="Complete Under Maintenance">Complete Under Maintenance</option>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Grid layout list */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredProjects.length === 0 ? (
+                    <div className="col-span-full p-10 text-center text-slate-500 font-medium italic glass-panel rounded-3xl">
+                      No projects matched directory filters.
+                    </div>
+                  ) : (
+                    filteredProjects.map((proj) => (
+                      <div
+                        key={proj.work_order_no}
+                        onClick={() => setActiveWO(proj)}
+                        className="glass-panel glass-card-hover p-6 rounded-3xl border border-white/5 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[200px] text-left font-sans text-slate-100"
+                      >
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 font-mono truncate max-w-[200px]" title={proj.department}>
+                              {proj.department}
+                            </span>
+                            <Badge variant={proj.status === 'Running' ? 'emerald' : proj.status === 'Closed' ? 'red' : 'amber'} showDot={false}>
+                              {proj.status}
+                            </Badge>
+                          </div>
+                          
+                          <h3 className="text-sm font-extrabold text-slate-200 font-mono" title={proj.work_order_no}>
+                            {proj.work_order_no}
+                          </h3>
+                          <p className="text-xs text-slate-400 mt-2 truncate-2-lines min-h-[32px]">
+                            {proj.site_details}
+                          </p>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-4 mt-4 flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <span className="text-[8px] uppercase tracking-widest text-slate-500">Geography</span>
+                            <span className="text-xs text-slate-300 font-semibold mt-0.5">{proj.state} / {proj.district}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest group-hover:translate-x-1 transition duration-200">
+                            Open Requisitions &rarr;
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Requisitions List Table */
+              <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                {loading ? (
+                  <div className="flex items-center justify-center p-24">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
+                  </div>
+                ) : filteredRequisitions.length === 0 ? (
+                  <div className="text-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
+                    No requisitions matching parameters.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow hover={false}>
+                        {['Requisition No.', 'Work Order', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
+                          <TableCell key={h} isHeader={true}>
+                            {h}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRequisitions.map((req) => {
+                        const isPending = req.requisition_status === 'Pending';
+                        const isOwner = req.requester_user_id === user?.mobile_number;
+                        const isAdmin = user?.role === 'admin';
+                        const canCancel = isPending && (isOwner || isAdmin);
+                        return (
+                          <TableRow key={req.requisition_id}>
+                            <TableCell className="font-mono font-semibold text-slate-100">
+                              {req.requisition_no}
+                            </TableCell>
+                            <TableCell className="font-mono text-slate-400">
+                              {req.work_order_no}
+                            </TableCell>
+                            <TableCell className="text-slate-300 font-semibold">
+                              {req.material_main_head}
+                            </TableCell>
+                            <TableCell className="font-mono font-bold text-amber-500">
+                              {formatCurrency(req.requisition_amount)}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge status={req.requisition_status} />
+                            </TableCell>
+                            <TableCell className="text-[11px] text-slate-500">
+                              {formatDate(req.created_at)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+                                {/* View details */}
+                                <Button
+                                  variant="glass"
+                                  size="xs"
+                                  onClick={() => setActiveReqId(req.requisition_id)}
+                                >
+                                  View Details
+                                </Button>
+
+                                {/* Take Action Button (ZO/HO/Admin for Pending rows only) */}
+                                {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                                  <Button
+                                    variant="glass"
+                                    size="xs"
+                                    className="text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20"
+                                    onClick={() => setActionTargetReq(req)}
+                                  >
+                                    Take Action
+                                  </Button>
+                                )}
+                                
+                                {/* Cancel Button */}
+                                {canCancel && (
+                                  <Button
+                                    variant="danger"
+                                    size="xs"
+                                    onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
+                                  >
+                                    Cancel
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Creation Modal */}

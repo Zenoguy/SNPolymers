@@ -1,38 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import { Button, Input, Select, Badge } from '../components/ui';
 import authApi from '../api/authApi';
 
-const getStatusBadgeStyles = (status, isOverdue) => {
-  if (isOverdue) {
-    return 'bg-red-500/15 border-red-500/30 text-red-400 animate-pulse';
-  }
-  
+const getStatusBadgeVariant = (status) => {
   switch (status) {
     case 'Draft':
-      return 'bg-slate-500/10 border-slate-500/20 text-slate-400';
+      return 'slate';
     case 'Submitted':
-      return 'bg-sky-500/10 border-sky-500/20 text-sky-400';
+      return 'sky';
     case 'Under ZO Review':
-      return 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400';
+      return 'indigo';
     case 'ZO Approved':
-      return 'bg-teal-500/10 border-teal-500/20 text-teal-400';
+      return 'teal';
     case 'Rejected by ZO':
-      return 'bg-red-500/10 border-red-500/20 text-red-400';
+      return 'red';
     case 'Under HO Review':
-      return 'bg-purple-500/10 border-purple-500/20 text-purple-400';
+      return 'purple';
     case 'Final Approved':
-      return 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400';
+      return 'emerald';
     case 'Rejected by HO':
-      return 'bg-rose-500/10 border-rose-500/20 text-rose-400';
+      return 'rose';
     case 'ZO Revision Requested':
-      return 'bg-amber-500/10 border-amber-500/20 text-amber-500';
+      return 'amber';
     case 'HO Revision Requested':
-      return 'bg-orange-500/10 border-orange-500/20 text-orange-500';
+      return 'orange';
     default:
-      return 'bg-white/5 border-white/5 text-slate-400';
+      return 'slate';
   }
 };
 
@@ -45,18 +42,14 @@ const formatINR = (value) => {
   }).format(num);
 };
 
+import { useQuery } from '@tanstack/react-query';
+
 const Estimates = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [estimates, setEstimates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   
   const [hoTab, setHoTab] = useState('active'); // active | history for HO users
   const [selectedFilter, setSelectedFilter] = useState('All'); // 'All' | 'Draft'
@@ -66,14 +59,10 @@ const Estimates = () => {
   const isJE = user?.role === 'je' || user?.role === 'staff';
   const isHO = user?.role === 'ho';
 
-  useEffect(() => {
-    fetchEstimatesList();
-  }, [page, hoTab]);
-
-  const fetchEstimatesList = async () => {
-    setLoading(true);
-    setError('');
-    try {
+  // Fetch estimates list using React Query
+  const { data: estimatesData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['estimates', { page, view: isHO ? hoTab : undefined }],
+    queryFn: async () => {
       const params = {
         page,
         limit
@@ -84,26 +73,17 @@ const Estimates = () => {
       }
       
       const response = await authApi.get('/estimates', { params });
-      if (response.data?.success) {
-        setEstimates(response.data.estimates || []);
-        setTotalPages(response.data.pagination?.totalPages || 1);
-        setTotalItems(response.data.pagination?.total || 0);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch cost estimates.');
-    } finally {
-      setLoading(false);
+      return response.data;
     }
-  };
+  });
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  const estimates = estimatesData?.estimates || [];
+  const totalPages = estimatesData?.pagination?.totalPages || 1;
+  const totalItems = estimatesData?.pagination?.total || 0;
+
+  const displayError = queryError?.response?.data?.message || queryError?.message || '';
+
+
 
   const handleCardClick = (id) => {
     navigate(`/estimates/${id}`);
@@ -155,30 +135,28 @@ const Estimates = () => {
           </div>
           {isHO && (
             <div className="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
-              <button
+              <Button
                 onClick={() => { setHoTab('active'); setPage(1); }}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                  hoTab === 'active' ? 'bg-amber-500 text-slate-950 font-extrabold' : 'text-slate-400 hover:text-slate-200'
-                }`}
+                variant={hoTab === 'active' ? 'amber' : 'ghost'}
+                size="sm"
               >
                 Active Queue
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => { setHoTab('history'); setPage(1); }}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                  hoTab === 'history' ? 'bg-amber-500 text-slate-950 font-extrabold' : 'text-slate-400 hover:text-slate-200'
-                }`}
+                variant={hoTab === 'history' ? 'amber' : 'ghost'}
+                size="sm"
               >
                 History Log
-              </button>
+              </Button>
             </div>
           )}
         </div>
 
-        {error && (
+        {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-6 flex items-center gap-2.5 shrink-0">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {error}
+            {displayError}
           </div>
         )}
 
@@ -207,41 +185,40 @@ const Estimates = () => {
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-4">MY Sheets</span>
                 <div className="space-y-2.5">
-                  <button
+                  <Button
                     onClick={() => setSelectedFilter('All')}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
-                      selectedFilter === 'All'
-                        ? 'bg-white/10 border-white/10 text-slate-100'
-                        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                    }`}
+                    variant={selectedFilter === 'All' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="w-full justify-start"
                   >
                     All Sheets
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setSelectedFilter('Draft')}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
-                      selectedFilter === 'Draft'
-                        ? 'bg-white/10 border-white/10 text-slate-100'
-                        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                    }`}
+                    variant={selectedFilter === 'Draft' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="w-full justify-start"
                   >
                     Draft Sheets
-                  </button>
+                  </Button>
                 </div>
               </div>
               
               {/* Plus Button inside MY Sheets card to Initialize New Sheet */}
               {(isJE || user?.role === 'admin') && (
-                <Link
-                  to="/estimates/new"
-                  className="mt-6 w-full py-4 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition duration-200"
+                <Button
+                  onClick={() => navigate('/estimates/new')}
+                  variant="amber"
+                  className="mt-6 w-full py-4 shadow-lg shadow-amber-500/10 transform hover:-translate-y-0.5"
+                  icon={
+                    <svg className="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                    </svg>
+                  }
                   title="Initialize New Cost Estimate Sheet"
                 >
-                  <svg className="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                  </svg>
                   New Sheet
-                </Link>
+                </Button>
               )}
             </div>
           </div>
@@ -294,9 +271,13 @@ const Estimates = () => {
                       </div>
 
                       <div className="flex justify-between items-center border-t border-white/5 pt-3.5 mt-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-extrabold uppercase tracking-wider border ${getStatusBadgeStyles(est.estimate_status, est.is_deadline_overdue)}`}>
+                        <Badge
+                          variant={est.is_deadline_overdue ? 'red' : getStatusBadgeVariant(est.estimate_status)}
+                          showDot={false}
+                          className={est.is_deadline_overdue ? 'animate-pulse' : ''}
+                        >
                           {est.is_deadline_overdue ? 'DEADLINE OVERDUE' : est.estimate_status}
-                        </span>
+                        </Badge>
                         <div className="text-right">
                           <span className="text-[9px] text-slate-500 uppercase font-bold block">Estimated Amount</span>
                           <span className="text-sm font-black text-slate-200 font-mono">{formatINR(est.estimate_amount)}</span>
@@ -311,21 +292,21 @@ const Estimates = () => {
             {/* 3. Bottom Controls: Search Bar and Filters */}
             <div className="border-t border-white/5 pt-5 flex flex-col sm:flex-row gap-4 shrink-0 items-center justify-between z-10">
               <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center flex-grow max-w-lg">
-                <input
+                <Input
                   type="text"
                   placeholder="Search by Work Order or Estimate No..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+                  size="sm"
                 />
               </div>
 
               <div className="w-full sm:w-auto flex gap-3 items-center shrink-0">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">Status</label>
-                <select
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">Status</span>
+                <Select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition-colors"
+                  size="sm"
                 >
                   <option value="All">All Statuses</option>
                   <option value="Draft">Draft</option>
@@ -338,7 +319,7 @@ const Estimates = () => {
                   <option value="Rejected by HO">Rejected by HO</option>
                   <option value="ZO Revision Requested">ZO Revision Requested</option>
                   <option value="HO Revision Requested">HO Revision Requested</option>
-                </select>
+                </Select>
               </div>
             </div>
             
@@ -347,20 +328,22 @@ const Estimates = () => {
               <div className="mt-4 flex justify-between items-center text-[10px] text-slate-500 shrink-0 font-bold uppercase tracking-wider z-10">
                 <span>Page {page} of {totalPages} ({totalItems} total)</span>
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.max(p - 1, 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition border border-white/5"
+                    size="xs"
+                    variant="secondary"
                   >
                     Prev
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setPage(p => Math.min(p + 1, totalPages))}
                     disabled={page === totalPages}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition border border-white/5"
+                    size="xs"
+                    variant="secondary"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

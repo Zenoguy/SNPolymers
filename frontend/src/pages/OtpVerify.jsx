@@ -30,8 +30,8 @@ const OtpVerify = () => {
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(300); 
-  const [resendDisabled, setResendDisabled] = useState(true);
   const [resendTimer, setResendTimer] = useState(30); 
+  const resendDisabled = resendTimer > 0;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -53,10 +53,7 @@ const OtpVerify = () => {
   }, [countdown]);
 
   useEffect(() => {
-    if (resendTimer <= 0) {
-      setResendDisabled(false);
-      return;
-    }
+    if (resendTimer <= 0) return;
     const timer = setInterval(() => {
       setResendTimer((prev) => prev - 1);
     }, 1000);
@@ -125,7 +122,6 @@ const OtpVerify = () => {
   const handleResend = async () => {
     setError('');
     setSuccess('');
-    setResendDisabled(true);
     setResendTimer(30);
     
     try {
@@ -138,7 +134,6 @@ const OtpVerify = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to dispatch new OTP.');
-      setResendDisabled(false);
       setResendTimer(0);
     }
   };
