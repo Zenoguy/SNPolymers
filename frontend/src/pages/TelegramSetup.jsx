@@ -29,32 +29,18 @@ const TelegramIcon = ({ size = 48 }) => (
 const STEPS = [
   {
     number: 1,
-    emoji: '📱',
-    label: 'Open Telegram on your phone',
+    emoji: '🤖',
+    label: 'Tap the blue "Open Telegram Bot" button below',
   },
   {
     number: 2,
-    emoji: '💬',
-    label: (
-      <>
-        Search{' '}
-        <a
-          href="https://t.me/snpolymers_bot"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#2AABEE' }}
-          className="font-bold underline underline-offset-2"
-        >
-          @snpolymers_bot
-        </a>{' '}
-        and send any message — the bot will instantly reply with your Chat ID
-      </>
-    ),
+    emoji: '🚀',
+    label: 'Tap "Start" (or send a message) to receive your Chat ID',
   },
   {
     number: 3,
-    emoji: '🔢',
-    label: 'Enter that Chat ID below and tap Link Account',
+    emoji: '📋',
+    label: 'Tap the Chat ID in Telegram to copy it, then paste it below',
   },
 ];
 
@@ -63,9 +49,10 @@ const TelegramSetup = () => {
   const navigate = useNavigate();
   const mobileNumber = location.state?.mobileNumber;
 
-  const [chatId, setChatId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [linked, setLinked] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   // Redirect back if no mobile number in state
   React.useEffect(() => {
@@ -74,50 +61,87 @@ const TelegramSetup = () => {
     }
   }, [mobileNumber, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    const trimmedId = chatId.trim();
-    if (!trimmedId) {
-      setError('Please enter the Chat ID the bot sent you.');
-      return;
-    }
-
+  // Helper to trigger OTP request
+  const triggerOtpRequest = async () => {
     setLoading(true);
-
+    setError('');
     try {
-      // Step 1: Link the Telegram Chat ID to this user
-      const linkRes = await authApi.post('/link-telegram', {
-        mobileNumber,
-        chatId: trimmedId,
+      const otpRes = await authApi.post('/request-otp', { mobileNumber });
+      if (otpRes.data?.success) {
+        navigate('/verify-otp', { state: { mobileNumber } });
+      } else {
+        setError('Account linked but OTP failed to send. Please try logging in again.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Account linked but OTP failed to send. Please try logging in again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Poll for link status
+  React.useEffect(() => {
+    if (!mobileNumber) return;
+
+    let isSubscribed = true;
+    let pollInterval = null;
+
+    const checkStatus = async () => {
+      try {
+        const res = await authApi.get('/link-status', {
+          params: { mobileNumber }
+        });
+
+        if (res.data?.success && res.data?.linked) {
+          if (pollInterval) clearInterval(pollInterval);
+          if (isSubscribed) {
+            setLinked(true);
+            setChecking(false);
+            // Automatically request OTP now that the account is linked!
+            await triggerOtpRequest();
+          }
+        }
+      } catch (err) {
+        console.error('Error checking Telegram link status:', err);
+      }
+    };
+
+    // Initial check
+    checkStatus();
+
+    // Poll every 3 seconds
+    pollInterval = setInterval(checkStatus, 3000);
+
+    return () => {
+      isSubscribed = false;
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [mobileNumber]);
+
+  // Manual fallback check
+  const checkLinkStatusManual = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authApi.get('/link-status', {
+        params: { mobileNumber }
       });
 
-      if (!linkRes.data?.success) {
-        setError('Invalid Chat ID. Please make sure you entered the number the bot sent you.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 2: Immediately trigger OTP send (now that chat_id is saved)
-      const otpRes = await authApi.post('/request-otp', { mobileNumber });
-
-      if (!otpRes.data?.success) {
-        setError('Account linked but OTP failed to send. Please try logging in again.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: Navigate to OTP entry
-      navigate('/verify-otp', { state: { mobileNumber } });
-    } catch (err) {
-      const msg = err.response?.data?.message;
-      // Distinguish link errors from OTP errors based on typical error messages
-      if (err.config?.url?.includes('link-telegram')) {
-        setError(msg || 'Invalid Chat ID. Please make sure you entered the number the bot sent you.');
+      if (res.data?.success && res.data?.linked) {
+        setLinked(true);
+        // Request OTP
+        const otpRes = await authApi.post('/request-otp', { mobileNumber });
+        if (otpRes.data?.success) {
+          navigate('/verify-otp', { state: { mobileNumber } });
+        } else {
+          setError('Account linked but OTP failed to send. Please try logging in again.');
+        }
       } else {
-        setError(msg || 'Account linked but OTP failed to send. Please try logging in again.');
+        setError('Connection not found yet. Please make sure you clicked "Share Contact" in the Telegram bot.');
       }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to check link status. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -151,6 +175,34 @@ const TelegramSetup = () => {
           <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mt-5" />
         </div>
 
+        {/* Prominent Telegram Action Button */}
+        <div className="mb-6">
+          <a
+            href="https://t.me/snpolymers_bot?start=link"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex justify-center items-center gap-3 transform hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, #2AABEE 0%, #229ED9 100%)',
+              color: '#fff',
+              boxShadow: '0 4px 20px rgba(42,171,238,0.25)',
+              textDecoration: 'none',
+              display: 'flex'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 6px 28px rgba(42,171,238,0.45)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(42,171,238,0.25)';
+            }}
+          >
+            <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.36-.49.99-.75 3.88-1.69 6.46-2.8 7.74-3.32 3.68-1.5 4.44-1.76 4.94-1.77.11 0 .36.03.52.16.14.11.18.27.2.42.02.16.01.32-.01.48z"/>
+            </svg>
+            Open Telegram Bot
+          </a>
+        </div>
+
         {/* Three Steps */}
         <div className="space-y-3 mb-7">
           {STEPS.map((step) => (
@@ -182,32 +234,34 @@ const TelegramSetup = () => {
           ))}
         </div>
 
-        {/* Chat ID Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="telegram-chat-id"
-              className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5"
-            >
-              Your Telegram Chat ID
-            </label>
-            <input
-              id="telegram-chat-id"
-              type="text"
-              inputMode="numeric"
-              pattern="-?[0-9]*"
-              placeholder="Enter the number the bot sent you"
-              value={chatId}
-              onChange={(e) => {
-                // Accept digits and an optional leading minus (for group chats)
-                const val = e.target.value.replace(/[^\d-]/g, '');
-                setChatId(val);
-              }}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3.5 text-slate-100 text-sm font-mono font-semibold transition duration-200"
-              style={chatId ? { borderColor: 'rgba(42,171,238,0.4)', boxShadow: '0 0 12px rgba(42,171,238,0.1)' } : {}}
-              disabled={loading}
-              required
-            />
+        {/* Connection Status Indicator */}
+        <div className="space-y-5">
+          <div
+            className="flex items-center justify-center gap-3.5 p-4 rounded-2xl border transition-all duration-300"
+            style={{
+              background: 'rgba(42,171,238,0.03)',
+              borderColor: linked ? 'rgba(16,185,129,0.3)' : 'rgba(42,171,238,0.15)',
+              boxShadow: linked ? '0 0 16px rgba(16,185,129,0.05)' : 'none',
+            }}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4.5 w-4.5 border-t-2 border-b-2 border-white" />
+            ) : checking ? (
+              <div className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+              </div>
+            ) : linked ? (
+              <span className="text-emerald-400 font-extrabold text-xs">✓</span>
+            ) : null}
+            
+            <span className="text-xs font-semibold text-slate-300 leading-normal">
+              {loading
+                ? 'Requesting login passcode...'
+                : linked
+                ? 'Account linked! Sending login code...'
+                : 'Waiting for Telegram connection...'}
+            </span>
           </div>
 
           {/* Error Message */}
@@ -218,36 +272,16 @@ const TelegramSetup = () => {
             </div>
           )}
 
-          {/* CTA Button */}
+          {/* Manual Link Verification Button */}
           <button
-            id="telegram-link-btn"
-            type="submit"
-            disabled={loading || !chatId.trim()}
-            className="w-full py-4 px-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 flex justify-center items-center gap-2.5 disabled:opacity-50 transform hover:-translate-y-0.5"
-            style={{
-              background: '#2AABEE',
-              color: '#fff',
-              boxShadow: '0 4px 20px rgba(42,171,238,0.3)',
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && chatId.trim()) {
-                e.currentTarget.style.boxShadow = '0 6px 28px rgba(42,171,238,0.45)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(42,171,238,0.3)';
-            }}
+            type="button"
+            onClick={checkLinkStatusManual}
+            disabled={loading}
+            className="w-full py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:bg-white/5 active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white" />
-                Linking Account...
-              </>
-            ) : (
-              'Link My Account — Send OTP'
-            )}
+            I shared my contact — Send OTP
           </button>
-        </form>
+        </div>
 
         {/* Privacy Note */}
         <p className="mt-6 text-center text-[10px] text-slate-500 leading-relaxed font-normal px-2">

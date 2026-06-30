@@ -118,6 +118,39 @@ async function linkTelegram(req, res) {
 }
 
 /**
+ * GET /api/v1/auth/link-status
+ * Public polling endpoint. Checks if the user's telegram_chat_id is populated.
+ */
+async function checkLinkStatus(req, res) {
+  const { mobileNumber } = req.query;
+  if (!mobileNumber) {
+    return res.status(400).json({ success: false, message: 'Mobile number is required.' });
+  }
+
+  try {
+    const { data: user, error } = await supabase
+      .from('authorised_users')
+      .select('telegram_chat_id')
+      .eq('mobile_number', mobileNumber)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error || !user) {
+      return res.status(404).json({ success: false, message: 'User not found or inactive.' });
+    }
+
+    const linked = !!user.telegram_chat_id;
+    return res.status(200).json({
+      success: true,
+      linked
+    });
+  } catch (error) {
+    logError('checkLinkStatus', error);
+    return res.status(500).json({ success: false, message: 'Failed to verify link status.' });
+  }
+}
+
+/**
  * POST /api/v1/auth/verify-otp
  * Verifies OTP and generates Session / JWT
  */
@@ -355,6 +388,7 @@ async function getMe(req, res) {
 module.exports = {
   requestOtp,
   linkTelegram,
+  checkLinkStatus,
   verifyOtpCode,
   logout,
   refreshTokens,
