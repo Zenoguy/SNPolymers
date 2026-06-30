@@ -49,18 +49,10 @@ const TelegramSetup = () => {
   const navigate = useNavigate();
   const mobileNumber = location.state?.mobileNumber;
 
-  const [chatId, setChatId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const inputRef = React.useRef(null);
-
-  // Auto-focus input on mount
-  React.useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
+  const [linked, setLinked] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   // Redirect back if no mobile number in state
   React.useEffect(() => {
@@ -69,50 +61,87 @@ const TelegramSetup = () => {
     }
   }, [mobileNumber, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    const trimmedId = chatId.trim();
-    if (!trimmedId) {
-      setError('Please enter the Chat ID the bot sent you.');
-      return;
-    }
-
+  // Helper to trigger OTP request
+  const triggerOtpRequest = async () => {
     setLoading(true);
-
+    setError('');
     try {
-      // Step 1: Link the Telegram Chat ID to this user
-      const linkRes = await authApi.post('/link-telegram', {
-        mobileNumber,
-        chatId: trimmedId,
+      const otpRes = await authApi.post('/request-otp', { mobileNumber });
+      if (otpRes.data?.success) {
+        navigate('/verify-otp', { state: { mobileNumber } });
+      } else {
+        setError('Account linked but OTP failed to send. Please try logging in again.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Account linked but OTP failed to send. Please try logging in again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Poll for link status
+  React.useEffect(() => {
+    if (!mobileNumber) return;
+
+    let isSubscribed = true;
+    let pollInterval = null;
+
+    const checkStatus = async () => {
+      try {
+        const res = await authApi.get('/link-status', {
+          params: { mobileNumber }
+        });
+
+        if (res.data?.success && res.data?.linked) {
+          if (pollInterval) clearInterval(pollInterval);
+          if (isSubscribed) {
+            setLinked(true);
+            setChecking(false);
+            // Automatically request OTP now that the account is linked!
+            await triggerOtpRequest();
+          }
+        }
+      } catch (err) {
+        console.error('Error checking Telegram link status:', err);
+      }
+    };
+
+    // Initial check
+    checkStatus();
+
+    // Poll every 3 seconds
+    pollInterval = setInterval(checkStatus, 3000);
+
+    return () => {
+      isSubscribed = false;
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [mobileNumber]);
+
+  // Manual fallback check
+  const checkLinkStatusManual = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authApi.get('/link-status', {
+        params: { mobileNumber }
       });
 
-      if (!linkRes.data?.success) {
-        setError('Invalid Chat ID. Please make sure you entered the number the bot sent you.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 2: Immediately trigger OTP send (now that chat_id is saved)
-      const otpRes = await authApi.post('/request-otp', { mobileNumber });
-
-      if (!otpRes.data?.success) {
-        setError('Account linked but OTP failed to send. Please try logging in again.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: Navigate to OTP entry
-      navigate('/verify-otp', { state: { mobileNumber } });
-    } catch (err) {
-      const msg = err.response?.data?.message;
-      // Distinguish link errors from OTP errors based on typical error messages
-      if (err.config?.url?.includes('link-telegram')) {
-        setError(msg || 'Invalid Chat ID. Please make sure you entered the number the bot sent you.');
+      if (res.data?.success && res.data?.linked) {
+        setLinked(true);
+        // Request OTP
+        const otpRes = await authApi.post('/request-otp', { mobileNumber });
+        if (otpRes.data?.success) {
+          navigate('/verify-otp', { state: { mobileNumber } });
+        } else {
+          setError('Account linked but OTP failed to send. Please try logging in again.');
+        }
       } else {
-        setError(msg || 'Account linked but OTP failed to send. Please try logging in again.');
+        setError('Connection not found yet. Please make sure you clicked "Share Contact" in the Telegram bot.');
       }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to check link status. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -205,33 +234,34 @@ const TelegramSetup = () => {
           ))}
         </div>
 
-        {/* Chat ID Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="telegram-chat-id"
-              className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5"
-            >
-              Your Telegram Chat ID
-            </label>
-            <input
-              id="telegram-chat-id"
-              ref={inputRef}
-              type="text"
-              inputMode="numeric"
-              pattern="-?[0-9]*"
-              placeholder="Enter the number the bot sent you"
-              value={chatId}
-              onChange={(e) => {
-                // Accept digits and an optional leading minus (for group chats)
-                const val = e.target.value.replace(/[^\d-]/g, '');
-                setChatId(val);
-              }}
-              className="w-full glass-input focus:ring-0 outline-none rounded-xl px-4 py-3.5 text-slate-100 text-sm font-mono font-semibold transition duration-200"
-              style={chatId ? { borderColor: 'rgba(42,171,238,0.4)', boxShadow: '0 0 12px rgba(42,171,238,0.1)' } : {}}
-              disabled={loading}
-              required
-            />
+        {/* Connection Status Indicator */}
+        <div className="space-y-5">
+          <div
+            className="flex items-center justify-center gap-3.5 p-4 rounded-2xl border transition-all duration-300"
+            style={{
+              background: 'rgba(42,171,238,0.03)',
+              borderColor: linked ? 'rgba(16,185,129,0.3)' : 'rgba(42,171,238,0.15)',
+              boxShadow: linked ? '0 0 16px rgba(16,185,129,0.05)' : 'none',
+            }}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4.5 w-4.5 border-t-2 border-b-2 border-white" />
+            ) : checking ? (
+              <div className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+              </div>
+            ) : linked ? (
+              <span className="text-emerald-400 font-extrabold text-xs">✓</span>
+            ) : null}
+            
+            <span className="text-xs font-semibold text-slate-300 leading-normal">
+              {loading
+                ? 'Requesting login passcode...'
+                : linked
+                ? 'Account linked! Sending login code...'
+                : 'Waiting for Telegram connection...'}
+            </span>
           </div>
 
           {/* Error Message */}
@@ -242,36 +272,16 @@ const TelegramSetup = () => {
             </div>
           )}
 
-          {/* CTA Button */}
+          {/* Manual Link Verification Button */}
           <button
-            id="telegram-link-btn"
-            type="submit"
-            disabled={loading || !chatId.trim()}
-            className="w-full py-4 px-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 flex justify-center items-center gap-2.5 disabled:opacity-50 transform hover:-translate-y-0.5"
-            style={{
-              background: '#2AABEE',
-              color: '#fff',
-              boxShadow: '0 4px 20px rgba(42,171,238,0.3)',
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && chatId.trim()) {
-                e.currentTarget.style.boxShadow = '0 6px 28px rgba(42,171,238,0.45)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(42,171,238,0.3)';
-            }}
+            type="button"
+            onClick={checkLinkStatusManual}
+            disabled={loading}
+            className="w-full py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:bg-white/5 active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white" />
-                Linking Account...
-              </>
-            ) : (
-              'Link My Account — Send OTP'
-            )}
+            I shared my contact — Send OTP
           </button>
-        </form>
+        </div>
 
         {/* Privacy Note */}
         <p className="mt-6 text-center text-[10px] text-slate-500 leading-relaxed font-normal px-2">

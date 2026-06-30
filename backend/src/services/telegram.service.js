@@ -86,6 +86,12 @@ async function startPolling() {
     return;
   }
 
+  // Webhook is preferred in production. Long polling is disabled unless explicitly forced.
+  if (process.env.NODE_ENV === 'production' && process.env.DISABLE_TELEGRAM_POLLING !== 'false') {
+    console.log('[BOT] Telegram long polling disabled in production (webhook mode is active).');
+    return;
+  }
+
   if (process.env.DISABLE_TELEGRAM_POLLING === 'true') {
     console.log('[BOT] Telegram long polling is disabled via DISABLE_TELEGRAM_POLLING env variable.');
     return;
@@ -151,6 +157,148 @@ async function startPolling() {
 
   // Kick off the loop
   poll();
+}
+
+/**
+ * Sends a Telegram message containing a native "Share Contact" button requesting phone link.
+ */
+async function sendContactRequestKeyboard(chatId, firstName) {
+  if (!TELEGRAM_BOT_TOKEN) return;
+  try {
+    const text = `👋 Hi ${firstName}!\n\nTo securely link your IDBP account, please tap the button below to share your whitelisted phone number.`;
+    const replyMarkup = {
+      keyboard: [[{
+        text: "📱 Share Contact to Link Account",
+        request_contact: true
+      }]],
+      resize_keyboard: true,
+      one_time_keyboard: true
+    };
+    const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(text)}&reply_markup=${encodeURIComponent(JSON.stringify(replyMarkup))}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (!data.ok) {
+      console.warn(`[BOT] Failed to send contact keyboard to ${chatId}: ${data.description}`);
+    }
+  } catch (err) {
+    console.warn(`[BOT] sendContactRequestKeyboard error: ${err.message}`);
+  }
+}
+
+/**
+ * Parses and handles a Telegram update payload delivered via webhook.
+ */
+async function processWebhookUpdate(update) {
+  const message = update.message;
+  if (!message) return;
+
+  const chatId = message.chat?.id;
+  if (!chatId) return;
+
+  const text = message.text;
+  const contact = message.contact;
+
+  if (text && text.startsWith('/start')) {
+    const firstName = message.from?.first_name || 'there';
+    await sendContactRequestKeyboard(chatId, firstName);
+    return;
+  }
+
+  if (contact) {
+    const firstName = contact.first_name || 'there';
+    let phone = contact.phone_number;
+    if (!phone) return;
+
+    // Normalise phone number to match the +91XXXXXXXXXX format stored in DB
+    let normalizedPhone = phone.trim().replace(/\s+/g, '');
+    if (!normalizedPhone.startsWith('+')) {
+      normalizedPhone = '+' + normalizedPhone;
+    }
+
+    try {
+      // Find active user with this normalized mobile number
+      const { data: user, error } = await supabase
+        .from('authorised_users')
+        .select('*')
+        .eq('mobile_number', normalizedPhone)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!user) {
+        const rejectMsg = `❌ *Access Denied.*\n\nThe phone number *${normalizedPhone}* is not whitelisted or is inactive in the system.\n\nPlease contact the administrator to whitelist your mobile number first.`;
+        await sendBotMessage(chatId, rejectMsg);
+        console.log(`[BOT] Rejected connection for unwhitelisted number ${normalizedPhone} (chat_id: ${chatId})`);
+        return;
+      }
+
+      // Link account
+      const { error: updateError } = await supabase
+        .from('authorised_users')
+        .update({ telegram_chat_id: String(chatId) })
+        .eq('mobile_number', normalizedPhone);
+
+      if (updateError) throw updateError;
+
+      const successMsg = `✅ *Account Linked Successfully!*\n\nHello *${user.display_name || firstName}*,\n\nYour Telegram account is now securely linked to the Integrated Digital Business Platform.\n\nYou can close Telegram and return to your web browser to continue logging in.`;
+      
+      const replyMarkup = { remove_keyboard: true };
+      const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(successMsg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(JSON.stringify(replyMarkup))}`;
+      await fetch(url);
+
+      console.log(`[BOT] Linked phone number ${normalizedPhone} to Chat ID ${chatId} (${user.display_name})`);
+
+    } catch (err) {
+      console.error(`[BOT] Error linking contact for chat ${chatId}:`, err);
+      const errMsg = `⚠️ An error occurred while linking your account. Please try again.`;
+      await sendBotMessage(chatId, errMsg);
+    }
+    return;
+  }
+
+  // Fallback info message
+  const fallbackMsg = `💡 *SN Polymers IDBP Bot*\n\nPlease tap the link on the web application login screen to start the setup process.`;
+  await sendBotMessage(chatId, fallbackMsg);
+}
+
+/**
+ * Automatically registers the webhook endpoint with Telegram.
+ * Runs in production on server startup.
+ */
+async function registerWebhook() {
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+  const WEBHOOK_URL = process.env.WEBHOOK_URL;
+  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn('[BOT] TELEGRAM_BOT_TOKEN not set — cannot register webhook.');
+    return;
+  }
+  if (!WEBHOOK_URL) {
+    console.warn('[BOT] WEBHOOK_URL is not set — cannot register webhook.');
+    return;
+  }
+
+  try {
+    const targetUrl = `${WEBHOOK_URL}/api/v1/telegram-webhook`;
+    let setupUrl = `${TELEGRAM_API_BASE}/setWebhook?url=${encodeURIComponent(targetUrl)}`;
+    if (WEBHOOK_SECRET) {
+      setupUrl += `&secret_token=${encodeURIComponent(WEBHOOK_SECRET)}`;
+    }
+    
+    const response = await fetch(setupUrl);
+    const data = await response.json();
+    if (data.ok) {
+      console.log(`[BOT] Telegram Webhook registered successfully to: ${targetUrl}`);
+    } else {
+      console.error(`[BOT] Telegram Webhook registration failed: ${data.description}`);
+    }
+  } catch (err) {
+    console.error(`[BOT] Error registering Telegram webhook: ${err.message}`);
+  }
 }
 
 /**
@@ -367,6 +515,8 @@ async function notifyZoFundRequestApproved(originalRequest, updatedRequest) {
 module.exports = {
   sendOtp,
   startPolling,
+  processWebhookUpdate,
+  registerWebhook,
   notifyZoEstimateSubmitted,
   notifyHoEstimateApproved,
   notifyZoFundRequestApproved

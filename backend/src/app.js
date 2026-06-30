@@ -27,7 +27,8 @@ const requisitionsRoutes = require('./routes/requisitions.routes');
 const dailyProgressRoutes = require('./routes/dailyProgress.routes');
 const raFinalBillRoutes = require('./routes/raFinalBill.routes');
 
-const { startPolling } = require('./services/telegram.service');
+const { startPolling, registerWebhook } = require('./services/telegram.service');
+const { handleTelegramWebhook } = require('./controllers/telegram.webhook.controller');
 
 const { globalLimiter } = require('./middleware/rateLimiter');
 const requestLogger = require('./middleware/requestLogger');
@@ -52,6 +53,9 @@ app.use(cookieParser());
 
 // Trust first proxy (required for correct client IP detection in rate limiting behind reverse proxies)
 app.set('trust proxy', 1);
+
+// Public Webhook route for Telegram Bot
+app.post('/api/v1/telegram-webhook', handleTelegramWebhook);
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
@@ -86,8 +90,10 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode.`);
-  // Start Telegram bot long-polling loop for auto-reply Chat ID flow
+  // Start Telegram bot long-polling loop for auto-reply Chat ID flow in dev
   startPolling();
+  // Register webhook with Telegram in production
+  registerWebhook();
 });
 
 module.exports = app;
