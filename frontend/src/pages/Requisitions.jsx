@@ -1467,7 +1467,11 @@ const Requisitions = () => {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Projects Directory ({projects.length})
+                  Projects Directory ({
+                    projects.filter(p =>
+                      estimates.some(e => e.work_order_no === p.work_order_no && e.estimate_status === 'Final Approved')
+                    ).length
+                  })
                 </button>
               </div>
 

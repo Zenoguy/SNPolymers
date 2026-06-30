@@ -13,11 +13,14 @@ const TELEGRAM_API_BASE = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 async function sendOtp(telegramChatId, otp) {
   const messageText = `Your SN Polymers IDBP login code is: ${otp}. Valid for 5 minutes. Do not share this code with anyone.`;
 
-  // Always log OTP to terminal for backend visibility/debugging
-  console.log('\n======================================');
-  console.log(`[OTP DEBUG] Telegram Chat ID: ${telegramChatId || 'N/A (console fallback)'}`);
-  console.log(`[OTP CODE]: ${otp}`);
-  console.log('======================================\n');
+  // Log OTP to terminal in non-production environments only.
+  // Never log in production — OTP codes must not appear in cloud logging services.
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n======================================');
+    console.log(`[OTP DEBUG] Telegram Chat ID: ${telegramChatId || 'N/A (console fallback)'}`);
+    console.log(`[OTP CODE]: ${otp}`);
+    console.log('======================================\n');
+  }
 
   if (!telegramChatId) {
     console.log('[OTP SERVICE] No telegram_chat_id set — running in console-only fallback mode.');

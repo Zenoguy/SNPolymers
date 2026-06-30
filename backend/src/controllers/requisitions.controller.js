@@ -100,74 +100,74 @@ async function createRequisition(req, res) {
       });
     }
 
-    // 5. Remaining Estimate Amount budget validation
-    let remainingAmount = null;
-    let committed = 0;
-    if (estimateAmount !== null) {
-      const { data: committedRes, error: committedErr } = await supabase
-        .from('requisitions')
-        .select('requisition_amount')
-        .eq('work_order_no', work_order_no.trim())
-        .neq('requisition_status', 'Cancelled');
+    // 5. Call the transactional RPC create_requisition_secure to insert atomically with lock and budget check
+    const { data: newReq, error: rpcError } = await supabase.rpc('create_requisition_secure', {
+      p_requester_user_id: req.user.mobile_number,
+      p_work_order_no: work_order_no.trim(),
+      p_estimate_no: project.estimate_no,
+      p_estimate_amount: estimateAmount,
+      p_state: project.state,
+      p_district: project.district,
+      p_area_code: project.zone,
+      p_department: project.department,
+      p_site_details: project.site_details,
+      p_requisition_no: requisition_no.trim(),
+      p_material_main_head: material_main_head.trim(),
+      p_requisition_pdf_url: requisition_pdf_url.trim(),
+      p_original_filename: original_filename?.trim() || null,
+      p_requisition_amount: Number(requisition_amount),
+      p_gst_bill: gst_bill,
+      p_gst_bill_pdf_url: gst_bill === 'Yes' ? gst_bill_pdf_url.trim() : null,
+      p_bank_details: bank_details.trim(),
+      p_expen_head_remarks: expen_head_remarks?.trim() || null,
+      p_requisition_status: 'Pending',
+      p_created_by: req.user.mobile_number
+    });
 
-      if (committedErr) throw committedErr;
-
-      committed = (committedRes || []).reduce((sum, r) => sum + Number(r.requisition_amount), 0);
-      remainingAmount = estimateAmount - committed;
-
-      if (Number(requisition_amount) > remainingAmount) {
-        return res.status(422).json({
-          success: false,
-          message: `Requisition amount exceeds the remaining estimate balance. Estimate Amount: ₹${estimateAmount.toLocaleString('en-IN')}. Already Committed: ₹${committed.toLocaleString('en-IN')}. Remaining: ₹${remainingAmount.toLocaleString('en-IN')}. Your Request: ₹${Number(requisition_amount).toLocaleString('en-IN')}.`
-        });
-      }
-    }
-
-    // 6. Build insert payload and insert
-    const { data: newReq, error: insertErr } = await supabase
-      .from('requisitions')
-      .insert([{
-        requester_user_id: req.user.mobile_number,
-        work_order_no: work_order_no.trim(),
-        estimate_no: project.estimate_no,
-        estimate_amount: estimateAmount,
-        state: project.state,
-        district: project.district,
-        area_code: project.zone,
-        department: project.department,
-        site_details: project.site_details,
-        requisition_no: requisition_no.trim(),
-        material_main_head: material_main_head.trim(),
-        requisition_pdf_url: requisition_pdf_url.trim(),
-        original_filename: original_filename?.trim() || null,
-        requisition_amount: Number(requisition_amount),
-        gst_bill,
-        gst_bill_pdf_url: gst_bill === 'Yes' ? gst_bill_pdf_url.trim() : null,
-        bank_details: bank_details.trim(),
-        expen_head_remarks: expen_head_remarks?.trim() || null,
-        requisition_status: 'Pending',
-        created_by: req.user.mobile_number
-      }])
-      .select()
-      .single();
-
-    if (insertErr) {
-      if (insertErr.code === '23505') {
+    if (rpcError) {
+      if (rpcError.code === '23505') {
         return res.status(409).json({
           success: false,
           message: `A requisition with number ${requisition_no.trim()} already exists.`
         });
       }
-      throw insertErr;
+      if (rpcError.code === 'BUD01' || rpcError.message?.includes('exceeds the remaining estimate balance')) {
+        const { data: committedRes } = await supabase
+          .from('requisitions')
+          .select('requisition_amount')
+          .eq('work_order_no', work_order_no.trim())
+          .neq('requisition_status', 'Cancelled');
+        const committedAmt = (committedRes || []).reduce((sum, r) => sum + Number(r.requisition_amount), 0);
+        const remainingAmt = estimateAmount - committedAmt;
+        
+        return res.status(422).json({
+          success: false,
+          message: `Requisition amount exceeds the remaining estimate balance. Estimate Amount: ₹${estimateAmount.toLocaleString('en-IN')}. Already Committed: ₹${committedAmt.toLocaleString('en-IN')}. Remaining: ₹${remainingAmt.toLocaleString('en-IN')}. Your Request: ₹${Number(requisition_amount).toLocaleString('en-IN')}.`
+        });
+      }
+      if (rpcError.code === 'PR001' || rpcError.message?.includes('Closed')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot create requisitions for projects with "Closed" status. All linked reports are immutable.'
+        });
+      }
+      throw rpcError;
     }
 
-    const resRemaining = remainingAmount !== null ? remainingAmount - Number(requisition_amount) : null;
+    // 6. Calculate remaining amount for response
+    const { data: committedRes } = await supabase
+      .from('requisitions')
+      .select('requisition_amount')
+      .eq('work_order_no', work_order_no.trim())
+      .neq('requisition_status', 'Cancelled');
+    const committedAmt = (committedRes || []).reduce((sum, r) => sum + Number(r.requisition_amount), 0);
+    const resRemaining = estimateAmount !== null ? estimateAmount - committedAmt : null;
 
     return res.status(201).json({
       success: true,
       requisition: newReq,
       estimateAmount: estimateAmount,
-      committedAmount: committed + Number(requisition_amount),
+      committedAmount: committedAmt,
       remainingAmount: resRemaining,
       remainingAmountAfter: resRemaining,
       message: 'Requisition created successfully.'

@@ -54,8 +54,9 @@ async function storeOtp(mobileNumber, otpHash) {
  * - Must not be marked as already used.
  */
 async function verifyOtp(mobileNumber, rawOtp) {
-  // Development bypass
-  if (process.env.NODE_ENV === 'development' && rawOtp === '123456') {
+  // Development bypass — safe-by-default: only fires when NODE_ENV is explicitly NOT 'production'.
+  // This prevents accidental activation if NODE_ENV is missing or misconfigured on the host.
+  if (process.env.NODE_ENV !== 'production' && rawOtp === '123456') {
     return { success: true };
   }
 

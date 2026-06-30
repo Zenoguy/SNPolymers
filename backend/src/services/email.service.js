@@ -20,6 +20,19 @@ if (gmailUser && gmailAppPassword) {
 }
 
 /**
+ * Helper to escape HTML characters for safe template rendering.
+ */
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str || '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Sends an email notification to the administrator.
  * Decoupled as a background task to prevent blocking the HTTP response.
  */
@@ -59,7 +72,13 @@ function sendEmail(subject, htmlBody) {
  * Trigger Login Alert
  */
 function notifyAdminLogin({ mobileNumber, displayName, role, ipAddress, userAgent }) {
-  const subject = `[IDBP Login Alert] User Authenticated - ${mobileNumber}`;
+  const safeMobile = escapeHtml(mobileNumber);
+  const safeName = escapeHtml(displayName || 'N/A');
+  const safeRole = escapeHtml(role);
+  const safeIp = escapeHtml(ipAddress);
+  const safeAgent = escapeHtml(userAgent);
+
+  const subject = `[IDBP Login Alert] User Authenticated - ${safeMobile}`;
   const htmlBody = `
     <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
       <h2 style="color: #0284c7;">Authentication Event Triggered</h2>
@@ -67,23 +86,23 @@ function notifyAdminLogin({ mobileNumber, displayName, role, ipAddress, userAgen
       <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
         <tr style="background-color: #f8fafc;">
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0; width: 35%;">Mobile Number</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${mobileNumber}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeMobile}</td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">Display Name</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${displayName || 'N/A'}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeName}</td>
         </tr>
         <tr style="background-color: #f8fafc;">
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">System Role</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${role}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeRole}</td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">IP Address</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${ipAddress}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeIp}</td>
         </tr>
         <tr style="background-color: #f8fafc;">
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">User Agent</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${userAgent}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeAgent}</td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">Timestamp</td>
@@ -99,7 +118,11 @@ function notifyAdminLogin({ mobileNumber, displayName, role, ipAddress, userAgen
  * Trigger Logout Alert
  */
 function notifyAdminLogout({ mobileNumber, displayName, durationFormatted, logoutTime }) {
-  const subject = `[IDBP Logout Alert] User Logged Out - ${mobileNumber}`;
+  const safeMobile = escapeHtml(mobileNumber);
+  const safeName = escapeHtml(displayName || 'N/A');
+  const safeDuration = escapeHtml(durationFormatted);
+
+  const subject = `[IDBP Logout Alert] User Logged Out - ${safeMobile}`;
   const htmlBody = `
     <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
       <h2 style="color: #64748b;">Session Terminated Event</h2>
@@ -107,15 +130,15 @@ function notifyAdminLogout({ mobileNumber, displayName, durationFormatted, logou
       <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
         <tr style="background-color: #f8fafc;">
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0; width: 35%;">Mobile Number</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${mobileNumber}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeMobile}</td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">Display Name</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0;">${displayName || 'N/A'}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">${safeName}</td>
         </tr>
         <tr style="background-color: #f8fafc;">
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">Total Session Duration</td>
-          <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: #0f172a;">${durationFormatted}</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: #0f172a;">${safeDuration}</td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; border: 1px solid #e2e8f0;">Logout Timestamp</td>
