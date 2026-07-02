@@ -278,20 +278,16 @@ async function getEstimateById(req, res) {
 
 async function getEstimateInitData(req, res) {
   try {
-    // 1. Fetch running projects
-    const { data: runningProjects, error: projError } = await supabase
-      .from('projects_master')
-      .select('*')
-      .neq('status', 'Closed');
+    // Fetch running projects and active estimates in parallel
+    const [
+      { data: runningProjects, error: projError },
+      { data: activeEstimates, error: activeError }
+    ] = await Promise.all([
+      supabase.from('projects_master').select('*').neq('status', 'Closed'),
+      supabase.from('project_cost_estimates').select('work_order_no').not('estimate_status', 'in', '("Final Approved","Rejected by ZO","Rejected by HO")')
+    ]);
 
     if (projError) throw projError;
-
-    // 2. Fetch active estimates
-    const { data: activeEstimates, error: activeError } = await supabase
-      .from('project_cost_estimates')
-      .select('work_order_no')
-      .not('estimate_status', 'in', `("Final Approved","Rejected by ZO","Rejected by HO")`);
-
     if (activeError) throw activeError;
 
     const blockedWorkOrders = new Set((activeEstimates || []).map(e => e.work_order_no));
