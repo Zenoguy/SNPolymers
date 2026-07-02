@@ -99,21 +99,42 @@ const EstimateForm = () => {
   const initForm = async () => {
     setError('');
     try {
-      // 1. Fetch catalog version, catalog data, and purchase options
-      const verRes = await authApi.get('/master-data/version');
-      const backendVersion = verRes.data?.version;
-      const cachedVersion = localStorage.getItem('catalog_version');
-      const cachedCatalogStr = localStorage.getItem('catalog_data');
+      // Create promises for parallel execution
+      const catalogPromise = (async () => {
+        const verRes = await authApi.get('/master-data/version');
+        const backendVersion = verRes.data?.version;
+        const cachedVersion = localStorage.getItem('catalog_version');
+        const cachedCatalogStr = localStorage.getItem('catalog_data');
 
-      let catalog;
-      if (cachedVersion && cachedCatalogStr && Number(cachedVersion) === Number(backendVersion)) {
-        catalog = JSON.parse(cachedCatalogStr);
-      } else {
-        const catRes = await authApi.get('/master-data/catalog');
-        catalog = catRes.data;
-        localStorage.setItem('catalog_version', String(backendVersion));
-        localStorage.setItem('catalog_data', JSON.stringify(catalog));
+        let catalog;
+        if (cachedVersion && cachedCatalogStr && Number(cachedVersion) === Number(backendVersion)) {
+          catalog = JSON.parse(cachedCatalogStr);
+        } else {
+          const catRes = await authApi.get('/master-data/catalog');
+          catalog = catRes.data;
+          localStorage.setItem('catalog_version', String(backendVersion));
+          localStorage.setItem('catalog_data', JSON.stringify(catalog));
+        }
+        return catalog;
+      })();
+
+      const estimateDataPromise = isEditMode 
+        ? authApi.get(`/estimates/${id}`)
+        : authApi.get('/estimates/init');
+
+      // For create mode, set workOrders as soon as data arrives, without waiting for catalog
+      if (!isEditMode) {
+        estimateDataPromise
+          .then(initRes => {
+            if (initRes.data?.success) {
+              setWorkOrders(initRes.data.availableWorkOrders || []);
+            }
+          })
+          .catch(err => setError(err.response?.data?.message || 'Failed to fetch work orders.'));
       }
+
+      // Await catalog which is required for both modes to populate the items table dropdowns
+      const catalog = await catalogPromise;
 
       // Build main heads list
       const mainHeadsList = catalog.categories.map(c => c.name).sort();
@@ -136,8 +157,8 @@ const EstimateForm = () => {
       setPurchaseOptions(catalog.purchaseSources || []);
 
       if (isEditMode) {
-        // 2. Edit Mode: Fetch Estimate Details
-        const res = await authApi.get(`/estimates/${id}`);
+        // Await the estimate data for edit mode
+        const res = await estimateDataPromise;
         if (res.data?.success) {
           const { estimate, items: estItems } = res.data;
           setEstimateStatus(estimate.estimate_status);
@@ -173,12 +194,6 @@ const EstimateForm = () => {
             setDeadline(new Date(estimate.active_revision_deadline));
             startCountdown(new Date(estimate.active_revision_deadline));
           }
-        }
-      } else {
-        // 3. Create Mode: Fetch Projects for Selection from GET /estimates/init
-        const initRes = await authApi.get('/estimates/init');
-        if (initRes.data?.success) {
-          setWorkOrders(initRes.data.availableWorkOrders || []);
         }
       }
     } catch (err) {
