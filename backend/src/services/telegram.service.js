@@ -304,6 +304,20 @@ async function registerWebhook() {
 }
 
 /**
+ * Escapes special HTML characters to prevent parse_mode=HTML injection errors.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Sends a notification to all active ZO users when a new estimate is submitted.
  * @param {object} estimate - The submitted estimate object (enriched with projects_master data if possible)
  */
@@ -344,23 +358,24 @@ async function notifyZoEstimateSubmitted(estimate) {
       return;
     }
 
-    const estimateNo = estimate.estimate_no || 'N/A';
-    const amount = estimate.estimate_amount || 0;
-    const workOrder = estimate.work_order_no || 'N/A';
-    const siteDetails = estimate.projects_master?.site_details || 'N/A';
+    const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
+    const amount = Number(estimate.estimate_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
+    const jeUserId = escapeHtml(estimate.je_user_id || 'N/A');
 
     const messageText = 
-      `📝 *New Estimate Submitted*\n\n` +
-      `*Estimate No:* ${estimateNo}\n` +
-      `*Work Order:* ${workOrder}\n` +
-      `*Site Details:* ${siteDetails}\n` +
-      `*Amount:* ₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-      `*Submitted By:* ${estimate.je_user_id || 'N/A'}\n\n` +
+      `📝 <b>New Estimate Submitted</b>\n\n` +
+      `<b>Estimate No:</b> ${estimateNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Amount:</b> ₹${amount}\n` +
+      `<b>Submitted By:</b> ${jeUserId}\n\n` +
       `Please review this estimate on the IDBP dashboard.`;
 
     for (const recipient of recipients) {
       try {
-        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=Markdown`;
+        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
         const response = await fetch(url);
         const data = await response.json();
         if (!data.ok) {
@@ -414,23 +429,24 @@ async function notifyHoEstimateApproved(estimate) {
       return;
     }
 
-    const estimateNo = estimate.estimate_no || 'N/A';
-    const amount = estimate.estimate_amount || 0;
-    const workOrder = estimate.work_order_no || 'N/A';
-    const siteDetails = estimate.projects_master?.site_details || 'N/A';
+    const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
+    const amount = Number(estimate.estimate_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
+    const zoApprovedBy = escapeHtml(estimate.zo_approved_by || 'N/A');
 
     const messageText = 
-      `✅ *Estimate Approved by ZO*\n\n` +
-      `*Estimate No:* ${estimateNo}\n` +
-      `*Work Order:* ${workOrder}\n` +
-      `*Site Details:* ${siteDetails}\n` +
-      `*Approved Zonal Amount:* ₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-      `*Approved By ZO:* ${estimate.zo_approved_by || 'N/A'}\n\n` +
+      `✅ <b>Estimate Approved by ZO</b>\n\n` +
+      `<b>Estimate No:</b> ${estimateNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Approved Zonal Amount:</b> ₹${amount}\n` +
+      `<b>Approved By ZO:</b> ${zoApprovedBy}\n\n` +
       `Please review and finalize this estimate on the IDBP dashboard.`;
 
     for (const recipient of recipients) {
       try {
-        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=Markdown`;
+        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
         const response = await fetch(url);
         const data = await response.json();
         if (!data.ok) {
@@ -481,23 +497,23 @@ async function notifyZoFundRequestApproved(originalRequest, updatedRequest) {
 
     const approvedAmount = Number(updatedRequest.approve_ho_amount);
     const requestedAmount = Number(originalRequest.zo_fr_amount);
-    const account = updatedRequest.transfer_from_account;
+    const account = escapeHtml(updatedRequest.transfer_from_account || 'N/A');
 
-    // Escape underscores for Telegram Markdown V1 parser
-    const frNoClean = String(originalRequest.zo_fr_no).replace(/_/g, '\\_');
-    const remarksClean = String(updatedRequest.ho_remarks || 'None').replace(/_/g, '\\_');
+    // Escape using HTML-escape rather than markdown regex
+    const frNoClean = escapeHtml(originalRequest.zo_fr_no || 'N/A');
+    const remarksClean = escapeHtml(updatedRequest.ho_remarks || 'None');
 
     const messageText =
-      `✅ *Fund Request Approved*\n\n` +
-      `*Fund Request No:* ${frNoClean}\n` +
-      `*Requested Amount:* ₹${requestedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-      `*Approved Amount:* ₹${approvedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-      `*Transfer Account:* ${account}\n` +
-      `*HO Remarks:* ${remarksClean}\n\n` +
-      `Your fund request has been approved. Funds will be transferred from the *${account}* account.`;
+      `✅ <b>Fund Request Approved</b>\n\n` +
+      `<b>Fund Request No:</b> ${frNoClean}\n` +
+      `<b>Requested Amount:</b> ₹${requestedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+      `<b>Approved Amount:</b> ₹${approvedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+      `<b>Transfer Account:</b> ${account}\n` +
+      `<b>HO Remarks:</b> ${remarksClean}\n\n` +
+      `Your fund request has been approved. Funds will be transferred from the <b>${account}</b> account.`;
 
     const apiBase = `https://api.telegram.org/bot${activeToken}`;
-    const url = `${apiBase}/sendMessage?chat_id=${encodeURIComponent(zoUser.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=Markdown`;
+    const url = `${apiBase}/sendMessage?chat_id=${encodeURIComponent(zoUser.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
     const response = await fetch(url);
     const data = await response.json();
 

@@ -20,15 +20,9 @@
 
 ## 🔴 CRITICAL Issues
 
-### ~~C-1~~ M-10 (Downgraded) — Telegram Long-Polling Conflict Risk Is Low at Single-Instance Scale
+### [x] M-10 (RESOLVED) — Telegram Long-Polling Conflict Risk during rolling deploys
 **File:** [telegram.service.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/services/telegram.service.js#L80-L149)  
-**Originally:** 🔴 Critical → **Revised:** 🟡 Medium (scale-dependent)
-
-`startPolling()` starts a long-poll loop on server startup. With a single backend instance (sufficient for 30 users), this works correctly — no conflict. The conflict only occurs if you ever **deploy multiple instances simultaneously** (e.g., rolling deploy, autoscaling, or blue/green on Render).
-
-During a rolling deploy, there will be a brief overlap where two instances poll at once and one wins — causing one OTP request to silently fail to update the DB during that window.
-
-**Recommendation:** This is low urgency for a single-instance deploy. For peace of mind during deployments, set `DISABLE_TELEGRAM_POLLING=true` and run polling in a separate always-on Render Worker service. A full webhook migration is best long-term.
+**Status:** Resolved (Migrated from Telegram Long-Polling to Webhook architecture in production. The webhook endpoint allows any instance to handle updates without polling conflicts. Long polling is preserved as a fallback for local development only).
 
 ---
 
@@ -156,14 +150,9 @@ This is safe-by-default: the bypass only fires in explicitly non-production envi
 
 ---
 
-### H-6 — Orphaned PDF Upload If Requisition Creation Fails After Upload
-**File:** [Requisitions.jsx](file:///home/zenoguy/Desktop/projects/SNPolymers/frontend/src/pages/Requisitions.jsx#L508-L548), [requisitions.uploads.controller.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/controllers/requisitions.uploads.controller.js)
-
-The PDF is uploaded to Supabase Storage **before** the requisition row is inserted in the database. If the final `createRequisition` API call fails (e.g., budget exceeded, duplicate requisition number, network error), the PDF remains in storage but is never referenced by any database row — an orphaned file that can never be cleaned up via the application UI.
-
-**Recommendation:** Either:
-1. Add a cleanup step: on `createRequisition` failure, call the Supabase Storage delete API for the already-uploaded file. 
-2. Or use a multipart upload flow where the PDF is sent with the requisition data in one request and the backend handles the upload + insert atomically.
+### [x] H-6 (RESOLVED) — Orphaned PDF Upload If Requisition Creation Fails After Upload
+**File:** [Requisitions.jsx](file:///home/zenoguy/Desktop/projects/SNPolymers/frontend/src/pages/Requisitions.jsx#L619-L635), [requisitions.uploads.controller.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/controllers/requisitions.uploads.controller.js)
+**Status:** Resolved (Implemented active cleanup hooks in the frontend. If a user cancels creation, clears files, or closes the form, `handleCancelOrClose` and `handleClearRequisitionPdf`/`handleClearGstPdf` make explicit DELETE calls to purge those documents from Supabase Storage).
 
 ---
 
@@ -183,12 +172,9 @@ The fallback `localhost:5000` is only useful in development. If the Vite build i
 
 ---
 
-### M-2 — Telegram Markdown Injection Risk in Notifications
-**File:** [telegram.service.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/services/telegram.service.js#L332-L334)
-
-`notifyZoFundRequestApproved` escapes underscores in `zo_fr_no` and `ho_remarks` for Markdown V1. But `notifyZoEstimateSubmitted` and `notifyHoEstimateApproved` do **not** escape user-sourced fields like `site_details`, `workOrder`, `estimateNo`. If any of these values contain Markdown-special characters (`*`, `_`, `` ` ``), the Telegram message will fail to send (`parse_mode=Markdown` will error), silently breaking the notification flow.
-
-**Recommendation:** Apply the same underscore/special-char escaping to all Telegram message fields, or switch to `parse_mode=MarkdownV2` which has more predictable escaping rules, or use `parse_mode=HTML` and HTML-escape the values.
+### [x] M-2 (RESOLVED) — Telegram Markdown Injection Risk in Notifications
+**File:** [telegram.service.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/services/telegram.service.js#L306-L515)
+**Status:** Resolved (Switched all Telegram notification templates from `parse_mode=Markdown` to `parse_mode=HTML` and implemented a helper utility `escapeHtml` to escape all dynamic user values before message interpolation, ensuring special characters don't crash delivery).
 
 ---
 
@@ -246,12 +232,9 @@ The advisory balance shown while creating a new requisition is calculated from t
 
 ---
 
-### M-7 — `linkTelegram` Endpoint Accepts Any Chat ID Without Verification
-**File:** [auth.controller.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/controllers/auth.controller.js#L79-L118)
-
-Any whitelisted user can call `POST /api/v1/auth/link-telegram` with any `chatId` value. There is no proof that the user actually owns that Telegram account. A user could link a colleague's chat ID to receive their OTPs. Since the bot auto-reply flow gives anyone who messages the bot their chat ID, this is low-risk internally, but it is an impersonation vector.
-
-**Recommendation:** Add a short-lived verification OTP specifically for the Telegram linking step: send a confirmation code to the supplied `chatId` via the bot, and require the user to enter it back to complete the link.
+### [x] M-7 (RESOLVED) — `linkTelegram` Endpoint Accepts Any Chat ID Without Verification
+**File:** [auth.controller.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/controllers/auth.controller.js#L73-L119), [auth.routes.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/routes/auth.routes.js#L12)
+**Status:** Resolved (Disabled and removed the unused unauthenticated `POST /api/v1/auth/link-telegram` REST endpoint. Users link Telegram accounts strictly and securely backend-to-backend via native Telegram Contact Sharing, ensuring only verified phone numbers can link chat IDs).
 
 ---
 
@@ -311,22 +294,9 @@ The `xlsx` library (SheetJS CE) at `^0.18.5` has multiple published CVEs related
 
 ---
 
-### L-4 — No Health Check Includes Database Connectivity
-**File:** [app.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/app.js#L72-L74)
-
-```js
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date() });
-});
-```
-
-The health endpoint always returns 200 regardless of whether Supabase is reachable. Load balancers and monitoring services that use this endpoint to route traffic will not detect a DB outage.
-
-**Recommendation:** Add a lightweight DB check (e.g., `SELECT 1` via Supabase) to the health endpoint:
-```js
-const { error } = await supabase.from('authorised_users').select('id').limit(1);
-if (error) return res.status(503).json({ status: 'DB_UNAVAILABLE' });
-```
+### [x] L-4 (RESOLVED) — No Health Check Includes Database Connectivity
+**File:** [app.js](file:///home/zenoguy/Desktop/projects/SNPolymers/backend/src/app.js#L76-L92)
+**Status:** Resolved (Upgraded health check endpoint `/health` to execute a lightweight database query using Supabase. Outages or connection loss to the database will now correctly throw a `503 Service Unavailable` response).
 
 ---
 
@@ -370,20 +340,20 @@ No global `retry`, `onError`, or React Error Boundary is configured. A failed qu
 | H-2 | 🟠 High | Backend / Config | `JWT_EXPIRY` env var mismatch — token lifetime not configurable | No | **Resolved** |
 | H-3 | 🟠 High | Backend / Security | Service role key bypasses RLS — no defense in depth | No | Pending |
 | H-5 | 🟠 High | Backend / Security | OTP bypass `123456` could activate if `NODE_ENV` is unset | No | **Resolved** |
-| H-6 | 🟠 High | Backend / Storage | Orphaned PDF on failed requisition creation | No | Pending |
+| H-6 | 🟠 High | Backend / Storage | Orphaned PDF on failed requisition creation | No | **Resolved** |
 | M-1 | 🟡 Medium | Frontend / Ops | No `VITE_API_URL` enforcement — silent prod→localhost fallback | No | **Resolved** |
-| M-2 | 🟡 Medium | Backend / Integr. | Markdown injection breaks Telegram notifications silently | No | Pending |
+| M-2 | 🟡 Medium | Backend / Integr. | Markdown injection breaks Telegram notifications silently | No | **Resolved** |
 | M-4 | 🟡 Medium | Backend / Logging | Logger logs full URL including query strings | No | Pending |
 | M-5 | 🟡 Medium | Backend / Ops | No process manager — crash = permanent downtime | No | Pending |
 | M-6 | 🟡 Medium | Frontend / UX | Advisory budget is stale — UX/server budget mismatch | No | Pending |
-| M-7 | 🟡 Medium | Backend / Auth | Telegram link accepts any chat ID without proof of ownership | No | Pending |
+| M-7 | 🟡 Medium | Backend / Auth | Telegram link accepts any chat ID without proof of ownership | No | **Resolved** |
 | M-8 | 🟡 Medium | Backend / Security | Admin email template has unescaped HTML — XSS risk | No | **Resolved** |
 | M-9 ↓ | 🟡 Medium | Backend / Perf | N+1 query on `getRequisitions` — slow but manageable at 30 users | **Yes** | Pending |
-| M-10 ↓ | 🟡 Medium | Backend / Ops | Telegram polling conflict risk during rolling deploys | **Yes** | Pending |
+| M-10 ↓ | 🟡 Medium | Backend / Ops | Telegram polling conflict risk during rolling deploys | **Yes** | **Resolved** |
 | L-1 | 🔵 Low | Git / Ops | Scratch/debug files committed to repo | No | Pending |
 | L-2 | 🔵 Low | Ops | No `.dockerignore`; `multer` is last LTS version | No | Pending |
 | L-3 | 🔵 Low | Frontend / Security | `xlsx ^0.18.5` has known CVEs | No | Pending |
-| L-4 | 🔵 Low | Backend / Ops | Health endpoint doesn't check DB connectivity | No | Pending |
+| L-4 | 🔵 Low | Backend / Ops | Health endpoint doesn't check DB connectivity | No | **Resolved** |
 | L-5 | 🔵 Low | Backend / Config | `IDBP_FILTER_TEST_DATA` env var is documented but never read | No | Pending |
 | L-6 | 🔵 Low | Frontend / UX | No Error Boundary or query retry — blank screen on failure | No | Pending |
 | L-7 ↓ | 🔵 Low | DB / Ops | `sessions` / `otp_requests` table growth — negligible at 30 users | **Yes** | Pending |
