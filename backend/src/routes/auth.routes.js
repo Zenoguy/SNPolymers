@@ -1,5 +1,5 @@
 const express = require('express');
-const { requestOtp, linkTelegram, checkLinkStatus, verifyOtpCode, logout, refreshTokens, getMe } = require('../controllers/auth.controller');
+const { requestOtp, checkLinkStatus, verifyOtpCode, logout, refreshTokens, getMe } = require('../controllers/auth.controller');
 const verifyJwt = require('../middleware/verifyJwt');
 const { otpRequestLimiter, otpVerifyLimiter, refreshTokenLimiter } = require('../middleware/rateLimiter');
 const validateRequest = require('../middleware/validateRequest');
@@ -9,7 +9,6 @@ const router = express.Router();
 
 // Public routes
 router.post('/request-otp', otpRequestLimiter, validateRequest(requestOtpSchema), requestOtp);
-router.post('/link-telegram', otpRequestLimiter, validateRequest(linkTelegramSchema), linkTelegram);
 router.get('/link-status', checkLinkStatus);
 router.post('/verify-otp', otpVerifyLimiter, validateRequest(verifyOtpSchema), verifyOtpCode);
 router.post('/refresh', refreshTokenLimiter, refreshTokens);

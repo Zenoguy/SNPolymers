@@ -7,7 +7,7 @@ const { sendOtp } = require('../services/telegram.service');
 const { JWT_SECRET, generateTokens, createSession, closeSession, formatDuration } = require('../services/session.service');
 const { notifyAdminLogin, notifyAdminLogout } = require('../services/email.service');
 const validate = require('../validation/validate');
-const { requestOtpSchema, linkTelegramSchema, verifyOtpSchema } = require('../validation/auth.schema');
+const { requestOtpSchema, verifyOtpSchema } = require('../validation/auth.schema');
 
 const isProd = process.env.NODE_ENV === 'production';
 const cookieOptions = {
@@ -70,52 +70,7 @@ async function requestOtp(req, res) {
   }
 }
 
-/**
- * POST /api/v1/auth/link-telegram
- * Public endpoint. Saves a user-supplied Telegram chat_id to their
- * authorised_users record. The chat_id is obtained by the user messaging
- * the bot directly and reading the auto-reply.
- */
-async function linkTelegram(req, res) {
-  if (!validate(req, res, linkTelegramSchema)) return;
-  const { mobileNumber, chatId } = req.body;
-  const chatIdStr = chatId;
 
-  try {
-    // 1. Verify the mobile number is whitelisted & active
-    const { data: user, error } = await supabase
-      .from('authorised_users')
-      .select('id, mobile_number, is_active')
-      .eq('mobile_number', mobileNumber)
-      .eq('is_active', true)
-      .limit(1)
-      .single();
-
-    if (error || !user) {
-      return res.status(403).json({ success: false, message: 'Access denied. This number is not whitelisted or is inactive.' });
-    }
-
-    // 2. Save the chat_id
-    const { error: updateError } = await supabase
-      .from('authorised_users')
-      .update({ telegram_chat_id: chatIdStr })
-      .eq('id', user.id);
-
-    if (updateError) {
-      throw new Error(`Failed to save Chat ID: ${updateError.message}`);
-    }
-
-    console.log(`[TELEGRAM] Chat ID ${chatIdStr} linked to ${mobileNumber}`);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Telegram account linked successfully.'
-    });
-  } catch (error) {
-    logError('linkTelegram', error);
-    return res.status(500).json({ success: false, message: 'Failed to link Telegram Chat ID.' });
-  }
-}
 
 /**
  * GET /api/v1/auth/link-status
@@ -387,7 +342,6 @@ async function getMe(req, res) {
 
 module.exports = {
   requestOtp,
-  linkTelegram,
   checkLinkStatus,
   verifyOtpCode,
   logout,

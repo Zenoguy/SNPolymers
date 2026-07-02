@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
+const { supabase } = require('./db/supabase');
 require('dotenv').config();
 
 // Production environment sanity checks
@@ -72,9 +73,24 @@ app.use('/api/v1/auth/requisitions', requisitionsRoutes);
 app.use('/api/v1/auth/daily-progress', dailyProgressRoutes);
 app.use('/api/v1/auth/ra-final-bills', raFinalBillRoutes);
 
-// Basic sanity route
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date() });
+// Health check route with database connectivity ping
+app.get('/health', async (req, res) => {
+  try {
+    // Attempt a lightweight read check from authorised_users using head: true
+    const { error } = await supabase
+      .from('authorised_users')
+      .select('count', { count: 'exact', head: true })
+      .limit(1);
+
+    if (error) {
+      throw error;
+    }
+
+    return res.status(200).json({ status: 'OK', database: 'CONNECTED', timestamp: new Date() });
+  } catch (err) {
+    console.error(`Health check failed: database connection issue — ${err.message}`);
+    return res.status(503).json({ status: 'ERROR', database: 'DISCONNECTED', error: err.message, timestamp: new Date() });
+  }
 });
 
 // 404 Route handler
