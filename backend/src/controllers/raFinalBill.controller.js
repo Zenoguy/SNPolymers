@@ -195,9 +195,10 @@ async function getBills(req, res) {
     }
 
     query = query
-      .order('bill_date', { ascending: false })
       .order('created_at', { ascending: false })
+      .order('bill_date', { ascending: false })
       .range(offset, offset + limit - 1);
+
 
     const { data: bills, count, error } = await query;
 

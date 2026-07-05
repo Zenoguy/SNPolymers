@@ -52,6 +52,9 @@ const RAFinalBill = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Success toast popup state
+  const [toast, setToast] = useState(null); // { message, billNo }
+
   // UI Panels
   const [showCreatePanel, setShowCreatePanel] = useState(false);
   const [selectedBillId, setSelectedBillId] = useState(null);
@@ -112,6 +115,9 @@ const RAFinalBill = () => {
   const [uploadError, setUploadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+
+  // In-modal form validation error (shown inside the overlay)
+  const [formError, setFormError] = useState('');
 
   // Fetch projects using React Query
   const { data: projectsData } = useQuery({
@@ -204,6 +210,13 @@ const RAFinalBill = () => {
     const timer = setTimeout(() => setSuccess(''), 5000);
     return () => clearTimeout(timer);
   }, [success]);
+
+  // Toast auto-dismiss
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // Handle Work Order selection change (Within Create Panel)
   const handleWorkOrderChange = async (e) => {
@@ -326,6 +339,22 @@ const RAFinalBill = () => {
     }
   };
 
+  // Helper: clamp numeric input to non-negative on change
+  const handleNumericInput = (field) => (e) => {
+    const raw = e.target.value;
+    // Allow empty string for clearing
+    if (raw === '' || raw === '-') {
+      setFormState(prev => ({ ...prev, [field]: raw === '-' ? '' : raw }));
+      return;
+    }
+    const num = parseFloat(raw);
+    if (!isNaN(num) && num < 0) {
+      setFormState(prev => ({ ...prev, [field]: '0' }));
+    } else {
+      setFormState(prev => ({ ...prev, [field]: raw }));
+    }
+  };
+
   // Form Reset
   const [_, forceUpdate] = useState(0); // Dummy for triggers
   const handleReset = () => {
@@ -372,6 +401,7 @@ const RAFinalBill = () => {
 
   // Form Cancel
   const handleCancel = () => {
+    setFormError('');
     handleReset();
     setFormState({
       work_order_no: '',
@@ -411,13 +441,73 @@ const RAFinalBill = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setFormError('');
     setSuccess('');
 
-    // Check all required inputs
+    // 1. Required field check
     const required = ['work_order_no', 'payment_type', 'bill_date', 'bill_no', 'bill_copy_url'];
     for (const f of required) {
       if (!formState[f]) {
-        setError(`Please check all fields. ${f.replace(/_/g, ' ')} is required.`);
+        setFormError(`${f.replace(/_/g, ' ')} is required. Please fill in all required fields.`);
+        return;
+      }
+    }
+
+    // 2. Future date check
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const billDate = new Date(formState.bill_date);
+    if (billDate > today) {
+      setFormError('Bill Date cannot be a future date. Please enter a valid bill date.');
+      return;
+    }
+
+    // 3. Negative value check for all financial fields
+    const financialFields = [
+      'gross_bill', 'agency_payment', 'security_deposit_amount',
+      'special_security_amount', 'other_retention', 'it_tds',
+      'sgst', 'cgst', 'sd'
+    ];
+    for (const field of financialFields) {
+      const val = Number(formState[field] || 0);
+      if (val < 0) {
+        setFormError(`${field.replace(/_/g, ' ')} cannot be negative. All financial values must be zero or positive.`);
+        return;
+      }
+    }
+
+    const grossBillVal = Number(formState.gross_bill || 0);
+    const breakdownSum =
+      (Number(formState.agency_payment) || 0) +
+      (Number(formState.security_deposit_amount) || 0) +
+      (Number(formState.special_security_amount) || 0) +
+      (Number(formState.other_retention) || 0) +
+      (Number(formState.it_tds) || 0) +
+      (Number(formState.sgst) || 0) +
+      (Number(formState.cgst) || 0) +
+      (Number(formState.sd) || 0);
+
+    // 4. Gross bill vs breakdown validation (only enforce when breakdown fields are filled)
+    const hasBreakdown = breakdownSum > 0;
+    if (hasBreakdown && Math.abs(grossBillVal - breakdownSum) > 0.009) {
+      setFormError(
+        `Gross Bill (${formatCurrency(grossBillVal)}) must equal the sum of all breakdown fields (${formatCurrency(breakdownSum)}). ` +
+        `Please correct the mismatch before saving.`
+      );
+      return;
+    }
+
+    // 5. Overbilling check: current bill + previous bills must not exceed work order value
+    const workOrderValue = formSummaryData.work_order_value || 0;
+    if (workOrderValue > 0) {
+      const prevBilled = formSummaryData.previous_bill_amount || 0;
+      const totalAfterThis = prevBilled + grossBillVal;
+      if (totalAfterThis > workOrderValue) {
+        setFormError(
+          `This bill would cause overbilling. ` +
+          `Total billed (${formatCurrency(totalAfterThis)}) would exceed the Work Order Value (${formatCurrency(workOrderValue)}). ` +
+          `Maximum allowed for this bill: ${formatCurrency(workOrderValue - prevBilled)}.`
+        );
         return;
       }
     }
@@ -429,7 +519,7 @@ const RAFinalBill = () => {
         payment_type: formState.payment_type,
         bill_date: formState.bill_date,
         bill_no: formState.bill_no,
-        gross_bill: Number(formState.gross_bill || 0),
+        gross_bill: grossBillVal,
         security_deposit_amount: Number(formState.security_deposit_amount || 0),
         agency_payment: Number(formState.agency_payment || 0),
         special_security_amount: Number(formState.special_security_amount || 0),
@@ -445,14 +535,18 @@ const RAFinalBill = () => {
 
       const res = await createBill(payload);
       if (res.data?.success) {
-        setSuccess('Bill entry saved successfully.');
+        // Invalidate & refetch BEFORE closing the modal to avoid re-render interference
+        await queryClient.invalidateQueries({ queryKey: ['bills'] });
+        await queryClient.invalidateQueries({ queryKey: ['billSummary'] });
+        // Also explicitly refetch the stats query to ensure dashboard cards update
+        queryClient.refetchQueries({ queryKey: ['bills', 'stats'] });
+        // Show toast popup and close modal
+        setToast({ message: 'Bill entry saved successfully!', billNo: formState.bill_no });
         handleCancel();
-        queryClient.invalidateQueries({ queryKey: ['bills'] });
-        queryClient.invalidateQueries({ queryKey: ['billSummary'] });
       }
     } catch (err) {
       console.error('Failed to save bill entry:', err);
-      setError(err.response?.data?.message || 'Failed to submit bill entry.');
+      setFormError(err.response?.data?.message || 'Failed to submit bill entry. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -527,6 +621,37 @@ const RAFinalBill = () => {
       <BackgroundShapes />
       <Sidebar />
       <MobileHeader />
+
+      {/* SUCCESS TOAST POPUP — fixed bottom-right, auto-dismisses */}
+      {toast && (
+        <div
+          className="fixed bottom-6 right-6 z-[9999] animate-fadeIn"
+          style={{ animation: 'slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+        >
+          <div className="flex items-start gap-4 bg-emerald-950 border border-emerald-700/60 rounded-2xl px-5 py-4 shadow-2xl min-w-[320px] max-w-[420px]">
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mt-0.5">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-extrabold text-emerald-300 tracking-tight">{toast.message}</p>
+              {toast.billNo && (
+                <p className="text-[11px] text-emerald-500/80 font-mono mt-0.5 truncate">Bill No: {toast.billNo}</p>
+              )}
+              <p className="text-[10px] text-emerald-600 mt-1 uppercase tracking-widest font-bold">Dashboard updated</p>
+            </div>
+            <button
+              onClick={() => setToast(null)}
+              className="shrink-0 text-emerald-600 hover:text-emerald-400 transition mt-0.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         {/* Status Alerts */}
@@ -1081,7 +1206,19 @@ const RAFinalBill = () => {
         >
           {/* Form Body */}
           <div className="space-y-6 text-left">
-            
+
+            {/* In-Modal Validation Error Banner */}
+            {formError && (
+              <div className="p-4 bg-red-950/25 border border-red-700/40 rounded-2xl text-xs text-red-300 flex items-start gap-3 shadow-lg animate-fadeIn">
+                <span className="mt-0.5 w-4 h-4 shrink-0 text-red-500">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                </span>
+                <span className="leading-relaxed font-medium">{formError}</span>
+              </div>
+            )}
+
             {/* SECTION 1: PROJECT DETAILS */}
             <div className="border border-white/5 bg-slate-900/20 rounded-2xl p-5 space-y-4 shadow-sm">
               <div className="flex items-center gap-2 border-b border-white/5 pb-2">
@@ -1254,8 +1391,9 @@ const RAFinalBill = () => {
                   type="number"
                   placeholder="Enter Gross Bill Amount"
                   step="0.01"
+                  min="0"
                   value={formState.gross_bill}
-                  onChange={(e) => setFormState(prev => ({ ...prev, gross_bill: e.target.value }))}
+                  onChange={handleNumericInput('gross_bill')}
                   disabled={submitting}
                   size="sm"
                   iconLeft={<span className="text-xs text-amber-500 font-bold">₹</span>}
@@ -1267,72 +1405,72 @@ const RAFinalBill = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Input
                   label="Agency Payment"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.agency_payment}
-                  onChange={(e) => setFormState(prev => ({ ...prev, agency_payment: e.target.value }))}
+                  onChange={handleNumericInput('agency_payment')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="Security Deposit Amt"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.security_deposit_amount}
-                  onChange={(e) => setFormState(prev => ({ ...prev, security_deposit_amount: e.target.value }))}
+                  onChange={handleNumericInput('security_deposit_amount')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="Special Security Amt"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.special_security_amount}
-                  onChange={(e) => setFormState(prev => ({ ...prev, special_security_amount: e.target.value }))}
+                  onChange={handleNumericInput('special_security_amount')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="Other Retention"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.other_retention}
-                  onChange={(e) => setFormState(prev => ({ ...prev, other_retention: e.target.value }))}
+                  onChange={handleNumericInput('other_retention')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="IT TDS"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.it_tds}
-                  onChange={(e) => setFormState(prev => ({ ...prev, it_tds: e.target.value }))}
+                  onChange={handleNumericInput('it_tds')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="SGST"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.sgst}
-                  onChange={(e) => setFormState(prev => ({ ...prev, sgst: e.target.value }))}
+                  onChange={handleNumericInput('sgst')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="CGST"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.cgst}
-                  onChange={(e) => setFormState(prev => ({ ...prev, cgst: e.target.value }))}
+                  onChange={handleNumericInput('cgst')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
                 />
                 <Input
                   label="SD"
-                  type="number" placeholder="0.00" step="0.01"
+                  type="number" placeholder="0.00" step="0.01" min="0"
                   value={formState.sd}
-                  onChange={(e) => setFormState(prev => ({ ...prev, sd: e.target.value }))}
+                  onChange={handleNumericInput('sd')}
                   disabled={submitting} size="sm"
                   iconLeft={<span className="text-xs text-slate-500 font-bold">₹</span>}
                   className="font-mono"
