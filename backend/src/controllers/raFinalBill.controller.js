@@ -105,7 +105,76 @@ async function createBill(req, res) {
       }
     }
 
-    // 4. Construct insert payload
+    // 4. Parse & validate all financial amounts
+    const grossBillNum           = Number(gross_bill           || 0);
+    const agencyPaymentNum       = Number(agency_payment       || 0);
+    const securityDepositNum     = Number(security_deposit_amount || 0);
+    const specialSecurityNum     = Number(special_security_amount || 0);
+    const otherRetentionNum      = Number(other_retention      || 0);
+    const itTdsNum               = Number(it_tds               || 0);
+    const sgstNum                = Number(sgst                 || 0);
+    const cgstNum                = Number(cgst                 || 0);
+    const sdNum                  = Number(sd                   || 0);
+
+    const financialValues = {
+      gross_bill: grossBillNum,
+      agency_payment: agencyPaymentNum,
+      security_deposit_amount: securityDepositNum,
+      special_security_amount: specialSecurityNum,
+      other_retention: otherRetentionNum,
+      it_tds: itTdsNum,
+      sgst: sgstNum,
+      cgst: cgstNum,
+      sd: sdNum
+    };
+
+    for (const [field, val] of Object.entries(financialValues)) {
+      if (isNaN(val) || !isFinite(val) || val < 0) {
+        return res.status(400).json({
+          success: false,
+          message: `${field.replace(/_/g, ' ')} must be a valid non-negative number.`
+        });
+      }
+    }
+
+    // 5. Gross Bill consistency check: gross_bill must equal sum of breakdown fields (±0.01 tolerance)
+    const breakdownSum =
+      agencyPaymentNum + securityDepositNum + specialSecurityNum +
+      otherRetentionNum + itTdsNum + sgstNum + cgstNum + sdNum;
+
+    // Only enforce if breakdown fields are actually filled (sum > 0)
+    if (breakdownSum > 0 && Math.abs(grossBillNum - breakdownSum) >= 0.01) {
+      return res.status(400).json({
+        success: false,
+        message: `Gross Bill (${grossBillNum.toFixed(2)}) must equal the sum of all breakdown fields (${breakdownSum.toFixed(2)}). Difference: ${Math.abs(grossBillNum - breakdownSum).toFixed(2)}.`
+      });
+    }
+
+    // 6. Overbilling check: cumulative billed amount must not exceed work order value
+    const workOrderValue = Number(project.work_order_value || 0);
+    if (workOrderValue > 0 && grossBillNum > 0) {
+      const { data: existingBills, error: existingBillsErr } = await supabase
+        .from('ra_final_bills')
+        .select('gross_bill')
+        .eq('work_order_no', work_order_no);
+
+      if (existingBillsErr) throw existingBillsErr;
+
+      const totalAlreadyBilled = (existingBills || []).reduce(
+        (sum, b) => sum + Number(b.gross_bill || 0), 0
+      );
+      const totalAfterThis = totalAlreadyBilled + grossBillNum;
+
+      if (totalAfterThis > workOrderValue + 0.01) {
+        return res.status(422).json({
+          success: false,
+          message: `Overbilling rejected. Total billed (₹${totalAfterThis.toFixed(2)}) would exceed the Work Order Value (₹${workOrderValue.toFixed(2)}). Maximum allowed for this bill: ₹${Math.max(0, workOrderValue - totalAlreadyBilled).toFixed(2)}.`
+        });
+      }
+    }
+
+    // 7. Construct insert payload
+
     const insertPayload = {
       created_by: creatorMobile,
       work_order_no: work_order_no.trim(),
@@ -117,20 +186,21 @@ async function createBill(req, res) {
       payment_type: payment_type.trim(),
       bill_date,
       bill_no: bill_no.trim(),
-      gross_bill: Number(gross_bill || 0),
+      gross_bill: grossBillNum,
       earnest_money_deposit: Number(project.earnest_money_deposit || 0), // Source from projects_master
-      security_deposit_amount: Number(security_deposit_amount || 0),
-      agency_payment: Number(agency_payment || 0),
-      special_security_amount: Number(special_security_amount || 0),
-      other_retention: Number(other_retention || 0),
-      it_tds: Number(it_tds || 0),
-      sgst: Number(sgst || 0),
-      cgst: Number(cgst || 0),
-      sd: Number(sd || 0),
+      security_deposit_amount: securityDepositNum,
+      agency_payment: agencyPaymentNum,
+      special_security_amount: specialSecurityNum,
+      other_retention: otherRetentionNum,
+      it_tds: itTdsNum,
+      sgst: sgstNum,
+      cgst: cgstNum,
+      sd: sdNum,
       bill_copy_url: bill_copy_url.trim(),
       original_bill_filename: original_bill_filename || null,
       remarks: remarks?.trim() || null
     };
+
 
     const { data: createdBill, error: insertError } = await supabase
       .from('ra_final_bills')
