@@ -5,7 +5,7 @@ import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import { Button, Input, Modal } from '../components/ui';
 import authApi from '../api/authApi';
-import { exportToExcel, exportToPDF } from '../utils/exportHelpers';
+import { exportToExcel } from '../utils/exportHelpers';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const ESTIMATE_STATUS = {
@@ -412,12 +412,7 @@ const EstimateView = () => {
             >
               Excel
             </Button>
-            <Button
-              onClick={() => exportToPDF('printable-estimate-area', estimate.estimate_no)}
-              variant="danger"
-            >
-              PDF
-            </Button>
+
             {canReopen && (
               <Button
                 onClick={handleReopenEstimate}
