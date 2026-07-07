@@ -11,6 +11,7 @@ import {
   updateMaterial,
   updateMaterialStatus
 } from '../api/materialsApi';
+import { exportMaterialsToExcel } from '../utils/exportHelpers';
 
 const MaterialMaster = () => {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ const MaterialMaster = () => {
   // Core Messaging & Modal / Form States
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
 
   // Filtering & Pagination States
   const [search, setSearch] = useState('');
@@ -176,6 +178,31 @@ const MaterialMaster = () => {
     setPage(1);
   };
 
+  const handleExportExcel = async () => {
+    setExportLoading(true);
+    setErrorMsg('');
+    try {
+      const params = {
+        page: 1,
+        limit: 1000,
+        search: debouncedSearch,
+        main_head: mainHeadFilter,
+        sub_head: subHeadFilter,
+        is_active: activeFilter,
+        sortBy,
+        sortOrder
+      };
+      const res = await getMaterials(params);
+      const itemsToExport = res.data?.materials || [];
+      exportMaterialsToExcel(itemsToExport);
+    } catch (err) {
+      console.error('Failed to export materials:', err);
+      setErrorMsg('Failed to export materials. Please try again.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   // Form handlers
   const openCreateModal = () => {
     setModalMode('create');
@@ -330,6 +357,19 @@ const MaterialMaster = () => {
               size="sm"
             >
               Search
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleExportExcel}
+              disabled={exportLoading}
+              className="border border-white/10 text-slate-300 hover:text-white flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {exportLoading ? 'Exporting...' : 'Export Excel'}
             </Button>
           </form>
 

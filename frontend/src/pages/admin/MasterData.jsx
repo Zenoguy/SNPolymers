@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
 import { getProjects, createProject, updateProject, updateProjectStatus } from '../../api/projectsApi';
+import { exportProjectsToExcel } from '../../utils/exportHelpers';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ['Running', 'Closed', 'Complete Under Maintenance'];
@@ -481,6 +482,16 @@ const MasterData = () => {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
+          </button>
+          <button
+            onClick={() => exportProjectsToExcel(filtered)}
+            title="Export to Excel"
+            className="p-2.5 rounded-xl glass-input hover:border-white/20 transition-all duration-200 text-slate-400 hover:text-slate-200 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Export Excel</span>
           </button>
         </div>
 

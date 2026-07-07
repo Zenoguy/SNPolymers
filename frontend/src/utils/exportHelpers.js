@@ -55,3 +55,57 @@ export function exportToPDF(elementId, estimateNo) {
 
   html2pdf().set(options).from(element).save();
 }
+
+export function exportMaterialsToExcel(materials) {
+  if (!materials || materials.length === 0) {
+    alert('No materials to export.');
+    return;
+  }
+
+  const formattedRows = materials.map((m, index) => ({
+    "Sl. No.": index + 1,
+    "Main Head": m.Material_Main_Head || '',
+    "Sub Head": m.Material_Sub_Head || '',
+    "Material Details": m.Material_Details || '',
+    "Unit": m.M_Unit || '',
+    "Status": m.is_active ? 'Active' : 'Inactive'
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Material Master");
+
+  XLSX.writeFile(workbook, `Material_Master_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+export function exportProjectsToExcel(projects) {
+  if (!projects || projects.length === 0) {
+    alert('No projects to export.');
+    return;
+  }
+
+  const formattedRows = projects.map((p, index) => ({
+    "Sl. No.": index + 1,
+    "Work Order No.": p.work_order_no || '',
+    "Estimate No.": p.estimate_no || '',
+    "Work Order Value (INR)": p.work_order_value || 0,
+    "EMD Amount (INR)": p.earnest_money_deposit || 0,
+    "Site Details": p.site_details || '',
+    "State": p.state || '',
+    "District": p.district || '',
+    "Zone": p.zone || '',
+    "Department": p.department || '',
+    "Status": p.status || '',
+    "Latitude": p.site_latitude || '',
+    "Longitude": p.site_longitude || '',
+    "Start Date": p.project_start_date || '',
+    "End Date": p.project_end_date || ''
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Projects Master");
+
+  XLSX.writeFile(workbook, `Projects_Master_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
