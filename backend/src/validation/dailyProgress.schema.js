@@ -13,10 +13,15 @@ const createProgressReportSchema = {
     site_visit_date: z.string({ required_error: 'site_visit_date is required.' })
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'site_visit_date must be a valid date in YYYY-MM-DD format.')
       .refine(val => {
-        const inputDate = new Date(val);
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-        return inputDate <= today;
+        const [year, month, day] = val.split('-').map(Number);
+        const inputDate = new Date(year, month - 1, day);
+        
+        const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+        const formatter = new Intl.DateTimeFormat('en-CA', options);
+        const [tYear, tMonth, tDay] = formatter.format(new Date()).split('-').map(Number);
+        const todayDate = new Date(tYear, tMonth - 1, tDay);
+
+        return inputDate <= todayDate;
       }, 'site_visit_date cannot be in the future.'),
 
     work_progress_details: z.string({ required_error: 'work_progress_details is required.' })
