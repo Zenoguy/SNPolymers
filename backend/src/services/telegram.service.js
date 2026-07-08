@@ -576,6 +576,7 @@ async function notifyJeRevisionRequested(estimate, revisionLog) {
     const notApprovedRows = items ? items.filter(item => item[approveField] === 'Not Approve').length : 0;
 
     const requestedByMob = revisionLog.requested_by;
+    const { resolveDisplayNames } = require('../controllers/estimates.helpers');
     const userMap = await resolveDisplayNames([requestedByMob]);
     const requestedByName = userMap[requestedByMob] || requestedByMob || 'N/A';
 
