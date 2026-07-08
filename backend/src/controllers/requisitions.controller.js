@@ -408,11 +408,11 @@ async function actOnRequisition(req, res) {
       return res.status(404).json({ success: false, message: 'Requisition not found.' });
     }
 
-    // 2. Status guard: must be Pending
-    if (reqRecord.requisition_status !== 'Pending') {
+    // 2. Status guard: must be Pending or Hold
+    if (reqRecord.requisition_status !== 'Pending' && reqRecord.requisition_status !== 'Hold') {
       return res.status(403).json({
         success: false,
-        message: `Action can only be taken on Pending requisitions. Current status: ${reqRecord.requisition_status}`
+        message: `Action can only be taken on Pending or Hold requisitions. Current status: ${reqRecord.requisition_status}`
       });
     }
 
@@ -447,7 +447,7 @@ async function actOnRequisition(req, res) {
       .from('requisitions')
       .update(updatePayload)
       .eq('requisition_id', id)
-      .eq('requisition_status', 'Pending')
+      .in('requisition_status', ['Pending', 'Hold'])
       .select()
       .maybeSingle();
 

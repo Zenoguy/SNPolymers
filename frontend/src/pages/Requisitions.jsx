@@ -1361,6 +1361,7 @@ const Requisitions = () => {
                   <TableBody>
                     {requisitions.filter(r => r.work_order_no === activeWO.work_order_no).map((req) => {
                       const isPending = req.requisition_status === 'Pending';
+                      const isHold = req.requisition_status === 'Hold';
                       const isOwner = req.requester_user_id === user?.mobile_number;
                       const isAdmin = user?.role === 'admin';
                       const canCancel = isPending && (isOwner || isAdmin);
@@ -1390,7 +1391,7 @@ const Requisitions = () => {
                               >
                                 View Details
                               </Button>
-                              {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                              {(isPending || isHold) && ['zo', 'ho', 'admin'].includes(user?.role) && (
                                 <Button
                                   variant="glass"
                                   size="xs"
@@ -1656,6 +1657,7 @@ const Requisitions = () => {
                     <TableBody>
                       {filteredRequisitions.map((req) => {
                         const isPending = req.requisition_status === 'Pending';
+                        const isHold = req.requisition_status === 'Hold';
                         const isOwner = req.requester_user_id === user?.mobile_number;
                         const isAdmin = user?.role === 'admin';
                         const canCancel = isPending && (isOwner || isAdmin);
@@ -1690,8 +1692,8 @@ const Requisitions = () => {
                                   View Details
                                 </Button>
 
-                                {/* Take Action Button (ZO/HO/Admin for Pending rows only) */}
-                                {isPending && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                                {/* Take Action Button (ZO/HO/Admin for Pending/Hold rows) */}
+                                {(isPending || isHold) && ['zo', 'ho', 'admin'].includes(user?.role) && (
                                   <Button
                                     variant="glass"
                                     size="xs"
