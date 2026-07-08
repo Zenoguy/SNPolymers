@@ -1089,7 +1089,7 @@ const Requisitions = () => {
   const { data: estimatesData } = useQuery({
     queryKey: ['estimates'],
     queryFn: async () => {
-      const res = await getEstimates();
+      const res = await getEstimates({ status: 'Final Approved', limit: 1000 });
       return res.data?.estimates ?? [];
     }
   });

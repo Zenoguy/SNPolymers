@@ -110,14 +110,10 @@ async function getEstimates(req, res) {
 
     if (effectiveRole === 'je') {
       dbQuery = dbQuery.eq('created_by', req.user.mobile_number);
-    } else if (effectiveRole === 'zo') {
-      dbQuery = dbQuery.in('estimate_status', ZO_VISIBLE_STATUSES);
-    } else if (effectiveRole === 'ho') {
-      if (query.view === 'history') {
-        dbQuery = dbQuery.in('estimate_status', HO_HISTORY_STATUSES);
-      } else {
-        dbQuery = dbQuery.in('estimate_status', HO_ACTIVE_STATUSES);
-      }
+    }
+
+    if (query.status) {
+      dbQuery = dbQuery.eq('estimate_status', query.status);
     }
 
     const { data: estimates, count, error } = await dbQuery
