@@ -530,6 +530,86 @@ async function notifyZoFundRequestApproved(originalRequest, updatedRequest) {
   }
 }
 
+async function notifyJeRevisionRequested(estimate, revisionLog) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  try {
+    const { data: jeUser, error: jeError } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('mobile_number', estimate.created_by)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (jeError) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve JE user: ${jeError.message}`);
+      return;
+    }
+
+    if (!jeUser || !jeUser.telegram_chat_id || jeUser.telegram_chat_id.trim() === '') {
+      console.warn(
+        `[TELEGRAM ALERTS] JE user ${estimate.created_by} has no active Telegram chat ID configured.`
+      );
+      return;
+    }
+
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.warn(`[TELEGRAM ALERTS] TELEGRAM_BOT_TOKEN is not set.`);
+      return;
+    }
+
+    // Fetch line items details
+    const { data: items, error: itemsError } = await supabase
+      .from('project_cost_estimate_items')
+      .select('zo_office_approve, ho_office_approve')
+      .eq('estimate_id', estimate.estimate_id);
+
+    if (itemsError) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve line items: ${itemsError.message}`);
+      return;
+    }
+
+    const totalRows = items ? items.length : 0;
+    const stage = revisionLog.stage;
+    const approveField = stage === 'ZO' ? 'zo_office_approve' : 'ho_office_approve';
+    const notApprovedRows = items ? items.filter(item => item[approveField] === 'Not Approve').length : 0;
+
+    const requestedByMob = revisionLog.requested_by;
+    const userMap = await resolveDisplayNames([requestedByMob]);
+    const requestedByName = userMap[requestedByMob] || requestedByMob || 'N/A';
+
+    const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
+    const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
+    const deadlineFormatted = new Date(revisionLog.revision_deadline).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata'
+    });
+
+    const messageText =
+      `⚠️ <b>Estimate Revision Requested (${stage})</b>\n\n` +
+      `<b>Estimate No:</b> ${estimateNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Revision Cycle:</b> ${revisionLog.revision_cycle}\n` +
+      `<b>Requested By:</b> ${escapeHtml(requestedByName)}\n` +
+      `<b>Unapproved Rows:</b> ${notApprovedRows} out of ${totalRows} rows not approved\n` +
+      `<b>Deadline:</b> ${deadlineFormatted} (IST)\n\n` +
+      `Please review the remarks and resubmit the revised estimate on the IDBP dashboard.`;
+
+    const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(jeUser.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (!data.ok) {
+      console.warn(`[TELEGRAM ALERTS] Failed to send message to ${jeUser.display_name} (${jeUser.telegram_chat_id}): ${data.description}`);
+    } else {
+      console.log(`[TELEGRAM ALERTS] Revision request notification sent to JE ${jeUser.display_name}`);
+    }
+  } catch (error) {
+    console.error(`[TELEGRAM ALERTS] notifyJeRevisionRequested failed: ${error.message}`);
+  }
+}
+
 module.exports = {
   sendOtp,
   startPolling,
@@ -537,7 +617,8 @@ module.exports = {
   registerWebhook,
   notifyZoEstimateSubmitted,
   notifyHoEstimateApproved,
-  notifyZoFundRequestApproved
+  notifyZoFundRequestApproved,
+  notifyJeRevisionRequested
 };
 
 

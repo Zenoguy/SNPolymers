@@ -520,6 +520,12 @@ async function requestRevision(req, res) {
 
     if (updateError) throw updateError;
 
+    // Trigger Telegram notification to JE asynchronously
+    const { notifyJeRevisionRequested } = require('../services/telegram.service');
+    notifyJeRevisionRequested(updatedEstimate, logEntry).catch(err => {
+      console.error(`Telegram notification failed: ${err.message}`);
+    });
+
     return res.status(200).json({
       success: true,
       estimate: updatedEstimate,
@@ -719,6 +725,12 @@ async function reopenEstimate(req, res) {
       .single();
 
     if (updateError) throw updateError;
+
+    // Trigger Telegram notification to JE asynchronously
+    const { notifyJeRevisionRequested } = require('../services/telegram.service');
+    notifyJeRevisionRequested(updatedEstimate, logEntry).catch(err => {
+      console.error(`Telegram notification failed: ${err.message}`);
+    });
 
     return res.status(200).json({
       success: true,

@@ -110,6 +110,26 @@ describe('Milestone 8 — Notifications & Audit logs API', () => {
       expect(typeof telegramService.startPolling).toBe('function');
       expect(typeof telegramService.notifyZoEstimateSubmitted).toBe('function');
       expect(typeof telegramService.notifyHoEstimateApproved).toBe('function');
+      expect(typeof telegramService.notifyJeRevisionRequested).toBe('function');
+    });
+
+    test('Test 1b: Runs notifyJeRevisionRequested gracefully without throwing in test environment', async () => {
+      const mockEstimate = {
+        estimate_id: '00000000-0000-0000-0000-000000000000',
+        created_by: testJeMobile,
+        estimate_no: 'EST-TEST',
+        work_order_no: testWorkOrder,
+        projects_master: { site_details: 'Test details' }
+      };
+      const mockRevisionLog = {
+        stage: 'ZO',
+        revision_cycle: 1,
+        requested_by: testZoMobile,
+        revision_deadline: new Date().toISOString()
+      };
+      
+      // Should return immediately or complete without error in test environment
+      await expect(telegramService.notifyJeRevisionRequested(mockEstimate, mockRevisionLog)).resolves.not.toThrow();
     });
 
     test('Test 2a: Gracefully submits estimate when TELEGRAM_BOT_TOKEN is missing', async () => {
