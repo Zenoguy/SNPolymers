@@ -110,6 +110,87 @@ describe('Milestone 8 — Notifications & Audit logs API', () => {
       expect(typeof telegramService.startPolling).toBe('function');
       expect(typeof telegramService.notifyZoEstimateSubmitted).toBe('function');
       expect(typeof telegramService.notifyHoEstimateApproved).toBe('function');
+      expect(typeof telegramService.notifyJeRevisionRequested).toBe('function');
+    });
+
+    test('Test 1b: Runs notifyJeRevisionRequested gracefully without throwing in test environment', async () => {
+      const mockEstimate = {
+        estimate_id: '00000000-0000-0000-0000-000000000000',
+        created_by: testJeMobile,
+        estimate_no: 'EST-TEST',
+        work_order_no: testWorkOrder,
+        projects_master: { site_details: 'Test details' }
+      };
+      const mockRevisionLog = {
+        stage: 'ZO',
+        revision_cycle: 1,
+        requested_by: testZoMobile,
+        revision_deadline: new Date().toISOString()
+      };
+      
+      // Should return immediately or complete without error in test environment
+      await expect(telegramService.notifyJeRevisionRequested(mockEstimate, mockRevisionLog)).resolves.not.toThrow();
+    });
+
+    test('Test 1c: notifyJeRevisionRequested correctly formats message and hits Telegram API when token and chat_id are present', async () => {
+      // Temporarily bypass the NODE_ENV === 'test' guard
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+
+      // Temporarily set a dummy TELEGRAM_BOT_TOKEN
+      const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+      process.env.TELEGRAM_BOT_TOKEN = '123456:mock_token';
+
+      // Mock global fetch only for Telegram requests
+      const originalFetch = global.fetch;
+      let fetchedUrl = null;
+      global.fetch = async (url, options) => {
+        if (url.includes('api.telegram.org')) {
+          fetchedUrl = url;
+          return {
+            json: async () => ({ ok: true, result: { message_id: 12345 } })
+          };
+        }
+        return originalFetch(url, options);
+      };
+
+      // Set telegram_chat_id in DB for the test JE user
+      await supabase
+        .from('authorised_users')
+        .update({ telegram_chat_id: '987654321' })
+        .eq('mobile_number', testJeMobile);
+
+      try {
+        const mockEstimate = {
+          estimate_id: testEstimateId,
+          created_by: testJeMobile,
+          estimate_no: 'EST-M8-MOCK',
+          work_order_no: testWorkOrder,
+          projects_master: { site_details: 'Test details at site' }
+        };
+        const mockRevisionLog = {
+          stage: 'ZO',
+          revision_cycle: 1,
+          requested_by: testZoMobile,
+          revision_deadline: new Date().toISOString()
+        };
+
+        await telegramService.notifyJeRevisionRequested(mockEstimate, mockRevisionLog);
+
+        expect(fetchedUrl).not.toBeNull();
+        expect(fetchedUrl).toContain('987654321'); // Check chat_id
+        expect(fetchedUrl).toContain('EST-M8-MOCK'); // Check estimate no
+        expect(fetchedUrl).toContain('Unapproved'); // Check unapproved rows text
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+        process.env.TELEGRAM_BOT_TOKEN = originalToken;
+        global.fetch = originalFetch;
+        // Revert DB change
+        await supabase
+          .from('authorised_users')
+          .update({ telegram_chat_id: null })
+          .eq('mobile_number', testJeMobile);
+      }
     });
 
     test('Test 2a: Gracefully submits estimate when TELEGRAM_BOT_TOKEN is missing', async () => {
