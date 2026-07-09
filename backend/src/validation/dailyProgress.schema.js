@@ -51,7 +51,8 @@ const addRemarksSchema = {
   params: z.object({ id: uuidSchema }),
   body: z.object({
     remarks_approved_authority: z.string({ required_error: 'remarks_approved_authority is required.' })
-      .trim().min(1, 'remarks_approved_authority cannot be blank.')
+      .trim().min(1, 'remarks_approved_authority cannot be blank.'),
+    action: z.enum(['Approve', 'Reject']).optional().nullable()
   })
 };
 

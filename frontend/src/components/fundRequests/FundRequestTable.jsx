@@ -28,8 +28,9 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
       <TableBody>
         {requests.map((req) => {
           const isPending = req.request_status === 'Pending';
+          const isHold = req.request_status === 'Hold';
           const canCancel = isPending && isZoOrAdmin;
-          const canAct = isPending && isHoOrAdmin;
+          const canAct = (isPending || isHold) && isHoOrAdmin;
 
           return (
             <TableRow 

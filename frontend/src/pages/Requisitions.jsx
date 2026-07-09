@@ -490,7 +490,12 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
     if (!projectMetadata || projectMetadata.estimateAmount === null) return null;
     const committed = requisitions
       .filter(r => r.work_order_no === selectedWO && r.requisition_status !== 'Cancelled')
-      .reduce((sum, r) => sum + Number(r.requisition_amount), 0);
+      .reduce((sum, r) => {
+        if (r.requisition_status === 'Approved') {
+          return sum + Number(r.approved_amount !== null && r.approved_amount !== undefined ? r.approved_amount : r.requisition_amount);
+        }
+        return sum + Number(r.requisition_amount);
+      }, 0);
     return projectMetadata.estimateAmount - committed;
   };
 
@@ -512,6 +517,23 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
     if (!file) return;
 
     setError('');
+
+    // Pre-upload validation: require preceding fields
+    if (!selectedWO) {
+      setError('Please select a Work Order first.');
+      e.target.value = null;
+      return;
+    }
+    if (!requisitionNo.trim()) {
+      setError('Please enter a Requisition Number first.');
+      e.target.value = null;
+      return;
+    }
+    if (!materialHead) {
+      setError('Please select a Material Head first.');
+      e.target.value = null;
+      return;
+    }
 
     // Client-side validations
     if (file.type !== 'application/pdf') {
@@ -571,6 +593,28 @@ const RequisitionFormModal = ({ projects, estimates, mainHeads, onClose, onSave,
     if (!file) return;
 
     setError('');
+
+    // Pre-upload validation: require preceding fields
+    if (!selectedWO) {
+      setError('Please select a Work Order first.');
+      e.target.value = null;
+      return;
+    }
+    if (!requisitionNo.trim()) {
+      setError('Please enter a Requisition Number first.');
+      e.target.value = null;
+      return;
+    }
+    if (!materialHead) {
+      setError('Please select a Material Head first.');
+      e.target.value = null;
+      return;
+    }
+    if (!requisitionPdfUrl) {
+      setError('Please upload the Requisition PDF first.');
+      e.target.value = null;
+      return;
+    }
 
     // Client-side validations
     if (file.type !== 'application/pdf') {
@@ -1374,7 +1418,10 @@ const Requisitions = () => {
                             {req.material_main_head}
                           </TableCell>
                           <TableCell className="font-mono font-bold text-amber-500">
-                            {formatCurrency(req.requisition_amount)}
+                            {req.requisition_status === 'Approved'
+                              ? formatCurrency(req.approved_amount ?? req.requisition_amount)
+                              : formatCurrency(req.requisition_amount)
+                            }
                           </TableCell>
                           <TableCell>
                             <StatusBadge status={req.requisition_status} />
@@ -1673,7 +1720,10 @@ const Requisitions = () => {
                               {req.material_main_head}
                             </TableCell>
                             <TableCell className="font-mono font-bold text-amber-500">
-                              {formatCurrency(req.requisition_amount)}
+                              {req.requisition_status === 'Approved'
+                                ? formatCurrency(req.approved_amount ?? req.requisition_amount)
+                                : formatCurrency(req.requisition_amount)
+                              }
                             </TableCell>
                             <TableCell>
                               <StatusBadge status={req.requisition_status} />

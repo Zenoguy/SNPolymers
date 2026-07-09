@@ -28,6 +28,8 @@ const RequestDetailPanel = ({
 }) => {
   const isCreate = !request;
   const isPending = request?.request_status === 'Pending';
+  const isHold = request?.request_status === 'Hold';
+  const isPendingOrHold = isPending || isHold;
   const isHoOrAdmin = user?.role === 'ho' || user?.role === 'admin';
   const isZoOrAdmin = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
 
@@ -80,12 +82,12 @@ const RequestDetailPanel = ({
 
   // Set default HO approved amount matching requested amount
   useEffect(() => {
-    if (request && isPending) {
+    if (request && isPendingOrHold) {
       Promise.resolve().then(() => {
         setHoAmount(request.zo_fr_amount);
       });
     }
-  }, [request, isPending]);
+  }, [request, isPendingOrHold]);
 
   // Clear HO inputs when action changes to Hold (per process flow specs)
   useEffect(() => {
@@ -345,7 +347,7 @@ const RequestDetailPanel = ({
             <div className="glass-panel p-5 rounded-3xl border border-white/5">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-4">Approval Information</span>
               
-              {isPending && isHoOrAdmin ? (
+              {isPendingOrHold && isHoOrAdmin ? (
                 <form onSubmit={handleHoActionSubmit} className="space-y-4">
                   <div>
                     <label className="block text-[8px] font-bold uppercase tracking-widest text-slate-500 mb-1">Action Type</label>

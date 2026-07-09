@@ -37,6 +37,38 @@ const DailyProgress = () => {
   const [physicalWorkProgress, setPhysicalWorkProgress] = useState('');
   const [remarksAfterSiteVisit, setRemarksAfterSiteVisit] = useState('');
 
+  const isSelectedDateBackdated = (() => {
+    if (!siteVisitDate) return false;
+    const [year, month, day] = siteVisitDate.split('-').map(Number);
+    const inputDate = new Date(year, month - 1, day);
+    
+    const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const formatter = new Intl.DateTimeFormat('en-CA', options);
+    const [tYear, tMonth, tDay] = formatter.format(new Date()).split('-').map(Number);
+    const todayDate = new Date(tYear, tMonth - 1, tDay);
+    return inputDate < todayDate;
+  })();
+
+  const handleDateChange = (dateVal) => {
+    setSiteVisitDate(dateVal);
+    if (dateVal) {
+      const [year, month, day] = dateVal.split('-').map(Number);
+      const inputDate = new Date(year, month - 1, day);
+      
+      const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+      const formatter = new Intl.DateTimeFormat('en-CA', options);
+      const [tYear, tMonth, tDay] = formatter.format(new Date()).split('-').map(Number);
+      const todayDate = new Date(tYear, tMonth - 1, tDay);
+
+      if (inputDate < todayDate) {
+        const reason = window.prompt("⚠️ This is a back-dated entry. Please enter the reason for back-dating:");
+        if (reason) {
+          setRemarksAfterSiteVisit(reason.trim());
+        }
+      }
+    }
+  };
+
   // Authority Remarks editing states
   const [authorityRemarks, setAuthorityRemarks] = useState('');
   const [savingRemarks, setSavingRemarks] = useState(false);
@@ -159,15 +191,41 @@ const DailyProgress = () => {
     if (!file) return;
 
     setUploadError('');
+
+    // Pre-upload validation: require all other fields first
+    if (!siteVisitDate) {
+      setUploadError('Please select a Site Visit Date first.');
+      e.target.value = '';
+      return;
+    }
+    if (!workProgressDetails || !workProgressDetails.trim()) {
+      setUploadError('Please write the Work Progress Details first.');
+      e.target.value = '';
+      return;
+    }
+    if (!physicalWorkProgress) {
+      setUploadError('Please enter the Physical Progress percentage first.');
+      e.target.value = '';
+      return;
+    }
+
+    if (isSelectedDateBackdated && (!remarksAfterSiteVisit || !remarksAfterSiteVisit.trim())) {
+      setUploadError('Remarks explaining the reason are required for back-dated entries.');
+      e.target.value = '';
+      return;
+    }
+
     const allowedMime = ['image/jpeg', 'image/png'];
     if (!allowedMime.includes(file.type)) {
       setUploadError('Only JPEG, JPG, PNG files are accepted.');
+      e.target.value = '';
       return;
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       setUploadError('File size must not exceed 10MB.');
+      e.target.value = '';
       return;
     }
 
@@ -254,7 +312,7 @@ const DailyProgress = () => {
   };
 
   // Save authority remarks
-  const handleSaveRemarks = async () => {
+  const handleSaveRemarks = async (action = null) => {
     if (!activeReport) return;
     if (!authorityRemarks.trim()) {
       setRemarksFormError('Remarks cannot be empty.');
@@ -265,11 +323,12 @@ const DailyProgress = () => {
     setRemarksFormError('');
     try {
       const res = await addAuthorityRemarks(activeReport.report_id, {
-        remarks_approved_authority: authorityRemarks.trim()
+        remarks_approved_authority: authorityRemarks.trim(),
+        action: action
       });
 
       if (res.data?.success) {
-        setSuccess('Authority remarks saved successfully.');
+        setSuccess(action ? `Report ${action}d successfully.` : 'Authority remarks saved successfully.');
         setActiveReport(null);
         queryClient.invalidateQueries({ queryKey: ['progressReports'] });
       }
@@ -352,7 +411,7 @@ const DailyProgress = () => {
     const liveCount = projects.filter(p => p.status === 'Running').length;
     const todayString = getTodayDateString();
     const logsToday = allReports.filter(r => r.site_visit_date === todayString).length;
-    const pendingReview = allReports.filter(r => !r.remarks_approved_authority).length;
+    const pendingReview = allReports.filter(r => r.approval_status === 'Pending').length;
 
     // Calculate Average Progress across active projects
     const activeProjects = projects.filter(p => p.status === 'Running');
@@ -378,7 +437,7 @@ const DailyProgress = () => {
     });
 
     // Review Queue (Action Required)
-    const reviewQueue = allReports.filter(r => !r.remarks_approved_authority).slice(0, 6);
+    const reviewQueue = allReports.filter(r => r.approval_status === 'Pending').slice(0, 6);
 
     return {
       liveCount,
@@ -532,9 +591,27 @@ const DailyProgress = () => {
                     </TableCell>
                     <TableCell className="pr-4 truncate max-w-[180px]" title={report.remarks_approved_authority || ''} size="sm">
                       {report.remarks_approved_authority ? (
-                        <span className="text-slate-300">{report.remarks_approved_authority}</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-slate-300">{report.remarks_approved_authority}</span>
+                          <span className={`text-[8px] font-bold uppercase ${
+                            report.approval_status === 'Approved' ? 'text-emerald-400' :
+                            report.approval_status === 'Rejected' ? 'text-red-400' : 'text-amber-500'
+                          }`}>
+                            [{report.approval_status === 'Rejected' ? 'REJECTED DUE TO BACKDATE' : (report.approval_status || 'Approved')}]
+                          </span>
+                        </div>
                       ) : (
-                        <span className="text-slate-600 italic">Pending review</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[8px] font-bold uppercase ${
+                            report.approval_status === 'Approved' ? 'text-emerald-400' :
+                            report.approval_status === 'Rejected' ? 'text-red-400' : 'text-amber-500'
+                          }`}>
+                            [{report.approval_status === 'Rejected' ? 'REJECTED DUE TO BACKDATE' : (report.approval_status || 'Approved')}]
+                          </span>
+                          {report.approval_status === 'Pending' && (
+                            <span className="text-slate-600 italic">Pending review</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>
@@ -552,7 +629,7 @@ const DailyProgress = () => {
                         required
                         value={siteVisitDate}
                         max={getTodayDateString()}
-                        onChange={(e) => setSiteVisitDate(e.target.value)}
+                        onChange={(e) => handleDateChange(e.target.value)}
                         size="sm"
                       />
                     </TableCell>
@@ -623,7 +700,7 @@ const DailyProgress = () => {
                       <TextArea
                         rows={2}
                         value={remarksAfterSiteVisit}
-                        placeholder="Observations remarks..."
+                        placeholder={isSelectedDateBackdated ? "Reason for back-dating (REQUIRED)..." : "Observations remarks..."}
                         onChange={(e) => setRemarksAfterSiteVisit(e.target.value)}
                         size="sm"
                       />
@@ -1216,7 +1293,16 @@ const DailyProgress = () => {
 
                 {/* Authority Remarks block */}
                 <div className="border border-white/5 p-4 rounded-2xl bg-white/[0.01] space-y-3">
-                  <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider block border-b border-white/5 pb-1">ZO/HO review remarks</span>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-1">
+                    <span className="text-[9px] uppercase font-extrabold text-slate-500 tracking-wider block">ZO/HO review remarks</span>
+                    <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                      activeReport.approval_status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                      activeReport.approval_status === 'Rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                      'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {activeReport.approval_status === 'Rejected' ? 'REJECTED DUE TO BACKDATE' : (activeReport.approval_status || 'Approved')}
+                    </span>
+                  </div>
                   {isAuthority ? (
                     <div className="space-y-3">
                       <TextArea
@@ -1228,16 +1314,39 @@ const DailyProgress = () => {
                       />
                       {remarksFormError && <p className="text-[10px] text-red-400 font-semibold">{remarksFormError}</p>}
                       
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleSaveRemarks}
-                          disabled={!authorityRemarks.trim()}
-                          loading={savingRemarks}
-                          size="sm"
-                        >
-                          Save Remarks
-                        </Button>
-                      </div>
+                      {activeReport.approval_status === 'Pending' ? (
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="danger"
+                            onClick={() => handleSaveRemarks('Reject')}
+                            disabled={!authorityRemarks.trim()}
+                            loading={savingRemarks}
+                            size="sm"
+                          >
+                            Reject Report
+                          </Button>
+                          <Button
+                            variant="success"
+                            onClick={() => handleSaveRemarks('Approve')}
+                            disabled={!authorityRemarks.trim()}
+                            loading={savingRemarks}
+                            size="sm"
+                          >
+                            Approve Report
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => handleSaveRemarks(null)}
+                            disabled={!authorityRemarks.trim()}
+                            loading={savingRemarks}
+                            size="sm"
+                          >
+                            Save Remarks
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     activeReport.remarks_approved_authority ? (

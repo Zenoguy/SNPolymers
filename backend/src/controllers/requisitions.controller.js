@@ -157,10 +157,15 @@ async function createRequisition(req, res) {
       if (rpcError.code === 'BUD01' || rpcError.message?.includes('exceeds the remaining estimate balance')) {
         const { data: committedRes } = await supabase
           .from('requisitions')
-          .select('requisition_amount')
+          .select('requisition_amount, requisition_status, approved_amount')
           .eq('work_order_no', work_order_no.trim())
           .neq('requisition_status', 'Cancelled');
-        const committedAmt = (committedRes || []).reduce((sum, r) => sum + Number(r.requisition_amount), 0);
+        const committedAmt = (committedRes || []).reduce((sum, r) => {
+          if (r.requisition_status === 'Approved') {
+            return sum + Number(r.approved_amount !== null && r.approved_amount !== undefined ? r.approved_amount : r.requisition_amount);
+          }
+          return sum + Number(r.requisition_amount);
+        }, 0);
         const remainingAmt = estimateAmount - committedAmt;
         
         return res.status(422).json({
@@ -180,11 +185,21 @@ async function createRequisition(req, res) {
     // 6. Calculate remaining amount for response
     const { data: committedRes } = await supabase
       .from('requisitions')
-      .select('requisition_amount')
+      .select('requisition_amount, requisition_status, approved_amount')
       .eq('work_order_no', work_order_no.trim())
       .neq('requisition_status', 'Cancelled');
-    const committedAmt = (committedRes || []).reduce((sum, r) => sum + Number(r.requisition_amount), 0);
+    const committedAmt = (committedRes || []).reduce((sum, r) => {
+      if (r.requisition_status === 'Approved') {
+        return sum + Number(r.approved_amount !== null && r.approved_amount !== undefined ? r.approved_amount : r.requisition_amount);
+      }
+      return sum + Number(r.requisition_amount);
+    }, 0);
     const resRemaining = estimateAmount !== null ? estimateAmount - committedAmt : null;
+
+    const { notifyZoRequisitionSubmitted } = require('../services/telegram.service');
+    notifyZoRequisitionSubmitted(newReq).catch(err => {
+      console.error(`[REQUISITION] Telegram notification failed: ${err.message}`);
+    });
 
     return res.status(201).json({
       success: true,
@@ -261,10 +276,15 @@ async function getRequisitions(req, res) {
         if (req.user.role === 'je' && r.estimate_amount !== null) {
           const { data: comm } = await supabase
             .from('requisitions')
-            .select('requisition_amount')
+            .select('requisition_amount, requisition_status, approved_amount')
             .eq('work_order_no', r.work_order_no)
             .neq('requisition_status', 'Cancelled');
-          const commAmt = (comm || []).reduce((sum, item) => sum + Number(item.requisition_amount), 0);
+          const commAmt = (comm || []).reduce((sum, item) => {
+            if (item.requisition_status === 'Approved') {
+              return sum + Number(item.approved_amount !== null && item.approved_amount !== undefined ? item.approved_amount : item.requisition_amount);
+            }
+            return sum + Number(item.requisition_amount);
+          }, 0);
           remainingEstimateAmount = Number(r.estimate_amount) - commAmt;
         }
 
@@ -355,10 +375,15 @@ async function getRequisitionById(req, res) {
     if (requisition.estimate_amount !== null) {
       const { data: comm } = await supabase
         .from('requisitions')
-        .select('requisition_amount')
+        .select('requisition_amount, requisition_status, approved_amount')
         .eq('work_order_no', requisition.work_order_no)
         .neq('requisition_status', 'Cancelled');
-      const commAmt = (comm || []).reduce((sum, item) => sum + Number(item.requisition_amount), 0);
+      const commAmt = (comm || []).reduce((sum, item) => {
+        if (item.requisition_status === 'Approved') {
+          return sum + Number(item.approved_amount !== null && item.approved_amount !== undefined ? item.approved_amount : item.requisition_amount);
+        }
+        return sum + Number(item.requisition_amount);
+      }, 0);
       remainingEstimateAmount = Number(requisition.estimate_amount) - commAmt;
     }
 
@@ -458,6 +483,11 @@ async function actOnRequisition(req, res) {
         message: 'Conflict: The requisition status was already changed by another action.'
       });
     }
+
+    const { notifyJeRequisitionActed } = require('../services/telegram.service');
+    notifyJeRequisitionActed(reqRecord, updated).catch(err => {
+      console.error(`[REQUISITION] Telegram notification failed: ${err.message}`);
+    });
 
     return res.status(200).json({
       success: true,

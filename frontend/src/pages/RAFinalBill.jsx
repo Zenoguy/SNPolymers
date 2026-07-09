@@ -309,15 +309,39 @@ const RAFinalBill = () => {
 
     setUploadError('');
 
+    // Pre-upload validation: require preceding required fields
+    if (!formState.work_order_no) {
+      setUploadError('Please select a Work Order first.');
+      e.target.value = null;
+      return;
+    }
+    if (!formState.payment_type) {
+      setUploadError('Please select the Type of Payment first.');
+      e.target.value = null;
+      return;
+    }
+    if (!formState.bill_date) {
+      setUploadError('Please select the Bill Date first.');
+      e.target.value = null;
+      return;
+    }
+    if (!formState.bill_no || !formState.bill_no.trim()) {
+      setUploadError('Please enter the Bill No first.');
+      e.target.value = null;
+      return;
+    }
+
     // Client-side validations
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
       setUploadError('Only PDF, JPG, JPEG, or PNG files are accepted.');
+      e.target.value = null;
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       setUploadError('File size must not exceed 5MB.');
+      e.target.value = null;
       return;
     }
 

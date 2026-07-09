@@ -77,6 +77,11 @@ async function createFundRequest(req, res) {
       throw insertError;
     }
 
+    const { notifyHoFundRequestSubmitted } = require('../services/telegram.service');
+    notifyHoFundRequestSubmitted(newFr).catch(err => {
+      console.error(`[FUND REQUEST] Telegram notification failed: ${err.message}`);
+    });
+
     return res.status(201).json({
       success: true,
       fundRequest: newFr,
@@ -245,10 +250,10 @@ async function actOnFundRequest(req, res) {
     if (frError) throw frError;
     if (!fr) return res.status(404).json({ success: false, message: 'Fund request not found.' });
 
-    if (fr.request_status !== 'Pending') {
+    if (fr.request_status !== 'Pending' && fr.request_status !== 'Hold') {
       return res.status(403).json({
         success: false,
-        message: `Action can only be taken on Pending requests. Current status: ${fr.request_status}`
+        message: `Action can only be taken on Pending or Hold requests. Current status: ${fr.request_status}`
       });
     }
 
@@ -293,7 +298,7 @@ async function actOnFundRequest(req, res) {
       .from('fund_requests')
       .update(updatePayload)
       .eq('fund_request_id', id)
-      .eq('request_status', 'Pending') // optimistic lock
+      .in('request_status', ['Pending', 'Hold']) // optimistic lock
       .select()
       .maybeSingle();
 
@@ -308,6 +313,11 @@ async function actOnFundRequest(req, res) {
     if (action === 'Approve') {
       const { notifyZoFundRequestApproved } = require('../services/telegram.service');
       notifyZoFundRequestApproved(fr, updated).catch(err => {
+        console.error(`[FUND REQUEST] Telegram notification failed: ${err.message}`);
+      });
+    } else if (action === 'Hold') {
+      const { notifyZoFundRequestHeld } = require('../services/telegram.service');
+      notifyZoFundRequestHeld(fr, updated).catch(err => {
         console.error(`[FUND REQUEST] Telegram notification failed: ${err.message}`);
       });
     }

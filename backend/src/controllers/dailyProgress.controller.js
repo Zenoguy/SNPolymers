@@ -66,7 +66,26 @@ async function createProgressReport(req, res) {
       });
     }
 
-    // 2. Build insert payload (geo-fields frozen from projects_master snapshot)
+    // 2. Determine if it is a back-dated submission
+    const [year, month, day] = site_visit_date.split('-').map(Number);
+    const inputDate = new Date(year, month - 1, day);
+    
+    const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const formatter = new Intl.DateTimeFormat('en-CA', options);
+    const [tYear, tMonth, tDay] = formatter.format(new Date()).split('-').map(Number);
+    const todayDate = new Date(tYear, tMonth - 1, tDay);
+
+    const isBackDate = inputDate < todayDate;
+    if (isBackDate) {
+      if (!remarks_after_site_visit || !remarks_after_site_visit.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Remarks are required for back-dated daily progress reports to explain the reason.'
+        });
+      }
+    }
+
+    // 3. Build insert payload (geo-fields frozen from projects_master snapshot)
     const insertPayload = {
       created_by: req.user.mobile_number,
       work_order_no: work_order_no.trim(),
@@ -80,7 +99,8 @@ async function createProgressReport(req, res) {
       physical_work_progress: Number(physical_work_progress), // already validated/rounded by Zod
       daily_site_photo_url: daily_site_photo_url.trim(),
       original_photo_filename: original_photo_filename?.trim() || null,
-      remarks_after_site_visit: remarks_after_site_visit?.trim() || null
+      remarks_after_site_visit: remarks_after_site_visit?.trim() || null,
+      approval_status: isBackDate ? 'Pending' : 'Approved'
     };
 
     // 3. Perform insert and handle unique constraint violation
@@ -94,16 +114,25 @@ async function createProgressReport(req, res) {
       if (insertErr.code === '23505') {
         return res.status(409).json({
           success: false,
-          message: 'A daily progress report has already been submitted for this work order on the selected date.'
+          message: 'You have already submitted a daily progress report for this work order on the selected date.'
         });
       }
       throw insertErr;
     }
 
+    if (isBackDate) {
+      const { notifyZoAndHoBackdatedProgressSubmitted } = require('../services/telegram.service');
+      notifyZoAndHoBackdatedProgressSubmitted(newReport).catch(err => {
+        console.error(`[DAILY PROGRESS] Telegram notification failed: ${err.message}`);
+      });
+    }
+
     return res.status(201).json({
       success: true,
       report: newReport,
-      message: 'Daily progress report created successfully.'
+      message: isBackDate
+        ? 'Daily progress report created successfully (marked Pending for approval).'
+        : 'Daily progress report created successfully.'
     });
 
   } catch (error) {
@@ -277,13 +306,17 @@ async function addAuthorityRemarks(req, res) {
   if (!validate(req, res, addRemarksSchema)) return;
 
   const { id } = req.params;
-  const { remarks_approved_authority } = req.body;
+  const { remarks_approved_authority, action } = req.body;
 
   try {
+    if (action && !['Approve', 'Reject'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Invalid action. Must be Approve or Reject.' });
+    }
+
     // 1. Fetch report details
     const { data: report, error: fetchError } = await supabase
       .from('daily_progress_reports')
-      .select('report_id, work_order_no')
+      .select('report_id, work_order_no, site_visit_date, created_by')
       .eq('report_id', id)
       .maybeSingle();
 
@@ -316,6 +349,12 @@ async function addAuthorityRemarks(req, res) {
       approval_date: new Date().toISOString()
     };
 
+    if (action === 'Approve') {
+      updatePayload.approval_status = 'Approved';
+    } else if (action === 'Reject') {
+      updatePayload.approval_status = 'Rejected';
+    }
+
     // 4. Perform update
     const { data: updated, error: updateError } = await supabase
       .from('daily_progress_reports')
@@ -327,6 +366,13 @@ async function addAuthorityRemarks(req, res) {
     if (updateError) throw updateError;
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Report not found.' });
+    }
+
+    if (action) {
+      const { notifyJeProgressActed } = require('../services/telegram.service');
+      notifyJeProgressActed(report, updated).catch(err => {
+        console.error(`[DAILY PROGRESS] Telegram action notification failed: ${err.message}`);
+      });
     }
 
     return res.status(200).json({
