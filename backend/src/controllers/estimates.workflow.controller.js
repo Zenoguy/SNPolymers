@@ -352,6 +352,14 @@ async function submitReview(req, res) {
       });
     }
 
+    // Trigger Telegram notification if Final Approved
+    if (updatedEstimate.estimate_status === ESTIMATE_STATUS.FINAL_APPROVED) {
+      const { notifyAllEstimateFinalApproved } = require('../services/telegram.service');
+      notifyAllEstimateFinalApproved(updatedEstimate).catch(err => {
+        console.error(`Telegram notification failed: ${err.message}`);
+      });
+    }
+
     return res.status(200).json({
       success: true,
       estimate: updatedEstimate,

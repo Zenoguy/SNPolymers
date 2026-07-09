@@ -4,7 +4,8 @@ const {
   notifyHoFundRequestSubmitted,
   notifyZoFundRequestHeld,
   notifyZoRequisitionSubmitted,
-  notifyJeRequisitionActed
+  notifyJeRequisitionActed,
+  notifyAllEstimateFinalApproved
 } = require('../../../src/services/telegram.service');
 
 describe('Telegram Notifications Suite', () => {
@@ -284,6 +285,44 @@ describe('Telegram Notifications Suite', () => {
                          logs.toLowerCase().includes('failed') ||
                          logs.toLowerCase().includes('warning') ||
                          logs.toLowerCase().includes('has no telegram');
+    expect(hasAttempted).toBe(true);
+  });
+
+  test('Test 6: notifyAllEstimateFinalApproved logs notification trigger', async () => {
+    process.env.NODE_ENV = 'development';
+
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    let logs = '';
+
+    console.log = (...args) => { logs += args.join(' ') + '\n'; originalLog(...args); };
+    console.warn = (...args) => { logs += args.join(' ') + '\n'; originalWarn(...args); };
+    console.error = (...args) => { logs += args.join(' ') + '\n'; originalError(...args); };
+
+    const mockEstimate = {
+      estimate_no: 'EST-001',
+      estimate_amount: 250000.00,
+      work_order_no: 'WO-100',
+      projects_master: {
+        site_details: 'Phase 6 site'
+      },
+      ho_approved_by: '+919999999999'
+    };
+
+    try {
+      await notifyAllEstimateFinalApproved(mockEstimate);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+      process.env.NODE_ENV = originalEnvNodeEnv;
+    }
+
+    const hasAttempted = logs.toLowerCase().includes('sent') ||
+                         logs.toLowerCase().includes('failed') ||
+                         logs.toLowerCase().includes('warning') ||
+                         logs.toLowerCase().includes('no active users');
     expect(hasAttempted).toBe(true);
   });
 });

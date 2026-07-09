@@ -1026,6 +1026,74 @@ async function notifyJeProgressActed(originalReport, updatedReport) {
   }
 }
 
+async function notifyAllEstimateFinalApproved(estimate) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  try {
+    const { data: allUsers, error } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('is_active', true)
+      .not('telegram_chat_id', 'is', null);
+
+    if (error) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve active users: ${error.message}`);
+      return;
+    }
+
+    const recipients = (allUsers || []).filter(u => u.telegram_chat_id && u.telegram_chat_id.trim() !== '');
+
+    if (recipients.length === 0) {
+      console.warn(
+        `[TELEGRAM ALERTS] No active users configured with Telegram chat IDs for final estimate approval notification. ` +
+        `Estimate: ${estimate?.estimate_id || 'N/A'}, Work Order: ${estimate?.work_order_no || 'N/A'}`
+      );
+      return;
+    }
+
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.warn(
+        `[TELEGRAM ALERTS] TELEGRAM_BOT_TOKEN is not set. Silent console fallback. ` +
+        `Estimate ID: ${estimate?.estimate_id}, Work Order: ${estimate?.work_order_no}`
+      );
+      return;
+    }
+
+    const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
+    const amount = Number(estimate.estimate_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
+    const hoApprovedBy = escapeHtml(estimate.ho_approved_by || 'N/A');
+
+    const messageText = 
+      `🎉 <b>Cost Estimate Finally Approved</b>\n\n` +
+      `<b>Estimate No:</b> ${estimateNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Final Approved Amount:</b> ₹${amount}\n` +
+      `<b>Approved By HO:</b> ${hoApprovedBy}\n\n` +
+      `The cost estimate has been finalized and approved by Head Office.`;
+
+    for (const recipient of recipients) {
+      try {
+        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id.trim())}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!data.ok) {
+          console.warn(`[TELEGRAM ALERTS] Failed to send message to ${recipient.display_name} (${recipient.telegram_chat_id}): ${data.description}`);
+        } else {
+          console.log(`[TELEGRAM ALERTS] Notification sent to ${recipient.display_name}`);
+        }
+      } catch (err) {
+        console.warn(`[TELEGRAM ALERTS] Failed to send message to ${recipient.display_name}: ${err.message}`);
+      }
+    }
+  } catch (error) {
+    console.error(`[TELEGRAM ALERTS] notifyAllEstimateFinalApproved failed: ${error.message}`);
+  }
+}
+
 module.exports = {
   sendOtp,
   startPolling,
@@ -1040,7 +1108,8 @@ module.exports = {
   notifyZoRequisitionSubmitted,
   notifyJeRequisitionActed,
   notifyZoAndHoBackdatedProgressSubmitted,
-  notifyJeProgressActed
+  notifyJeProgressActed,
+  notifyAllEstimateFinalApproved
 };
 
 
