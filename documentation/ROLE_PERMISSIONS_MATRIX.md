@@ -2,9 +2,6 @@
 
 This document maps all the functions and modules of the Integrated Digital Business Platform (IDBP) to the active system roles.
 
-> [!WARNING]
-> The **Staff** role has been officially **deprecated** and removed from the active system access profiles. All operational personnel should be mapped to one of the four active roles detailed below.
-
 ## Role Keys
 * **JE**: Junior Engineer (Field operations & site monitoring)
 * **ZO**: Zonal Office (Regional manager & intermediate reviewer)
@@ -59,6 +56,11 @@ This document maps all the functions and modules of the Integrated Digital Busin
 | View running bills ledger & summary statistics | ❌ | ✅ | ✅ | ✅ |
 | Create, calculate, and submit sequential bills | ❌ | ✅ | ❌ | ✅ |
 | Upload final/signed copies of billing files | ❌ | ✅ | ❌ | ✅ |
+| **Fund Reports** | | | | |
+| View active reports & stats dashboard | ✅ | ✅ | ✅ | ✅ |
+| Create, view details, or edit report logs | ✅ | ✅ | ✅ | ✅ |
+| Soft-delete report (Admin only) | ❌ | ❌ | ❌ | ✅ |
+| View deleted list & restore reports (Admin only) | ❌ | ❌ | ❌ | ✅ |
 | **Administration Console** | | | | |
 | Access Admin Panel dashboard & menu links | ❌ | ❌ | ❌ | ✅ |
 | Add new users to authorized whitelist | ❌ | ❌ | ❌ | ✅ |

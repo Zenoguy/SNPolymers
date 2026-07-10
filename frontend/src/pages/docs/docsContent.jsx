@@ -487,6 +487,36 @@ export const docSections = [
             </ul>
           </div>
         )
+      },
+      {
+        id: 'fund-reports',
+        title: 'Project Fund Reports',
+        headings: [
+          { id: 'report-overview', text: 'Financial Disbursements Tracking', level: 2 },
+          { id: 'report-constraints', text: 'Immutability and Project Closure', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Project Fund Reports</strong> module tracks and registers actual corporate disbursement events mapped to active project work orders.
+            </p>
+
+            <h2 id="report-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Financial Disbursements Tracking</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Users with active credentials can submit a new disbursement log by entering the Work Order Number, the disbursed amount (INR), and NEFT/RTGS transaction reference remarks. The system automatically pulls project location and department info from Master Data.
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 mt-3 text-xs">
+              <li><strong>Refreshed Analytics Header</strong>: Real-time summaries show the total disbursement volume, active reports count, running projects, and closed projects.</li>
+              <li><strong>Edit access</strong>: General roles can view, compile, and update details for active reports.</li>
+              <li><strong>Administrative control</strong>: Administrators can soft-delete active records, view deleted logs in a dedicated <strong>Deleted</strong> tab, and restore soft-deleted items instantly.</li>
+            </ul>
+
+            <h2 id="report-constraints" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Immutability and Project Closure</h2>
+            <DocCallout type="caution">
+              <strong>Closed Project Lock</strong>: If a project's status is changed to <strong>Closed</strong> in Master Data, all linked fund reports are locked immediately. Creation, modification, soft-deletion, or restoration requests for closed projects are blocked on both the client side and the database level.
+            </DocCallout>
+          </div>
+        )
       }
     ]
   },
@@ -520,7 +550,8 @@ export const docSections = [
                 'Create a Cost Estimate draft for an active Work Order',
                 'Submit the estimate sheet for Zonal review',
                 'Log daily physical site progress percentages and upload photos',
-                'Create payment requisitions and attach raw invoice files'
+                'Create payment requisitions and attach raw invoice files',
+                'Log project disbursements under the Fund Reports portal (/fund-reports)'
               ]}
             />
           </div>
@@ -545,7 +576,8 @@ export const docSections = [
                 'Log in and open the Cost Estimates approval queue',
                 'Audit JE sheets: Approve or Request Revision with a submission timer',
                 'Submit Zonal Fund Requests to HO to pay local vendor bills',
-                'Log work completion and file sequential Running Account (RA) bills'
+                'Log work completion and file sequential Running Account (RA) bills',
+                'Submit disbursement logs under the Fund Reports console (/fund-reports)'
               ]}
             />
           </div>
@@ -570,7 +602,8 @@ export const docSections = [
                 'Access pending lists to final approve cost estimate sheets',
                 'Monitor live progress updates, site photologs, and billing ledger balances',
                 'Review regional Fund Requests and select the debit credit source (CC, OD, CR)',
-                'Authorize fund releases and track ledger disbursements'
+                'Authorize fund releases and track ledger disbursements',
+                'Track and compile regional project disbursements under Fund Reports (/fund-reports)'
               ]}
             />
           </div>
@@ -595,7 +628,8 @@ export const docSections = [
                 'Access the Whitelist menu to register or deactivate users',
                 'Reset Telegram links for users updating phone hardware',
                 'Maintain material heads, sub-heads, and catalog rates',
-                'Review global Audit Trail logs for security and compliance checks'
+                'Review global Audit Trail logs for security and compliance checks',
+                'Manage project fund reports: view active/deleted, soft-delete, and restore logs (/fund-reports)'
               ]}
             />
           </div>
@@ -712,9 +746,6 @@ export const docSections = [
               </li>
             </ul>
 
-            <DocCallout type="caution">
-              <strong>Deprecated Role Alert</strong>: The <DocBadge role="staff" /> profile has been removed from active system configs. Operational personnel must be mapped to one of the four active roles listed above.
-            </DocCallout>
 
             <h2 id="access-levels" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Functional Access Definitions</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">

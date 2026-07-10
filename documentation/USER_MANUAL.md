@@ -1,361 +1,502 @@
-# S.N. Polymers Pvt. Ltd. — User Manual
+# S.N. Polymers Pvt. Ltd. — Integrated Digital Business Platform (IDBP) User Manual
 
-This manual provides a detailed operational reference for the Integrated Digital Business Platform (IDBP) of **S.N. Polymers Pvt. Ltd.** It covers all user interfaces, field parameters, workflow processes, and administrative controls.
+Welcome to the official, comprehensive **User Manual and Operations Guide** for the **Integrated Digital Business Platform (IDBP)** of **S.N. Polymers Pvt. Ltd.** 
 
----
-
-## PART I — Getting Started
-
-### 1. Whitelisting and System Access
-S.N. Polymers Pvt. Ltd. enforces a strict whitelisting security protocol. No user can register an account directly. Your mobile number must be registered by a System Administrator.
-
-* **Authorization Process**: Contact your System Administrator to register your name, 10-digit mobile number, and specific organizational role.
-* **Authentication Screen**: 
-  1. Navigate to the IDBP URL: [https://sn-polymers.vercel.app/](https://sn-polymers.vercel.app/)
-  2. Input your 10-digit mobile number.
-  3. The system automatically formats your input, stripping non-digit characters and prepending the international country code `+91`.
-  4. Click **Verify Whitelist & Send OTP**.
-
-![Screenshot: Portal Login Screen](/docs/images/login_page.png)
-*Placeholder: Portal Login Screen showing Mobile Number field and "Verify Whitelist & Send OTP" button.*
-
-### 2. Multi-Factor Authentication via Telegram OTP Bot
-The platform delivers one-time passcodes (OTP) directly to your secure Telegram account via [@snpolymers_bot](t.me/snpolymers_bot).
-
-* **Linking Telegram (First Login)**:
-  * If your mobile number is whitelisted but not yet linked to the Telegram Bot, you will be redirected to the **Telegram Setup** page.
-  * Click the provided link to open Telegram and start a chat with [@snpolymers_bot](t.me/snpolymers_bot).
-  * Click **Start**, and click **Share Contact** when requested by the bot. This maps your active Telegram account ID to your whitelisted mobile number.
-  * Once the link is established, return to the login screen.
-* **Logging In with OTP**:
-  * An OTP is sent to your Telegram chat. The code is a 6-digit numeric passcode valid for **5 minutes**.
-  * Enter the code into the verification boxes on screen and click **Verify Code**.
-  * If the code expires, click the **Resend Code** link to generate a new passcode.
-
-![Screenshot: OTP Verification Screen](/docs/images/otp_verify_page.png)
-*Placeholder: OTP Code entry page showing numeric input boxes and countdown timer.*
+This manual provides complete step-by-step guidance, detailed screen references, field validation rules, and role-based workflows to help you navigate and operate the platform effectively. The software is designed to streamline infrastructure costing, daily progress tracking, material master catalogs, fund requests, payment requisitions, and sequential contractor billing, all under a highly secure, role-based security framework.
 
 ---
 
-## PART II — Navigation & User Interface
-
-The platform is designed to adapt automatically to any screen size (laptops, tablets, or mobile phones) and supports customizable viewing themes.
-
-### 1. The Navigation Sidebar (Desktop)
-* **Collapse Button**: Click the collapse arrow icon (`<` or `>`) at the top of the sidebar to shrink the navigation menu into compact icons, maximizing screen space. The collapse state is stored in your browser's local memory.
-* **Dynamic Menu Items**: The sidebar automatically filters out pages that your role is not authorized to access.
-* **Theme Mode Switcher**: Toggles the interface between **Dark Mode** (optimized for low-light office environments) and **Light Mode** (optimized for outdoor site visits under direct sunlight).
-* **Sign Out**: The bottom panel displays your profile initial, display name, and active role. Click **Sign Out** to securely clear your authentication token.
-
-### 2. The Mobile Header Navigation
-* On mobile screens, the sidebar collapses into a compact hidden drawer.
-* Tap the menu icon in the upper-left corner of the mobile header to open the drawer.
-* Quick-access buttons for the **Console Dashboard** and **Admin Panel** are displayed in the header based on your permissions.
+## Table of Contents
+1. [PART I — Core Security & User Onboarding](#part-i-core-security-user-onboarding)
+2. [PART II — Common Navigation & Themes](#part-ii-common-navigation-themes)
+3. [PART III — Module Reference & Field Directories](#part-iii-module-reference-field-directories)
+   - [1. Console Dashboard](#1-console-dashboard)
+   - [2. Material Master Catalog](#2-material-master-catalog)
+   - [3. Project Cost Estimates](#3-project-cost-estimates)
+   - [4. Payment Requisitions (Procurement Tracking)](#4-payment-requisitions-procurement-tracking)
+   - [5. Daily Work Progress Log](#5-daily-work-progress-log)
+   - [6. Project Fund Requests](#6-project-fund-requests)
+   - [7. Running Account (RA) & Final Bills](#7-running-account-ra-final-bills)
+   - [8. Project Fund Reports](#8-project-fund-reports)
+4. [PART IV — Step-by-Step Role Workflows](#part-iv-step-by-step-role-workflows)
+   - [Junior Engineer (JE) Workflow](#junior-engineer-je-workflow)
+   - [Zonal Office (ZO) Workflow](#zonal-office-zo-workflow)
+   - [Head Office (HO) Workflow](#head-office-ho-workflow)
+   - [Administrator (Admin) Workflow](#administrator-admin-workflow)
+5. [PART V — Administrative Console](#part-v-administrative-console)
+6. [PART VI — Troubleshooting & Frequently Asked Questions](#part-vi-troubleshooting-frequently-asked-questions)
 
 ---
 
-## PART III — Module Reference
+## PART I — Core Security & User Onboarding
+
+S.N. Polymers Pvt. Ltd. enforces a strict security perimeter. Direct sign-up or registration is completely disabled. To access the platform, you must follow the whitelisting and verification process detailed below.
+
+### 1. The Whitelisting Process
+Before logging in, a System Administrator must register your credentials in the platform's security whitelist. You must provide:
+* **Full Name**: Used for system display and digital signature logs.
+* **10-Digit Mobile Number**: Your active phone number.
+* **Role**: Select one of the four active roles:
+  * `je` (Junior Engineer)
+  * `zo` (Zonal Office Manager)
+  * `ho` (Head Office Director)
+  * `admin` (System Administrator)
+
+### 2. Setting Up the Telegram Bot Linkage (One-Time Setup)
+Authentication codes are delivered via Telegram to ensure zero transmission delays and enhanced security over standard SMS.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant System as IDBP Portal
+    participant Bot as Telegram Bot (@snpolymers_bot)
+    
+    User->>System: Enters Mobile Number & Clicks "Verify"
+    System-->>User: Detects Unlinked Account -> Redirects to Telegram Link
+    User->>Bot: Clicks Link & Starts Chat
+    Bot->>User: Prompts "Share Contact"
+    User->>Bot: Clicks "Share Contact" Button
+    Bot-->>System: Confirms & Maps Chat ID to Whitelist Mobile
+    System-->>User: Redirects to Login OTP page
+```
+
+1. Navigate to the IDBP login portal: [https://sn-polymers.vercel.app/](https://sn-polymers.vercel.app/)
+2. Enter your whitelisted 10-digit mobile number and click **Verify Whitelist & Send OTP**.
+3. If your account is not yet linked, the screen will display the **Telegram Setup** screen.
+4. Click the link to open Telegram and search for [@snpolymers_bot](t.me/snpolymers_bot).
+5. Click **Start** (or type `/start`) in the chat.
+6. The bot will request your contact details. Click the **Share Contact** button in the chat menu. This allows the bot to securely verify your whitelisted mobile number.
+7. Return to the web portal and proceed with your login.
+
+### 3. Verification & Login Flow
+1. Enter your mobile number on the login page. The system strips non-digit characters and automatically prefixes it with India's country code (`+91`).
+2. Click **Verify Whitelist & Send OTP**.
+3. Check Telegram for a message from **S.N. Polymers Bot**. You will receive a secure 6-digit numeric verification code.
+4. Enter the 6-digit code on the verification screen in your browser.
+5. Click **Verify Code** to access the dashboard.
+
+> [!IMPORTANT]
+> **OTP Rules & Restrictions**:
+> * **Expiration**: Each OTP code is valid for exactly **5 minutes**.
+> * **Attempt Lock**: You are allowed a maximum of **3 validation attempts**. If you enter an incorrect code 3 times, the OTP is invalidated. You must wait for the timer to reset or click **Resend Code** to generate a new passcode.
+> * **Rate Limiting**: To prevent abuse, requests are restricted to **5 OTP codes per 15 minutes** per mobile number.
+
+---
+
+## PART II — Common Navigation & Themes
+
+The portal features a modern, responsive layout that adapts to laptops, tablets, and mobile devices.
+
+### 1. Desktop Sidebar Navigation
+* **Sidebar Menu**: Located on the left side of the screen. Items are automatically filtered based on your active role.
+* **Collapse Button**: Click the arrow icon (`<` or `>`) at the top of the sidebar to shrink it into icon-only mode, maximizing screen space. The sidebar state is remembered by your browser.
+* **Theme Toggle**: Located at the bottom of the sidebar. You can switch between:
+  * **Dark Mode**: Optimized for low-light office environments.
+  * **Light Mode**: Optimized for high-visibility outdoor site visits.
+* **Operator Profile Card**: Displays your active role, initials, and full name. Click the **Sign Out** button here to safely terminate your session and clear secure cookie tokens.
+
+### 2. Mobile Header Navigation
+* On mobile screens, the navigation sidebar collapses into a hidden drawer.
+* Tap the **Menu Icon** (three lines) in the top-left corner of the header to open the navigation drawer.
+* Quick action metrics and theme controls are accessible directly from the mobile header bar.
+
+---
+
+## PART III — Module Reference & Field Directories
+
+---
 
 ### 1. Console Dashboard
 
-The **Console Dashboard** is the home landing screen upon logging in.
+The **Console Dashboard** is the landing screen upon login, presenting a visual overview of system metrics and project operations.
 
-![Screenshot: System Dashboard Console](/docs/images/dashboard_page.png)
-*Placeholder: Main Dashboard Interface highlighting the navigation sidebar and key metric cards.*
-
-#### UI Components & Actions:
-* **Operator Information Card**: Lists your whitelisted mobile number and active system role.
-* **Project Operations Overview**:
-  * **Total Projects**: Total whitelisted projects in the system.
-  * **Running**: Count of active construction projects.
-  * **Closed / Under Maintenance**: Projects in administrative closure or warranty periods.
-  * **Last Project Updated**: Displays the work order ID and elapsed time since the last update.
-* **Estimates Overview**:
-  * Displays the total cost estimate records and the count of sheets currently pending review.
-  * Includes a **New Estimate** quick-launch button (for JEs and Admins).
+#### UI Controls and Features:
+* **Operator Info Panel**: Confirms your whitelisted phone number, display name, and active authorization role.
+* **Project Status Metric Cards**:
+  * **Total Projects**: Cumulative count of whitelisted projects.
+  * **Running Projects**: Active projects currently under construction.
+  * **Closed / Under Maintenance**: Projects in warranty or administrative closure.
+  * **Last Project Updated**: Displays the Work Order ID and time elapsed since the last modification.
+* **Estimates Snapshot Card**:
+  * Displays the total number of cost estimates in the system and sheets currently pending review.
+  * **New Estimate Button**: Quick-launch button (hidden for ZOs and JEs, visible to Admin).
 * **Recent Activity Feed**:
-  * A live log displaying the last 4 project-related actions (e.g., "Aswint closed BH_BEG_505").
-  * Automatically polls the backend server every **30 seconds** to display live operational logs.
+  * Displays a live stream of the last 4 project modifications (e.g., "Aswint approved Estimate EST-2026-042").
+  * Automatically refreshes/polls the server every **30 seconds** to keep logs up-to-date.
 
 ---
 
-### 2. Material Master
+### 2. Material Master Catalog
 
-The **Material Master** is our centralized catalog of construction materials, tools, and labor categories.
+The **Material Master** serves as the central directory for materials, labor categories, transport costs, and miscellaneous services.
 
-![Screenshot: Material Master Catalog View](/docs/images/material_master_page.png)
-*Placeholder: Material Master Screen showing filtering controls, data table, and Excel export button.*
+#### Screen Elements:
+* **Debounced Search Bar**: Real-time keyword filter. Type any keyword (e.g., "Cement", "Labour"); the list filters automatically after a **400ms delay** to prevent lag on slower devices.
+* **Category Filters**:
+  * **Main Head Filter**: Select *Labour*, *Materials*, *Transport*, or *Miscellaneous*.
+  * **Sub Head Filter**: Refines the list based on sub-category selection.
+  * **Status Filter**: Toggle between *Active* and *Inactive* items (visible to Administrators only).
+* **Export Button**: Click **Export to Excel** to download the filtered catalog list directly as an `.xlsx` file.
 
-#### UI Components & Actions:
-* **Search Input**: Debounced by **400ms** to prevent sluggishness. Type any keyword (e.g., "Cement") to filter the catalog.
-* **Filtering Dropdowns**: 
-  * **Main Category**: Select from primary heads like *Labour*, *Materials*, *Transport*, or *Miscellaneous*.
-  * **Sub Head**: Filters by specific sub-categories.
-  * **Status Filter**: Toggle between *Active* and *Inactive* catalog items (visible only to Administrators; standard users only see active materials).
-* **Export to Excel Button**: Downloads the filtered material database directly as an `.xlsx` file.
-* **Material Data Grid**: Lists:
-  * Material Main Head / Sub Head
-  * Material Details (Standard name and grade)
-  * Unit of Measurement (e.g., MT, Bags, Cum, Nos, Days)
-  * Active/Inactive Status indicator badge
-* **Create/Edit Material Modal (Admin Only)**:
-  * **Material Main Head**: Select or define primary category.
-  * **Material Sub Head**: Select or define sub-category.
-  * **Material Details**: Enter precise material name.
-  * **Unit**: Select standard unit of measurement.
-  * **Active Status Checkbox**: Check to make the material selectable in estimate forms.
+#### Material Data Grid Parameters:
+
+| Field Name | Description | Visibility / Edit Permissions |
+| :--- | :--- | :--- |
+| **Material Main Head** | Primary category division (e.g., Labour, Materials). | All Roles (Read-Only) / Admin (Edit) |
+| **Material Sub Head** | Sub-category of the main division (e.g., Steel, Cement, Carpenter). | All Roles (Read-Only) / Admin (Edit) |
+| **Material Details** | Precise name and technical grade of the material. | All Roles (Read-Only) / Admin (Edit) |
+| **Unit** | Standard Unit of Measurement (e.g., MT, Bags, Cum, Nos, Days). | All Roles (Read-Only) / Admin (Edit) |
+| **Status Badge** | Green (Active) or Red (Inactive). Inactive items are hidden from new estimate drafting. | All Roles (Read-Only) / Admin (Edit) |
 
 ---
 
-### 3. Cost Estimates
+### 3. Project Cost Estimates
 
-The **Cost Estimates** module is used to draft, submit, review, and approve civil engineering budgets for whitelisted projects.
+This module allows Junior Engineers to draft civil engineering cost estimates, which are then routed to Zonal and Head Offices for verification and approval.
 
-![Screenshot: Cost Estimates List Screen](/docs/images/estimates_list_page.png)
-*Placeholder: Cost Estimates List Screen showing stats headers, active queue tabs, and filter controls.*
+#### UI Workflows:
 
-#### A. Estimates List Page
-* **Status Metrics Header**: Quick counters displaying Total Estimates, Active Queue, and Submitted Sheets.
-* **My Sheets Sidebar**: Toggles the display between **All Sheets** and **Draft Sheets**.
-* **New Sheet Button**: (Visible to JEs and Admins) Initializes a new budget sheet.
-* **Estimates Directory Table**: Grid display showing Work Order No, Estimate No (generated automatically upon submission), Area Code, Status Badge (color-coded by state), Gross Estimate Amount, and Action Details button.
-* **Filters Toolbar**: Filter by Work Order number, Estimate number, or Status.
+```mermaid
+graph TD
+    JE[JE: Draft Estimate] -->|Submit| ZO[ZO: Intermediate Review]
+    ZO -->|Approve| HO[HO: Final Review]
+    ZO -->|Request Revision| JE
+    HO -->|Final Approve| FA[Status: Final Approved]
+    HO -->|Request Revision| JE
+```
 
-#### B. Estimate Creation / Edit Form (JE Console)
-This form supports cascading dropdown menus to prevent input errors:
+#### A. Estimates Directory Table
+Lists all system estimates with columns for Work Order Number, Auto-Generated Estimate Number, Zonal Area Code, Status Badge (color-coded by state), Gross Estimate Amount, and Action Details.
+* Use the **My Sheets Sidebar** to switch between **All Sheets** and **Draft Sheets**.
+* Click **New Sheet** (visible to JEs and Admins) to initialize a new estimate form.
 
-![Screenshot: Cost Estimate Form Page](/docs/images/estimate_form_page.png)
-*Placeholder: Cost Estimate Form Page showing project header, interactive items grid, and total footer.*
+#### B. The Estimate Drafting and Edit Form
 
-1. **Work Order Number**: Select the target project from the whitelisted dropdown.
-2. **Project Metadata Panel**: Automatically populates details like State, District, Zone, Client Department, Site Details, and contract Value.
-3. **JE Remarks**: Text area for rate assumptions, comments, or special notes.
-4. **Line Items Grid Table**:
-   * **Main Category**: Select primary category (Labour, Materials, etc.).
-   * **Sub Head**: Populates dynamically based on the Main Category.
-   * **Material Details**: Populates dynamically based on the Sub Head.
-   * **Unit**: Fills automatically based on the selected material (read-only).
-   * **Quantity (Qty)**: Input field. Must be a positive decimal.
-   * **Rate (₹)**: Input field. Enter unit rate.
-   * **Rate Reference**: Text input (e.g., "CSR 2026", "Market Rate").
-   * **Source of Purchase**: Dropdown (CC, OD, CR, local). Non-editable for JE/Staff.
-   * **Amount**: Auto-calculates `Qty × Rate`.
-   * **Remove Button**: Trashcan icon deletes the line item.
-5. **Gross Estimate Total**: A large display in the footer showing the sum of all item amounts.
-6. **Form Action Controls**:
-   * **Save as Draft**: Saves entries without initiating review. Highly recommended for long lists.
-   * **Submit Estimate**: Submits the budget for review. The sheet is locked for editing once submitted.
+##### 1. Project Selection & Header Block
+* **Work Order Number**: Dropdown menu showing all active projects. Select a project to populate the read-only metadata block:
+  * **State / District** (e.g., West Bengal / Kolkata)
+  * **Area Code / Zone** (e.g., Zone 2 / ZO-04)
+  * **Client Department** (e.g., PWD, Irrigation)
+  * **Site Details** (Project description)
+  * **Contract Value** (Maximum project budget)
+* **JE Remarks**: Text box to record rate assumptions, site notes, or instructions.
 
-> [!IMPORTANT]
-> **Revision Expiry Deadlines**: If a Zonal or Head Office reviewer requests a revision, the form displays a live countdown banner. If the deadline expires, the sheet automatically locks for editing. Only an Administrator can extend the deadline.
+##### 2. Estimate Line Items Table
+Click **Add Item** to insert a new line. Enter the following parameters:
 
-#### C. Estimate View & Workflow Details
-* Displays the complete itemized cost sheet and a full **Audit and Revision History Timeline** at the bottom.
-* **ZO Review Actions**: *Approve*, *Reject*, or *Request Revision* (requires remarks and setting a revision deadline).
-* **HO Final Approval**: Shows final authorization buttons to change status to *Final Approved* or request revisions.
+* **Main Category** (Dropdown): Select from *Labour*, *Materials*, *Transport*, or *Miscellaneous*.
+* **Sub Head** (Dropdown): Cascades dynamically. Only displays sub-heads matching your selected Main Category.
+* **Material Details** (Dropdown): Cascades dynamically. Displays specific materials belonging to your selected Sub Head.
+* **Unit** (Read-Only Input): Automatically displays the standard unit of measurement for the selected material.
+* **Quantity (Qty)** (Numeric Input): Enter the quantity needed. Must be a decimal value greater than **0.00**.
+* **Rate (₹)** (Numeric Input): Enter the unit price. Must be a decimal value greater than **0.00**.
+* **Rate Reference** (Text Input): Record the pricing source (e.g., "CSR 2026", "Local Quote").
+* **Source of Purchase** (Dropdown): Select CC, OD, CR, or local. Disabled for JEs; only editable by ZO, HO, and Admin roles.
+* **Amount (₹)** (Read-Only Metric): Automatically calculates `Quantity * Rate`.
 
----
+##### 3. Form Action Buttons
+* **Save as Draft**: Saves your progress without submitting it for review. JEs can reopen and edit drafts at any time.
+* **Submit Estimate**: Performs final validations and submits the sheet to the Zonal Office. Once submitted, editing is locked for the JE.
 
-### 4. Payment Requisitions
+> [!WARNING]
+> **Revision Expiry Deadlines**:
+> When a ZO or HO reviewer requests a revision, they must specify a revision reason and set a revision deadline. 
+> * The system will display a live countdown timer banner at the top of the form.
+> * If the countdown reaches zero, the estimate locks immediately.
+> * Only a System Administrator can extend an expired revision deadline.
 
-Payment Requisitions track operational procurement against active projects.
-
-![Screenshot: Payment Requisitions Screen](/docs/images/requisitions_page.png)
-*Placeholder: Payment Requisitions Screen showing project folders, invoices list, and upload panel.*
-
-#### UI Components & Actions:
-* **Project Folder Grid**: Click on a project folder to filter and display only its payment requisitions.
-* **Requisition Data Table**:
-  * Lists Requisition Serial ID, Date, Description, Quantity, Rate, Net Amount, and Invoice Copy.
-  * **GST Declared Badge**: Displays GST status.
-* **Create Requisition Panel**:
-  * **Material Category / Head**: Select from whitelisted heads.
-  * **Invoice Number / Reference**: Enter vendor invoice details.
-  * **Quantity & Rate**: Net amounts are calculated automatically.
-  * **GST Option**: Checkbox to declare if GST is included.
-  * **Attachment Upload**: Click to upload an invoice copy (PDF, PNG, or JPG).
-    > [!WARNING]
-    > **Upload Validation**: The server inspects the file contents. Altered extensions or unsupported document types will be rejected.
-* **Budget Constraint Enforcements**:
-  * Requisition amounts are checked against the project's remaining estimate balance.
-  * The system will block submissions that exceed remaining project funds.
-* **Delete Requisition (Admin Only)**: Administrators can delete requisitions to adjust project balances.
+#### C. Review and Workflow Details Screen
+Reviewers (ZO and HO) can view the submitted estimate, read individual line items, and access the **Review Panel**:
+* **Remarks/Comments**: Required input when requesting a revision or rejecting a sheet.
+* **Revision Deadline Picker**: Set the date and time limit for the JE to submit corrections.
+* **Action Buttons**: Click **Approve**, **Reject**, or **Request Revision**.
+* **Audit Trail Timeline**: Located at the bottom of the page, listing every state transition, user, comment, and timestamp for audit tracking.
 
 ---
 
-### 5. Daily Work Progress
+### 4. Payment Requisitions (Procurement Tracking)
 
-This module is used to record daily physical progress and attach photographic proof.
+Payment Requisitions track procurement invoices against approved project budgets.
 
-![Screenshot: Daily Work Progress Console](/docs/images/daily_progress_page.png)
-*Placeholder: Daily Progress Screen showing progress timeline log, photo uploader, and remarks section.*
+#### UI Components and Actions:
+* **Project Folder View**: Projects are displayed as clickable folders. Click a folder to display its payment requisitions.
+* **Requisitions Grid**: Displays Serial ID, Date, Description, Quantity, Rate, Net Amount, GST Status, and Uploaded Invoice attachment.
+* **Create Requisition Button**: Opens the step-by-step requisition wizard.
 
-#### UI Components & Actions:
-* **Navigation Tabs**:
-  * **Dashboard**: Displays a visual summary of recent site reports.
-  * **Directory**: Lists all projects with quick search by Work Order, Zonal Office, or Department.
-* **Log Progress Entry (JE Only)**:
-  * **Site Visit Date**: Date selector.
-  * **Work Progress Details**: Text area describing today's accomplishments.
-  * **Physical Work Progress (%)**: Enter the cumulative completion percentage.
-  * **Site Photo Upload**: Select an image file. A photo is required for submission.
-* **Report Timeline Log**: Displays site logs in reverse chronological order, including logged progress %, site photos, and authority remarks.
-* **Site Photo Viewer**: Click any site photo thumbnail to open a high-resolution viewer.
-* **Authority Evaluation Remarks (ZO / HO / Admin)**:
-  * Allows reviewers to append remarks and compliance notes to any progress entry.
+#### Step-by-Step Requisition Creation Wizard:
+
+##### Step 1: User Verification
+Displays your logged-in username and the current server timestamp. Click **Next** to proceed.
+
+##### Step 2: Project Mapping
+* **Work Order No.**: Dropdown listing all active work orders with approved estimates. Select a project to display its metadata: State, District, Area Code, Department, Site Details, and Approved Estimate Limit. Click **Next** to proceed.
+
+##### Step 3: Requisition Detail Entries
+Enter the following parameters:
+
+* **Requisition Number** (Text Input): Input your unique requisition reference.
+  > [!NOTE]
+  > The Requisition Number field restricts input to alphanumeric characters, hyphens, underscores, and dots (`A-Z`, `0-9`, `-`, `_`, `.`). Space character is blocked. Once you upload an invoice PDF, this field locks to prevent mismatch errors.
+* **Material Main Head** (Dropdown): Select the category of expenditure.
+* **Requisition Amount (₹)** (Numeric Input): Enter the invoice amount. Must be greater than **0.00**.
+  * **Advisory Balance Indicator**: The wizard displays the approved Estimate Limit and remaining budget. Requisitions exceeding this balance will be blocked by the server.
+* **GST Bill Included?** (Dropdown Selection): Select **Yes** or **No**.
+* **Upload Requisition PDF** (File Input): Select your requisition file. Only PDF files are accepted.
+* **Upload GST Invoice PDF** (File Input - visible only if GST Bill is Yes): Select the official GST invoice file. Only PDF files are accepted.
+  > [!CAUTION]
+  > **File Integrity Checking**: The backend validates files by inspecting their header "magic bytes" rather than relying on file extensions. Attempting to rename image files (e.g., renaming `.png` to `.pdf`) will result in upload errors.
+* **Bank Details** (Text Area): Enter the payee's bank details: Name, Branch, Account Number, and IFSC Code.
+* **Remarks** (Optional Text Area): Input additional notes.
+* Click **Submit Requisition** to save.
 
 ---
 
-### 6. Fund Requests
+### 5. Daily Work Progress Log
 
-The Zonal Office uses this module to request project funds, which are then reviewed and disbursed by the Head Office.
+This module records daily physical work progress and visual site proofs.
 
-![Screenshot: Fund Requests Dashboard](/docs/images/fund_requests_page.png)
-*Placeholder: Fund Requests Screen showing status metrics, balance charts, and request table.*
+#### Form Parameters & Validation:
 
-#### UI Components & Actions:
-* **Status Metrics Header**: Key figures showing Total Requested, Approved, and Pending funds.
-* **Visual Charts Panel**:
+* **Site Visit Date** (Date Selector): Select the date of the site inspection. Future dates are blocked.
+* **Physical Work Progress (%)** (Numeric Input): Enter the cumulative progress percentage. Must be a value between **0.0%** and **100.0%**.
+* **Work Progress Details** (Text Input): Provide a description of the work completed during the visit.
+* **Site Photo Upload** (File Input): Attach photographic proof from the site.
+  > [!IMPORTANT]
+  > **Site Photo Rules**:
+  > * A photo upload is **mandatory** for Junior Engineers to submit progress logs.
+  > * Supported Formats: `.jpg`, `.jpeg`, and `.png` images.
+  > * Maximum File Size: **10 MB**.
+* Click **Log Progress** to save.
+
+#### The Progress Timeline:
+* Displays entries in reverse chronological order.
+* Click on a site photo thumbnail to open a high-resolution image viewer.
+* **Authority Evaluation Remarks**: ZOs, HOs, and Admins can append compliance remarks and evaluation notes directly onto a progress entry.
+
+---
+
+### 6. Project Fund Requests
+
+This module allows Zonal Offices to request cash transfers, which are reviewed and disbursed by the Head Office.
+
+#### UI Dashboard Components:
+* **Disbursement Analytics Panel**:
   * **Status Chart**: Pie chart displaying the ratio of Pending, Approved, and On Hold requests.
-  * **Disbursement Balances**: Bar chart showing remaining balances across Credit Control (CC), Overdraft (OD), and Cash Credit (CR) accounts.
-* **Fund Requests Directory Table**: Lists Request ID, Project, Amount Requested, Status Badge, Date, and Actions.
+  * **Disbursement Balances**: Bar chart displaying remaining credit limits across S.N. Polymers' active accounts: Credit Control (CC), Overdraft (OD), and Cash Credit (CR).
+  * **Metrics Header**: Summarizes Total Requested, Total Approved, and Total Pending funds.
 * **Quick Filters Sidebar**:
-  * Filter by **My Requests** (created by you), **Pending Only**, **Approved This Month**, **On Hold**, or **Large Amount** (> ₹5,00,000).
-  * Lists recent financial activities.
-* **Create Fund Request Form**:
-  * Select target project, enter request number, input amount, and add Zonal Remarks.
-* **Review & Disbursement Action (HO & Admin)**:
-  * Click any request to open the detailed panel.
-  * Reviewers can select the funding source (**CC**, **OD**, or **CR**) and click **Approve** or **Place on Hold**.
+  * Filter by **My Requests**, **Pending Only**, **Approved This Month**, **On Hold**, or **Large Amount** (> ₹5,00,000).
+* **Create Request Button**: Opens the request window.
+
+#### Fund Request Form Parameters:
+* **Target Project**: Dropdown list of running projects.
+* **Request Reference Number**: Text input for the request identifier.
+* **Amount Requested (₹)**: Numeric value. Must be greater than **0.00**.
+* **Zonal Remarks**: Enter the purpose of the funds.
+
+#### Review and Approval Actions (HO & Admin):
+1. Click a request in the directory table to open the detailed panel.
+2. Select the funding source:
+   * **CC** (Credit Control)
+   * **OD** (Overdraft)
+   * **CR** (Cash Credit)
+3. Enter **HO Remarks**.
+4. Click **Approve** to release funds or **Place on Hold** to pause the request.
 
 ---
 
-### 7. RA & Final Bills
+### 7. Running Account (RA) & Final Bills
 
-Tracks sequential contractor billing and running accounts.
+This module tracks contractor payments and running accounts.
 
-![Screenshot: RA / Final Bills Spreadsheet View](/docs/images/ra_bills_page.png)
-*Placeholder: RA / Final Bills Spreadsheet Screen showing live project balance ledger and bills history list.*
+#### UI Panels:
+* **Sequential Invoice Table**: Lists projects and their billing history. Select a project to view its billing timeline.
+* **Create Bill Button**: Opens the billing form.
+* **Live Summary Ledger**: Displays project financials: Total Work Order Value, Previous Bill Cumulative Amount, Current Bill Amount, Total Billed, and remaining Balance.
 
-#### UI Components & Actions:
-* **Live Summary Ledger Card**:
-  * Displays: **Previous Bill Cumulative Amount**, **Current Bill Amount**, **Total Billed to Date**, and **Remaining Balance**.
-* **Billing Directory Tab**:
-  * Lists projects with search and filter controls. Select a project to view its billing history.
-* **Create Bill Panel (ZO & Admin)**:
-  * Select **RA Bill** or **Final Bill**.
-  * Input measurements and net bill values.
-  * **File Upload**: Upload the signed copy of the bill.
-* **System Safeguards**:
-  * **Sequential Billing**: The system blocks Bill $N$ if Bill $N-1$ is missing.
-  * **Immutable Database Records**: Once saved, billing logs cannot be edited or deleted by any user profile (including Administrators) to prevent financial audits from being modified.
+#### Billing Entry Parameters:
+
+* **Work Order No** (Dropdown): Select the target project. Disabled for closed projects.
+* **Type of Payment** (Dropdown): Select the billing step (e.g., RA Bill 1, RA Bill 2, ..., Final Bill).
+  > [!IMPORTANT]
+  > **Sequential Billing Rule**: The system enforces sequential billing. You cannot submit Bill $N$ unless Bill $N-1$ has been registered in the database.
+* **Bill Date** (Date Selector): Date of billing.
+* **Bill No** (Text Input): Input the bill reference.
+* **Gross Bill (Field 1)** (Numeric Input): Enter the gross billing amount.
+* **Breakdown Deduction Fields** (All fields are optional; blank fields default to 0):
+  * *Agency Payment*
+  * *Security Deposit Amt*
+  * *Special Security Amt*
+  * *Other Retention*
+  * *IT TDS*
+  * *SGST*
+  * *CGST*
+  * *SD*
+* **Signed Copy Upload** (File Input): Attach the signed billing document (PDF, PNG, or JPG).
+* **Remarks** (Text Input): Input notes.
+
+#### Live Breakdown Validation Banner:
+When entering breakdown values, the system displays a validation banner verifying:
+$$\text{Gross Bill} = \text{Sum of the 8 Breakdown Fields}$$
+* **Green (Match)**: The values match, and the bill can be submitted.
+* **Red (Mismatch)**: Displays a mismatch error showing the gross bill and breakdown sum. The submit button is disabled until the mismatch is resolved.
+
+> [!CAUTION]
+> **Financial Record Immutability**:
+> Once submitted, billing records are **immutable**. Triggers block all edit, update, or delete attempts on the database, including requests from Administrators. Double-check all billing entries before submitting.
+
+---
+
+### 8. Project Fund Reports
+
+This module tracks and manages actual financial disbursement records linked directly to project work orders.
+
+#### UI Controls and Features:
+* **Active vs. Deleted Tabs**: Toggle between the active disbursements list and a soft-deleted archive (visible to Administrators only).
+* **Project Info Auto-Fill Card**: Selecting a Work Order Number automatically loads project metadata from Master Data (Estimate No., Site Details, State, District, Zone, Department, and status).
+* **Search and Filter**: Real-time keyword filter by work order, location details, or remarks.
+* **Refreshed Stats Header**: Summarizes Total Disbursed amount (in INR), Active Reports, Running Projects count, and Closed Projects count.
+
+#### Fund Report Form Parameters:
+* **Work Order Number**: The alphanumeric work order identifier mapping the report to a project.
+* **Disbursed Amount (₹)**: Numeric value. Must be a finite, positive decimal.
+* **Payment Remarks / Reference**: Detailed transaction info (e.g., RTGS/NEFT transaction code, date, vendor details).
+
+#### Review, Soft-Delete, and Restore Actions:
+* **Edit Report**: Modify the disbursed amount and remarks for active records.
+* **Soft-Delete (Admin Only)**: Soft-delete active reports. Deleted reports are moved to the "Deleted" tab.
+* **Restore (Admin Only)**: Instantly restore a soft-deleted report, moving it back to the active list.
+
+> [!CAUTION]
+> **Project Closure Lock (Mutability Gate)**:
+> If a project's status in the Master Data is marked as **Closed**, all linked fund reports become completely **immutable**. 
+> * The system blocks any attempts to create new reports, edit details, soft-delete, or restore existing reports for that project.
+> * A warning banner displays on the UI if users open details for a closed project, and backend guards enforce this restriction with a `403 Forbidden` response.
 
 ---
 
 ## PART IV — Step-by-Step Role Workflows
 
-### 1. Junior Engineer (JE) Workflow
-*Goal: Initialize a project budget, log daily progress, and request materials.*
+---
 
-```mermaid
-graph TD
-    A[Log In & Get OTP] --> B[Browse Materials]
-    B --> C[Create Cost Estimate Draft]
-    C --> D[Submit Estimate for Review]
-    D -->|If ZO Requests Revision| E[Revise Estimate before Deadline]
-    D -->|If Approved| F[Log Daily Progress & Photos]
-    F --> G[Submit Payment Requisitions]
-```
+### Junior Engineer (JE) Workflow
+*Goal: Initialize a project budget, log daily progress, and log material invoices.*
 
-1. Log in and retrieve your OTP from the [@snpolymers_bot](t.me/snpolymers_bot).
-2. Go to **Cost Estimates**, click **New Sheet**, select the Work Order, add items, and click **Submit Estimate**.
-3. If a revision is requested, open the estimate, update the lines highlighted in orange, and resubmit before the countdown timer expires.
-4. Once the estimate is approved, log your progress daily on the **Daily Work Progress** screen, and upload a site photo.
-5. Create **Payment Requisitions** as vendor invoices arrive, uploading file copies.
+1. **Access the Portal**: Enter your mobile number on the login page, retrieve the OTP code from the [@snpolymers_bot](t.me/snpolymers_bot), and log in.
+2. **Draft a Cost Estimate**:
+   * Go to **Cost Estimates**, click **New Sheet**, and select the project's Work Order.
+   * Add estimate lines. Select category, sub-head, details, enter quantities and rates, and reference the pricing source.
+   * Click **Save as Draft** if you need to complete the estimate later.
+   * Click **Submit Estimate** when finished. The sheet status changes to `ZO Review` and editing locks.
+3. **Handle Revisions**:
+   * If a revision is requested, open the estimate and look for items highlighted in orange.
+   * Correct the flagged items and resubmit the sheet before the countdown timer expires.
+4. **Log Daily Progress**:
+   * Go to **Daily Work Progress**, select your project folder, and click **Log Progress Entry**.
+   * Select the date, slide progress from 0 to 100%, write a description of the day's achievements, upload a site photo, and click **Log Progress**.
+5. **Submit Invoices (Payment Requisitions)**:
+   * Go to **Payment Requisitions**, select your project folder, click **Create Requisition**, and complete the 3-step wizard.
+   * Enter the requisition number, main category, amount, select GST options, upload the invoice PDFs, enter bank details, and click **Submit Requisition**.
+6. **Submit Disbursement Reports (Fund Reports)**:
+   * Navigate directly to **Fund Reports** (at `/fund-reports`) to log disbursements.
+   * Select the target project to auto-fill details, input the disbursed amount, specify NEFT/RTGS transaction reference remarks, and submit the report.
 
 ---
 
-### 2. Zonal Office (ZO) Workflow
-*Goal: Review estimates, request local project funds, and create billing records.*
+### Zonal Office (ZO) Workflow
+*Goal: Review estimates, request zonal funds, and submit sequential bills.*
 
-```mermaid
-graph TD
-    A[Log In & Get OTP] --> B[Review JE Cost Estimates]
-    B -->|Approve| C[Submit Fund Request to HO]
-    B -->|Request Revision| D[Send Back to JE with Timer]
-    C -->|HO Disburses Funds| E[Create RA Bill & Upload Signed Copy]
-```
-
-1. Log in and go to **Cost Estimates** to review pending sheets.
-2. Click **Approve** to forward the estimate to the Head Office, or click **Request Revision** to send it back to the JE with a revision deadline.
-3. Once work begins, go to **Fund Requests**, click **New Request**, enter the amount, and submit it for HO approval.
-4. When work stages are completed, open **RA / Final Bills**, select the project, enter the bill measurements, upload the signed copy, and submit the record.
+1. **Review Project Budgets**:
+   * Go to **Cost Estimates** and select estimates marked `ZO Review`.
+   * Review the line items. Check purchase sources and rate assumptions.
+   * Select **Approve** to forward the estimate to the HO, or click **Request Revision** (requires comments and setting a revision deadline) to return it to the JE.
+2. **Submit Fund Requests**:
+   * Go to **Fund Requests** and click **New Request**.
+   * Select the target project, enter a reference number, input the amount needed, describe the purpose, and click **Submit Request**.
+3. **Register Project Billing**:
+   * Open **RA & Final Bills**, select the project, and click **Create Bill**.
+   * Select the next sequential bill index, enter dates, the bill reference, and gross amount.
+   * Input any deductions and check that the validation banner displays a green **Match** status.
+   * Upload the signed billing copy and click **Submit Bill**.
+4. **Submit Disbursement Reports (Fund Reports)**:
+   * Access `/fund-reports` to create transaction logs for zonal disbursements.
+   * Select the work order number, fill in the amount, add transaction/remarks details, and submit.
 
 ---
 
-### 3. Head Office (HO) Workflow
+### Head Office (HO) Workflow
 *Goal: Finalize estimate sheets, review regional fund requests, and authorize payments.*
 
-```mermaid
-graph TD
-    A[Log In & Get OTP] --> B[Review Submitted Estimates]
-    B -->|Final Approve| C[Review Pending Fund Requests]
-    B -->|Revision Required| D[Return to JE / ZO]
-    C -->|Allocate CC/OD/CR| E[Approve Fund Release]
-```
-
-1. Log in and check your **Active Queue** under **Cost Estimates**. Review and click **Final Approved**.
-2. Go to **Fund Requests**, review pending items, select a funding source account (CC, OD, or CR), and click **Approve** to release the funds.
-3. Monitor daily progress logs, photos, and RA billing history across zones.
-
----
-
-### 4. Administrator (Admin) Workflow
-*Goal: Manage users, catalog whitelists, and monitor system security logs.*
-
-```mermaid
-graph TD
-    A[Log In & Get OTP] --> B[Access Admin Panel]
-    B --> C[Manage Users & Whitelist]
-    B --> D[Configure Materials Catalog]
-    B --> E[Inspect System Audit Logs]
-```
-
-1. Log in and go to the **Admin Panel** in the sidebar.
-2. **Access Whitelist**: Add new employees, update active status, or click **Reset Telegram** if a user changes their mobile device.
-3. **Master Data**: Maintain the material categories and unit structures used in estimate forms.
-4. **Audit Trail Logs**: Review audit records to track system actions.
+1. **Finalize Cost Estimates**:
+   * Open **Cost Estimates** and set the queue toggle to **Active Queue** to see sheets marked `HO Review`.
+   * Review the details. Select **Final Approved** to activate the estimate, or select **Request Revision** to return it.
+2. **Disburse Project Funds**:
+   * Open **Fund Requests** and click on a request marked `Pending`.
+   * Select the funding source account: **CC** (Credit Control), **OD** (Overdraft), or **CR** (Cash Credit).
+   * Enter **HO Remarks** and click **Approve** to release the funds.
+3. **Monitor Project Portals**:
+   * Open **Daily Progress** to view daily logs, inspect site photos, and append remarks.
+   * Open **RA & Final Bills** to monitor project ledgers and download signed copies of bills.
+4. **Audit and Submit Fund Reports**:
+   * Navigate to `/fund-reports` to inspect the list of active disbursements or enter new executive disbursement entries for work orders.
 
 ---
 
-## PART V — System Administration
+### Administrator (Admin) Workflow
+*Goal: Manage users, whitelist credentials, and monitor system compliance.*
 
-Administrative options are accessible only to the `admin` role.
+1. **Manage Access Whitelist**:
+   * Open the **Admin Panel** in the sidebar and select **Access Whitelist**.
+   * Click **Add User** to whitelist new credentials. Enter the name, E.164 phone number, select their role, and click **Save**.
+   * Click **Edit** next to an entry to update roles or toggle active status.
+     > [!IMPORTANT]
+     > **Deactivation Security**: Deactivating a user automatically terminates their active session, logging them out of the platform.
+   * Use **Reset Telegram** to clear the chat ID webhook if a user changes their mobile device.
+2. **User Deletion Safety Checks**:
+   * The platform blocks user deletion if the user is linked to active records:
+     * Has drafted or submitted cost estimates.
+     * Has pending fund requests.
+     * Has pending payment requisitions.
+     * Has logged daily progress reports or approved progress evaluations.
+   * Deactivate the user instead of deleting to preserve audit history.
+3. **Maintain Master Catalog Data**:
+   * Navigate to **Master Data** under the Admin menu.
+   * Maintain category classifications, sub-heads, and units. Disable discontinued items so they cannot be selected in new estimates.
+4. **Monitor System Auditing Logs**:
+   * Navigate to the **Audit Trail Logs** console.
+   * Filter logs by operator, date range, or action type (e.g., login, estimate approval, fund release) to review platform activity.
+5. **Manage Project Fund Reports**:
+   * Navigate to `/fund-reports` to oversee active and soft-deleted reports. 
+   * Admins can update active reports, soft-delete records, toggle the **Deleted** tab to view deleted entries, and restore items.
 
-![Screenshot: System Whitelist Administration Panel](/docs/images/admin_whitelist_page.png)
-*Placeholder: Admin panel Whitelist table showing users, roles, and action buttons.*
+---
+
+## PART V — Administrative Console
+
+The Administrative Console is visible only to users logged in with the `admin` role.
 
 ### 1. Access Whitelist Management
-* **Add User Modal**: Input user name, mobile number, and select their role.
-* **Edit User Modal**: Update display names, roles, or toggle active status. Deactivating a user instantly terminates their active session.
-* **Reset Telegram Webhook**: Use this button if a user changes their phone number or needs to reconnect to the Telegram bot.
+* **Add User Modal**: Enter the user's name, mobile number, and role.
+* **Edit User Modal**: Update details or toggle active status.
+* **Reset Telegram Webhook**: Clears the mapped Chat ID. Use this if a user changes their phone number or needs to reconnect to the Telegram bot.
 
 ### 2. Purchase Options Manager
-* Manage the list of authorized vendors and funding accounts.
+* Maintain the database of approved vendors and funding accounts.
 * Add or edit supplier source names.
 
-### 3. Audit Trail Logs
+### 3. System Audit Trail Logs
 * Tracks every critical action in the system, including logins, estimate approvals, billing submissions, and admin changes.
-* Search by operator name or action type, and filter by date range.
+* Search logs by operator name, action type, or date range.
 
 ---
 
-## PART VI — Troubleshooting & FAQs
+## PART VI — Troubleshooting & Frequently Asked Questions
 
 ### Q: I did not receive my login OTP in Telegram.
-1. Make sure you entered your mobile number correctly on the login screen.
-2. Confirm with your Administrator that your mobile number is whitelisted.
-3. Open Telegram and search for [@snpolymers_bot](t.me/snpolymers_bot). Type `/start` to verify the connection.
+1. Check that you entered your mobile number correctly on the login page.
+2. Confirm with your Administrator that your mobile number is whitelisted and active.
+3. Open Telegram and search for [@snpolymers_bot](t.me/snpolymers_bot). Send a `/start` message to verify the connection.
+4. If you recently changed your device, contact your Administrator to click **Reset Telegram** on your whitelist entry.
 
 ### Q: The system says "Access Denied: Registered whitelisted credentials required."
 Your mobile number is not registered in the system whitelist. Contact your Administrator to add your details.
@@ -367,7 +508,12 @@ Cost estimates are locked once submitted. If you need to make changes, contact a
 Your revision deadline has expired. Contact your Zonal Office or an Administrator to extend the deadline.
 
 ### Q: Why was my file upload rejected?
-The server validates the file contents. Make sure you upload a clean, uncorrupted PDF, PNG, or JPG file. Other file types are blocked.
+The server validates file headers. Ensure you are uploading a clean, uncorrupted PDF, PNG, or JPG file. Other file types are blocked.
 
 ### Q: Why can't I create a new RA Bill?
 The system enforces sequential billing. You cannot create Bill $N$ unless Bill $N-1$ has been logged and completed.
+
+### Q: Why can't the Admin delete a user?
+The system blocks user deletion if the user is linked to active records. Deactivate the user instead to preserve audit history.
+
+---
