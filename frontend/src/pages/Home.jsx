@@ -26,6 +26,12 @@ const Home = () => {
             </div>
           </div>
           <nav className="flex items-center gap-4">
+            <Link
+              to="/docs"
+              className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-slate-105 transition-all duration-300"
+            >
+              Documentation
+            </Link>
             {user ? (
               <Link
                 to="/dashboard"

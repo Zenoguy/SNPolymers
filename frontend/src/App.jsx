@@ -24,6 +24,7 @@ import EstimateView from './pages/EstimateView';
 import Requisitions from './pages/Requisitions';
 import DailyProgress from './pages/DailyProgress';
 import RAFinalBill from './pages/RAFinalBill';
+import Docs from './pages/docs/Docs';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify-otp" element={<OtpVerify />} />
             <Route path="/telegram-setup" element={<TelegramSetup />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/docs/:pageId" element={<Docs />} />
 
             {/* Protected Routes (All Phase 2 Roles) */}
             <Route element={<ProtectedRoute allowedRoles={['staff', 'admin', 'je', 'zo', 'ho']} />}>
