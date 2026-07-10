@@ -289,13 +289,13 @@ describe('Milestone 8 — Notifications & Audit logs API', () => {
     test('Test 3: Validates manual STATUS_CHANGE audit records for full workflow lifecycle', async () => {
       expect(testEstimateId).not.toBeNull();
 
-      // Clean up audit logs
-      await supabase.from('audit_log').delete().eq('record_identifier', String(testEstimateId));
-
       // 1. Transition A: Draft -> Submitted (by JE)
       await supabase.from('project_cost_estimates')
         .update({ estimate_status: 'Draft', estimate_revision: 0 })
         .eq('estimate_id', testEstimateId);
+
+      // Clean up audit logs AFTER resetting to Draft
+      await supabase.from('audit_log').delete().eq('record_identifier', String(testEstimateId));
 
       const reqSubmit = {
         params: { id: testEstimateId },

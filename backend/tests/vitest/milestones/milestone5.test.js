@@ -523,8 +523,10 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
       console.log("===============================\n");
 
       expect(error).toBeNull();
-      expect(itemsAfter[0].zo_office_approve).toBe('Approve');
-      expect(itemsAfter[1].zo_office_approve).toBeNull();
+      const itemA = itemsAfter.find(i => i.material_details.includes('Cement A'));
+      const itemB = itemsAfter.find(i => i.material_details.includes('Cement B'));
+      expect(itemA.zo_office_approve).toBe('Approve');
+      expect(itemB.zo_office_approve).toBeNull();
 
       const { data: auditLogs } = await supabase.from('audit_log').select('*').eq('record_identifier', zarEstimateId).eq('action', 'AUTO_RESUBMIT');
       expect(auditLogs.length).toBe(1);

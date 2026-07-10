@@ -78,14 +78,15 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
           site_visit_date: testDate,
           work_progress_details: 'Duplicate details',
           physical_work_progress: 10,
-          daily_site_photo_url: 'dup.jpg'
+          daily_site_photo_url: 'dup.jpg',
+          remarks_after_site_visit: 'Duplicate backdate reason'
         }
       };
       const resDup = mockRes();
       await createProgressReport(reqDup, resDup);
 
       expect(resDup.statusCode).toBe(409);
-      expect(resDup.jsonData.message).toContain('already been submitted');
+      expect(resDup.jsonData.message).toContain('already submitted');
     });
 
     test('Test 3: Blocks absolute photo URL with 400 Bad Request', async () => {

@@ -33,13 +33,15 @@ describe('Milestone 7 — Cost Estimates HO Review API', () => {
     // Setup test users and estimate
     await supabase.from('authorised_users').delete().in('mobile_number', [testZoMobile, testJeMobile, testOtherMobile, testHoMobile]);
 
-    // Insert Users
-    await supabase.from('authorised_users').insert([
+    // Insert / Upsert Users
+    const { error: userError } = await supabase.from('authorised_users').upsert([
       { mobile_number: testZoMobile, display_name: 'Test ZO User', role: 'zo', is_active: true },
       { mobile_number: testJeMobile, display_name: 'Test JE User', role: 'je', is_active: true },
       { mobile_number: testOtherMobile, display_name: 'Other JE User', role: 'je', is_active: true },
-      { mobile_number: testHoMobile, display_name: 'Test HO User', role: 'ho', is_active: true }
-    ]);
+      { mobile_number: testHoMobile, display_name: 'Test HO User', role: 'ho', is_active: true },
+      { mobile_number: testAdminMobile, display_name: 'Test Admin User', role: 'admin', is_active: true }
+    ], { onConflict: 'mobile_number' });
+    if (userError) throw userError;
 
     // Clear active estimates for this work order to bypass unique checks
     await supabase.from('project_cost_estimates')

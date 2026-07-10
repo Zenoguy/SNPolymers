@@ -56,7 +56,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 1',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: testBillNo,
-        bill_amount_with_gst: 150000.00,
+        gross_bill: 150000.00,
         earnest_money_deposit: 1000.00,
         security_deposit_amount: 2000.00,
         bill_copy_url: 'test-uuid-path.pdf',
@@ -127,7 +127,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
       expect(updData[0].updated_at).not.toBe(initialData.updated_at);
     });
 
-    test('Test 4: Inserting with bill_amount_with_gst = 0 (expecting check constraint failure)', async () => {
+    test('Test 4: Inserting with gross_bill = -1 (expecting check constraint failure)', async () => {
       const invalidBill = {
         created_by: mobile,
         work_order_no: project.work_order_no,
@@ -139,7 +139,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 2',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_4`,
-        bill_amount_with_gst: 0,
+        gross_bill: -1,
         bill_copy_url: 'test.pdf'
       };
 
@@ -148,10 +148,10 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         .insert([invalidBill]);
 
       expect(error).not.toBeNull();
-      expect(error.message).toContain('chk_bill_amount_positive');
+      expect(error.message).toContain('chk_gross_bill_non_negative');
     });
 
-    test('Test 5: Inserting with bill_amount_with_gst = -500 (expecting check constraint failure)', async () => {
+    test('Test 5: Inserting with gross_bill = -500 (expecting check constraint failure)', async () => {
       const invalidBill = {
         created_by: mobile,
         work_order_no: project.work_order_no,
@@ -163,7 +163,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 2',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_5`,
-        bill_amount_with_gst: -500,
+        gross_bill: -500,
         bill_copy_url: 'test.pdf'
       };
 
@@ -172,7 +172,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         .insert([invalidBill]);
 
       expect(error).not.toBeNull();
-      expect(error.message).toContain('chk_bill_amount_positive');
+      expect(error.message).toContain('chk_gross_bill_non_negative');
     });
 
     test('Test 6: Inserting with earnest_money_deposit = -1 (expecting check constraint failure)', async () => {
@@ -187,7 +187,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 2',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_6`,
-        bill_amount_with_gst: 100.00,
+        gross_bill: 100.00,
         earnest_money_deposit: -1,
         bill_copy_url: 'test.pdf'
       };
@@ -212,7 +212,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 0',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_7`,
-        bill_amount_with_gst: 100.00,
+        gross_bill: 100.00,
         bill_copy_url: 'test.pdf'
       };
 
@@ -236,7 +236,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'ra bill 1',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_8`,
-        bill_amount_with_gst: 100.00,
+        gross_bill: 100.00,
         bill_copy_url: 'test.pdf'
       };
 
@@ -260,7 +260,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'Random String',
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_9`,
-        bill_amount_with_gst: 100.00,
+        gross_bill: 100.00,
         bill_copy_url: 'test.pdf'
       };
 
@@ -284,7 +284,7 @@ describe('Milestone P6-M1 — RA/Final Bill Database Foundation', () => {
         payment_type: 'RA Bill 1', // Duplicate of Test 1
         bill_date: new Date().toISOString().split('T')[0],
         bill_no: `${testBillNo}_dup`,
-        bill_amount_with_gst: 200000.00,
+        gross_bill: 200000.00,
         bill_copy_url: 'test.pdf'
       };
 

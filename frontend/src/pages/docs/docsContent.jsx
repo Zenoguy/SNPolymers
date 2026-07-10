@@ -297,20 +297,31 @@ export const docSections = [
         title: 'Console Dashboard',
         headings: [
           { id: 'dashboard-overview', text: 'Main Page Interface', level: 2 },
-          { id: 'dashboard-components', text: 'Dashboard Widgets', level: 2 }
+          { id: 'dashboard-role-adaptation', text: 'Dynamic Role-Based Presentation', level: 2 },
+          { id: 'dashboard-components', text: 'Dashboard Widgets & Live Refresh', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p id="dashboard-overview" className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Console Dashboard</strong> acts as the central home landing pad after completing secure OTP verification.
+              The <strong>Console Dashboard</strong> acts as the central command center of the IDBP application. Once your login session is verified via Telegram OTP, you are redirected here.
+            </p>
+            
+            <h2 id="dashboard-role-adaptation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dynamic Role-Based Presentation</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The dashboard dynamically changes its elements based on the operator's active permissions. JEs are presented with estimate draft buttons and site progress logs, whereas ZOs, HOs, and Admins are presented with summary gauges, pending approval queues, and system audit feeds.
             </p>
 
-            <h2 id="dashboard-components" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dashboard Widgets</h2>
-            <ul className="list-disc pl-5 space-y-2.5 text-slate-300 mt-3 text-xs">
-              <li><strong>Operator Profile Card</strong>: Displays phone details and active permission tags.</li>
-              <li><strong>Project Operations Overview</strong>: Counter cards showing overall project lists divided into <em>Total</em>, <em>Running</em>, and <em>Closed/Warranty</em> status categories. Also displays a timestamp of the last project data change.</li>
-              <li><strong>Budget Sheets Tracker</strong>: Counter widget capturing pending estimate draft approvals. Offers a quick button for engineers to launch a blank estimate sheet.</li>
-              <li><strong>Recent Activity Feed</strong>: A live action log displaying the last 4 database commands (e.g. status alterations, progress photo postings). Automatically fetches fresh data from the server every <strong>30 seconds</strong>.</li>
+            <h2 id="dashboard-components" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dashboard Widgets & Live Refresh</h2>
+            <ul className="list-disc pl-5 space-y-3.5 text-slate-300 mt-3 text-xs">
+              <li>
+                <strong>Operator Profile Details</strong>: Displays active session info, display name, whitelisted phone number, and dynamic privilege badges.
+              </li>
+              <li>
+                <strong>Project Status Counters</strong>: Categorizes and counts projects into <em>Total Registered</em>, <em>Running (Active)</em>, and <em>Closed (Finalized)</em> states.
+              </li>
+              <li>
+                <strong>Live Audit Logs Feed</strong>: Keeps track of recent database modifications (CREATE, UPDATE, STATUS_CHANGE) across all modules. This widget automatically polls the backend database every <strong>30 seconds</strong> to ensure all users see real-time updates.
+              </li>
             </ul>
           </div>
         )
@@ -320,29 +331,35 @@ export const docSections = [
         title: 'Material Master Catalog',
         headings: [
           { id: 'catalog-search', text: 'Search and Debounce Controls', level: 2 },
+          { id: 'catalog-active-status', text: 'Active/Inactive Status Logic', level: 2 },
           { id: 'catalog-export', text: 'Excel Catalog Exporting', level: 2 },
           { id: 'catalog-actions', text: 'Editing Materials (Admin)', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Material Master</strong> stores the catalog of items, tools, and labor grades used during estimation processes.
+              The <strong>Material Master Catalog</strong> is the centralized registry of civil engineering materials, equipment rentals, and labor heads. It enforces standard item names and unit configurations across all project sites.
             </p>
 
             <h2 id="catalog-search" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Search and Debounce Controls</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Use the search bar input at the top to filter items by keyword. The search uses a <strong>400ms debounce</strong> cycle, preventing repeated backend query triggers as you type. You can also filter catalog items by primary category, sub-category, or active status tags.
+              To prevent server resource exhaustion, the search bar implements a <strong>400ms client-side debounce</strong>. When searching for raw items (e.g., "Steel" or "Cement"), queries are only dispatched after you pause typing. Category filters and sub-heading dropdowns let you isolate specific supply lines.
+            </p>
+
+            <h2 id="catalog-active-status" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Active/Inactive Status Logic</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Materials can be toggled between <strong>Active</strong> and <strong>Inactive</strong>. Inactivating a catalog item hides it from Junior Engineers compiling new cost estimates, preventing obsolete material specifications.
             </p>
 
             <h2 id="catalog-export" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Excel Catalog Exporting</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Click <strong>Export to Excel</strong> to compile and download the current filtered material rows as a spreadsheet (<code className="text-slate-200">.xlsx</code> format) for regional procurement scheduling.
+              The catalog provides a one-click <strong>Export to Excel</strong> function. This compiles the current filtered view into a formatted spreadsheet (<code className="text-slate-200">.xlsx</code>) containing item descriptions, categories, units, and rates for offline pricing analysis.
             </p>
 
-            <h2 id="catalog-actions" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Editing Materials (Admin)</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              System Administrators can access an item creation modal to define new sub-headings, adjust measuring metrics (Bags, Tons, Days), or toggle item activity checkmarks (deactivating items blocks JEs from adding them to estimates).
-            </p>
+            <h2 id="catalog-actions" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Editing Materials (Admin Only)</h2>
+            <DocCallout type="note">
+              Only Administrators can add, edit, or toggle the activity status of catalog items. Any modification triggers a global audit trail log indicating the old and new values.
+            </DocCallout>
           </div>
         )
       },
@@ -350,34 +367,80 @@ export const docSections = [
         id: 'cost-estimates',
         title: 'Cost Estimating',
         headings: [
-          { id: 'estimate-list', text: 'Estimate Logs and Filtering', level: 2 },
-          { id: 'estimate-form', text: 'Priced Sheet Compilation', level: 2 },
-          { id: 'estimate-timeline', text: 'Revision Timelines and Limits', level: 2 }
+          { id: 'estimate-workflow', text: 'Estimate Approval Lifecycle', level: 2 },
+          { id: 'estimate-compilation', text: 'Priced Sheet Compilation & Grid Controls', level: 2 },
+          { id: 'estimate-drafts', text: 'Draft Sheets & Intermittent Saving', level: 2 },
+          { id: 'estimate-row-approvals', text: 'Row-Level Approvals & Rejections', level: 2 },
+          { id: 'estimate-telegram', text: 'Automated Telegram Dispatcher', level: 2 },
+          { id: 'estimate-auto-resubmit', text: 'Automatic Resubmission Mechanics', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Cost Estimates</strong> module is the business portal's heart, managing tender line item details and regional work budgets.
+              The <strong>Cost Estimates</strong> module manages the project budgets. It is designed to ensure strict quality checks, pricing controls, and automated review workflows.
             </p>
 
-            <h2 id="estimate-list" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Estimate Logs and Filtering</h2>
+            <h2 id="estimate-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Estimate Approval Lifecycle</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The estimates page displays log metrics, a workspace toggle to isolate <strong>Draft Sheets</strong>, and a dashboard table with work numbers, status indicators, contract value percentages, and action detail buttons.
+              Cost estimates progress through a strict multi-tier workflow:
             </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mt-2">
+              <div className="bg-white/5 p-3 rounded border border-white/5">
+                <span className="font-bold text-amber-400 block mb-1">ZO Stage Workflow</span>
+                <DocStepList
+                  steps={[
+                    { title: 'Draft', content: 'Created and edited solely by the assigned JE.' },
+                    { title: 'Submitted', content: 'Estimate sent by JE. Locks the sheet against further edits.' },
+                    { title: 'Under ZO Review', content: 'ZO Manager reviews individual line items.' },
+                    { title: 'ZO Approved / Rejected', content: 'Passed to HO if all rows approved; else returned to JE for revision.' }
+                  ]}
+                />
+              </div>
+              <div className="bg-white/5 p-3 rounded border border-white/5">
+                <span className="font-bold text-amber-400 block mb-1">HO Stage Workflow</span>
+                <DocStepList
+                  steps={[
+                    { title: 'Under HO Review', content: 'HO Director audits the ZO-approved cost estimate.' },
+                    { title: 'Final Approved', content: 'The estimate budget is locked, allowing project billing and procurement.' },
+                    { title: 'HO Revision Requested', content: 'Returned to JE for adjustments.' }
+                  ]}
+                />
+              </div>
+            </div>
 
-            <h2 id="estimate-form" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Priced Sheet Compilation</h2>
+            <h2 id="estimate-compilation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Priced Sheet Compilation & Grid Controls</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              To build a sheet, click <strong>New Sheet</strong>. Select a Work Order number to populate project metadata.
+              JEs compile estimate sheets using an interactive grid linked to the database:
             </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
-              <li><strong>Interactive Grid</strong>: Select item category heads, sub-heads, and material configurations. The system automatically populates read-only unit types.</li>
-              <li><strong>Dynamic Calculation</strong>: Input unit quantity and unit price values. The line row amount (<code className="text-amber-400">Qty × Rate</code>) and the gross estimate sum at the page footer update in real-time.</li>
-              <li><strong>Save Draft</strong>: Saves current rows as a draft locally on the backend database without routing the sheet to the reviewers' queues.</li>
+            <ul className="list-disc pl-5 space-y-2 text-slate-300 text-xs">
+              <li><strong>Real-time Totals</strong>: The row amount (<code className="text-slate-200">Qty × Rate</code>) and the gross estimate amount update instantly in the frontend grid.</li>
+              <li><strong>Duplicate Prevention</strong>: The grid blocks adding the exact same material multiple times.</li>
+              <li><strong>Transactional Rollback</strong>: On saving drafts or submitting, the backend processes items as a single transaction. If any row contains an invalid material ID, missing values, or negative numbers, the database performs a complete rollback to prevent corrupt data entry.</li>
             </ul>
 
-            <h2 id="estimate-timeline" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Revision Timelines and Limits</h2>
+            <h2 id="estimate-drafts" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Draft Sheets & Intermittent Saving</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Save Draft</strong> button allows JEs to store intermediate budget lines without locking the estimate or routing it to the reviewer queues. The draft remains editable and serves as a working copy.
+            </p>
+
+            <h2 id="estimate-row-approvals" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Row-Level Approvals & Rejections</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Reviewers audit estimates row-by-row rather than blindly approving sheets. ZOs and HOs mark each row as <em>Approve</em> or <em>Not Approve</em>. If a reviewer selects <strong>Not Approve</strong>, they must supply a justification in the row's remarks field. If undecided rows exist, the overall review submission is blocked.
+            </p>
+
+            <h2 id="estimate-telegram" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Automated Telegram Dispatcher</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              To keep the team aligned without delay, the backend is linked to our **Telegram Notification Gateway**:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Submissions</strong>: When a JE submits a new sheet, the system dispatches an alert to the Zonal Manager's registered Telegram handle.</li>
+              <li><strong>Approvals</strong>: Approving an estimate routes a release notification to Head Office directors.</li>
+              <li><strong>Revisions</strong>: If a revision is requested, the bot immediately alerts the JE with the comments and the submission timeline.</li>
+            </ul>
+
+            <h2 id="estimate-auto-resubmit" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Automatic Resubmission Mechanics</h2>
             <DocCallout type="important">
-              <strong>Revision Countdown Gate</strong>: When a Zonal Office or Head Office reviewer flags an estimate for revision, the system displays an orange countdown banner detailing a submission deadline. If this timeline expires, the estimate is locked against adjustments. Only an Administrator can reset this deadline.
+              <strong>Revision Countdown Gate</strong>: When a review is returned with a revision request, a countdown timer (defaulting to 24 hours) is registered. If the deadline expires, the next review attempt by the ZO or HO will automatically trigger an <strong>Auto-Resubmission</strong>. This updates the status back to <em>Submitted</em> (or <em>Under HO Review</em>), increments the revision cycle sequence, resets the rejected items to null for re-evaluation, and records an system audit log.
             </DocCallout>
           </div>
         )
@@ -386,26 +449,39 @@ export const docSections = [
         id: 'payment-requisitions',
         title: 'Payment Requisitions',
         headings: [
-          { id: 'requisition-logging', text: 'Invoice Filing', level: 2 },
-          { id: 'requisition-limits', text: 'Budget Constraint Enforcement', level: 2 }
+          { id: 'requisition-directory', text: 'Project Directory & Ledger View', level: 2 },
+          { id: 'requisition-workflow', text: 'Filing & Document Upload', level: 2 },
+          { id: 'requisition-limits', text: 'Budget Constraint Enforcement', level: 2 },
+          { id: 'requisition-ledger', text: 'Ledger and Purchase Mappings', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Payment Requisitions</strong> module tracks raw materials procurement and supplier ledger payments.
+              The <strong>Payment Requisitions</strong> module tracks material procurement invoices, sub-contractor bills, and supplier payments against project budgets.
             </p>
 
-            <h2 id="requisition-logging" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Invoice Filing</h2>
+            <h2 id="requisition-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Project Directory & Ledger View</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Engineers select a project folder to log invoice rows. Fields include Category Selection, Invoice Reference Number, Quantity, Unit Rate, GST declaration toggle, and an attachment uploader.
+              The interface divides controls between a global dashboard view and a **Project Directory**. Under the directory tab, you can search and filter the master work order list. Selecting a project work order opens a detailed, chronological table listing all requisition entries filed for that specific project, summarizing their approval state.
             </p>
-            <DocCallout type="warning">
-              <strong>Document Verification Gate</strong>: The backend inspects uploaded file headers. Files that are corrupt or do not match supported image/document formats (<code className="text-slate-200">.pdf</code>, <code className="text-slate-200">.png</code>, <code className="text-slate-200">.jpg</code>) are automatically rejected.
-            </DocCallout>
+
+            <h2 id="requisition-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Filing & Document Upload</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              To file a requisition, select a running project and input the invoice category, reference number, quantity, rate, and GST details. You must upload a scanned copy of the vendor invoice:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Format Validation</strong>: The backend checks files and rejects uploads that do not match supported formats (<code className="text-slate-200">.pdf</code>, <code className="text-slate-200">.png</code>, <code className="text-slate-200">.jpg</code>).</li>
+              <li><strong>UUID Obfuscation</strong>: Uploaded filenames are obfuscated using UUIDs to prevent directory path traversal vulnerabilities.</li>
+            </ul>
 
             <h2 id="requisition-limits" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Budget Constraint Enforcement</h2>
+            <DocCallout type="warning">
+              <strong>Strict Budget Block</strong>: Requisition values are validated in real-time. If a submitted amount (including tax options) exceeds the remaining budget of the approved project estimate, the database transaction blocks the entry. Only approved requisition values count towards the remaining budget.
+            </DocCallout>
+
+            <h2 id="requisition-ledger" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Ledger and Purchase Mappings</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The platform monitors budget balance values in real-time. Submitting a requisition value that exceeds the remaining balance of the approved project estimate triggers a system block, preventing submit validation.
+              Requisitions must map to specific suppliers and debit ledger sources. Administrators maintain vendor profiles and payment terms in the Purchase Options Manager to keep options consistent.
             </p>
           </div>
         )
@@ -414,23 +490,35 @@ export const docSections = [
         id: 'daily-progress',
         title: 'Daily Work Progress',
         headings: [
-          { id: 'progress-logging', text: 'Physical Site Updates', level: 2 },
-          { id: 'progress-timeline', text: 'Timeline View & Verification', level: 2 }
+          { id: 'progress-directory', text: 'Active Project Directory', level: 2 },
+          { id: 'progress-logging', text: 'On-Site Status Logging & Progress Tables', level: 2 },
+          { id: 'progress-backdate', text: 'Back-Date Validation & Approvals', level: 2 },
+          { id: 'progress-storage', text: 'Image Storage Security & Signed URLs', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Daily Work Progress</strong> log tracks on-site construction timeline schedules.
+              The <strong>Daily Work Progress</strong> module provides daily monitoring of physical site progress, establishing a detailed chronological audit trail of project completion.
             </p>
 
-            <h2 id="progress-logging" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Physical Site Updates</h2>
+            <h2 id="progress-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Active Project Directory</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Junior Engineers update project completion records by choosing a site visit date, writing an activity summary, entering the cumulative physical completion percentage (0 - 100%), and uploading a verification photograph.
+              The daily progress workspace features a **Project Directory** directory panel. Clicking on any work order folder opens the chronological logs dashboard for that site. This drills down into a historical table view of all daily progress entries logged by JEs.
             </p>
 
-            <h2 id="progress-timeline" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Timeline View & Verification</h2>
+            <h2 id="progress-logging" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">On-Site Status Logging & Progress Tables</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Updates display as an interactive vertical feed. Click progress photo thumbnails to view high-resolution snapshots. Zonal Office and Head Office managers use evaluation text fields on each update to log compliance notes.
+              Junior Engineers submit reports detailing site visit dates, work summaries, current physical progress percentages (rounded to integer values), and site photologs. These logs compile into a structured tabular progress feed for that work order.
+            </p>
+
+            <h2 id="progress-backdate" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Back-Date Validation & Approvals</h2>
+            <DocCallout type="important">
+              <strong>Back-Date Security Gate</strong>: Logging progress for a past date requires writing a detailed remark justifying the delayed submission. Back-dated reports are marked as <strong>Pending Approval</strong>. They do not appear in the public project timelines until reviewed and approved by Zonal or Head Office authorities.
+            </DocCallout>
+
+            <h2 id="progress-storage" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Image Storage Security & Signed URLs</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Site photos are stored in a private Supabase storage bucket. The app denies direct public URLs. Instead, temporary **Signed URLs** with a 1-hour expiration token are generated dynamically for authorized users, securing site photos against unauthorized access.
             </p>
           </div>
         )
@@ -439,23 +527,28 @@ export const docSections = [
         id: 'fund-requests',
         title: 'Fund Requests',
         headings: [
-          { id: 'request-metrics', text: 'Financial Metrics Dashboard', level: 2 },
-          { id: 'request-approval', text: 'Allocation and Review Gate', level: 2 }
+          { id: 'fund-metrics', text: 'Financial Gauges & Accounts', level: 2 },
+          { id: 'fund-workflow', text: 'Review and Source Allocation', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Fund Requests</strong> module manages cash transfers to zonal bank accounts to settle site liabilities.
+              The <strong>Fund Requests</strong> module manages cash disbursement requests filed by Zonal Managers to settle local supplier and sub-contractor liabilities.
             </p>
 
-            <h2 id="request-metrics" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Financial Metrics Dashboard</h2>
+            <h2 id="fund-metrics" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Financial Gauges & Accounts</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              This panel displays counters for requested, approved, and pending funds. Integrated charts display active statuses (pie chart) and remaining cash values across Credit Control (CC), Overdraft (OD), and Cash Credit (CR) accounts (bar chart).
+              The module dashboard features allocation gauges displaying remaining credits across active accounts:
             </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Credit Control (CC)</strong>: Primary cash account.</li>
+              <li><strong>Overdraft (OD)</strong>: Short-term credit line.</li>
+              <li><strong>Cash Credit (CR)</strong>: Secondary working capital account.</li>
+            </ul>
 
-            <h2 id="request-approval" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Allocation and Review Gate</h2>
+            <h2 id="fund-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Review and Source Allocation</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Zonal Officers can submit request rows detailing targets and local remarks. Head Office approvers review the request drawer, select the debit ledger source (CC, OD, or CR), and click <strong>Approve</strong> or <strong>Place on Hold</strong>.
+              Zonal Officers file fund requests in a <em>Pending</em> state. Head Office reviewers audit request details, select the source debit account (CC, OD, or CR), and input approval comments. Releasing funds updates account ledger balances.
             </p>
           </div>
         )
@@ -464,27 +557,42 @@ export const docSections = [
         id: 'ra-final-bills',
         title: 'RA & Final Bills',
         headings: [
-          { id: 'bill-calculations', text: 'Bill Balance Logs', level: 2 },
-          { id: 'bill-constraints', text: 'System Safeguards & Security', level: 2 }
+          { id: 'bill-directory', text: 'Billing Directory & Work Order Selection', level: 2 },
+          { id: 'bill-calculations', text: 'Bill Balance Logs & Breakdown Integrity', level: 2 },
+          { id: 'bill-sequence', text: 'Sequential Bill Verification', level: 2 },
+          { id: 'bill-immutability', text: 'Permanent Immutability Safeguard', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>RA / Final Bills</strong> spreadsheet registers client progress invoice logs.
+              The <strong>Running Account (RA) & Final Bills</strong> ledger records formal project invoices submitted to clients for civil works completed.
             </p>
 
-            <h2 id="bill-calculations" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Bill Balance Logs</h2>
+            <h2 id="bill-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Billing Directory & Work Order Selection</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The billing ledger calculates and displays cumulative billing values (previously billed, current bill amount, and remaining project values). Zonal Managers log billing rows and upload signed PDF billing records.
+              The workspace provides a **Billing Directory** view showing all work orders. Selecting a project opens its specific Billing Ledger Sheet. This presents a chronological table listing all historical RA bill entries and balance computations for that project work order.
             </p>
 
-            <h2 id="bill-constraints" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">System Safeguards & Security</h2>
+            <h2 id="bill-calculations" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Bill Balance Logs & Breakdown Integrity</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Every bill entry calculates previous billings, the current invoice value, and remaining project contract values. The backend enforces a strict breakdown sum rule:
+            </p>
+            <div className="bg-white/5 p-3 rounded font-mono text-[11px] text-amber-400 border border-white/5 mt-2">
+              Gross Bill = Agency Payment + Security Deposit + Earnest Money Deposit + Special Security + Other Retentions + IT TDS + Taxes (SGST & CGST)
+            </div>
+            <p className="text-slate-300 text-xs mt-2">
+              If the submitted gross bill deviates from the sum of these breakdown fields (by 0.01 or more), the API rejects the request with a validation error.
+            </p>
+
+            <h2 id="bill-sequence" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Sequential Bill Verification</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              To ensure sequential billing compliance, the database validates billing logs. Creating a bill labeled <em>RA Bill N</em> is blocked unless a record for <em>RA Bill N-1</em> exists in the work order directory.
+            </p>
+
+            <h2 id="bill-immutability" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Permanent Immutability Safeguard</h2>
             <DocCallout type="caution">
-              <strong>Immutable Audit Log</strong>: To preserve accounting integrity, billing records cannot be edited or deleted by any user level (including administrators) once written to the database.
+              <strong>Immutable Database Records</strong>: Once written, RA and Final Bill records cannot be edited, modified, or deleted by any user role (including System Administrators). This constraint is enforced by database triggers and API validation layers.
             </DocCallout>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 mt-3 text-xs">
-              <li><strong>Billing Sequence</strong>: The system enforces sequential billing. The database blocks billing row $N$ unless billing row $N-1$ is registered in the system index.</li>
-            </ul>
           </div>
         )
       },

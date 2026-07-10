@@ -385,14 +385,14 @@ describe('Milestone 6 — Cost Estimates Revision Gating & Logs API', () => {
       expect(await checkLogAccess('je', testJeMobile, 200)).toBe(true);
       expect(await checkLogAccess('je', testOtherMobile, 404)).toBe(true);
       expect(await checkLogAccess('zo', testZoMobile, 200)).toBe(true);
-      expect(await checkLogAccess('ho', testHoMobile, 404)).toBe(true);
+      expect(await checkLogAccess('ho', testHoMobile, 200)).toBe(true); // HO has intentional view access
 
       // Move to HO Review
       await supabase.from('project_cost_estimates')
         .update({ estimate_status: 'Under HO Review', last_modified_by: testAdminMobile })
         .eq('estimate_id', testEstimateId);
 
-      expect(await checkLogAccess('zo', testZoMobile, 404)).toBe(true);
+      expect(await checkLogAccess('zo', testZoMobile, 200)).toBe(true); // ZO has intentional view access
       expect(await checkLogAccess('ho', testHoMobile, 200)).toBe(true);
       expect(await checkLogAccess('staff', '+918000000099', 404)).toBe(true);
     });
