@@ -304,6 +304,7 @@ const FundRequests = () => {
                     requests={filteredRequests}
                     user={user}
                     onRowClick={handleRowClick}
+                    onActionClick={handleRowClick}
                     onCancelClick={(id, no) => setCancelTarget({ id, no })}
                   />
                 )}

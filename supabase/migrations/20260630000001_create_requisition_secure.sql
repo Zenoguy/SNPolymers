@@ -118,3 +118,5 @@ $$;
 -- Grant execute permissions to standard roles
 GRANT EXECUTE ON FUNCTION public.create_requisition_secure TO authenticated;
 GRANT EXECUTE ON FUNCTION public.create_requisition_secure TO service_role;
+
+

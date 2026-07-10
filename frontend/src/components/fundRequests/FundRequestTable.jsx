@@ -62,7 +62,7 @@ const FundRequestTable = ({ requests, user, onRowClick, onActionClick, onCancelC
                     <Button
                       variant="success"
                       size="xs"
-                      onClick={() => onActionClick(req)}
+                      onClick={() => onActionClick ? onActionClick(req) : onRowClick && onRowClick(req)}
                     >
                       Take Action
                     </Button>

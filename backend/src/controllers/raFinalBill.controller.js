@@ -248,11 +248,16 @@ async function getBills(req, res) {
       .select('*', { count: 'exact' });
 
     if (work_order_no) {
-      query = query.eq('work_order_no', work_order_no.trim());
+      query = query.ilike('work_order_no', `%${work_order_no.trim()}%`);
     }
 
     if (payment_type) {
-      query = query.eq('payment_type', payment_type.trim());
+      const typeTrim = payment_type.trim();
+      if (typeTrim === 'RA Bill') {
+        query = query.like('payment_type', 'RA Bill %');
+      } else {
+        query = query.eq('payment_type', typeTrim);
+      }
     }
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
