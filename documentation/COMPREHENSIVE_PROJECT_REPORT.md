@@ -1,10 +1,7 @@
 # COMPREHENSIVE PROJECT & ENGINEERING REPORT
 ## Integrated Digital Business Platform (IDBP) | S.N. Polymers Pvt. Ltd.
 
-### Project Development Team (Authors)
-* **Shreyan Ghosh** — Lead System Architect & Backend Engineer
-* **Aryak Pal** — Principal Full-Stack Developer & Database Administrator
-* **Aswint Guha** — UI/UX Lead & Security Specialist
+### Project Development Team - Shreyan Ghosh, Aswint Guha , Aryak Pal
 
 ---
 
