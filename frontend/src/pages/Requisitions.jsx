@@ -1252,11 +1252,12 @@ const Requisitions = () => {
   const getFilteredRequisitions = () => {
     let list = [...requisitions];
     
-    // Filter by tab if role is zo, ho, admin
-    if (['zo', 'ho', 'admin'].includes(user?.role)) {
-      if (currentTab === 'pending') {
-        list = list.filter(r => r.requisition_status === 'Pending');
-      }
+    if (currentTab === 'pending') {
+      list = list.filter(r => r.requisition_status === 'Pending');
+    } else if (currentTab === 'approved') {
+      list = list.filter(r => r.requisition_status === 'Approved');
+    } else if (currentTab === 'hold') {
+      list = list.filter(r => r.requisition_status === 'Hold');
     }
 
     const q = search.toLowerCase();
@@ -1517,33 +1518,51 @@ const Requisitions = () => {
         ) : (
           <div className="space-y-6 animate-fadeIn">
             {/* Search Bar, Tabs & Refresh */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
-              <div className="flex items-center gap-1 glass-panel p-1 rounded-xl border border-white/5">
-                {['zo', 'ho', 'admin'].includes(user?.role) && (
-                  <button
-                    onClick={() => setCurrentTab('pending')}
-                    className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
-                      currentTab === 'pending'
-                        ? 'bg-white/10 text-slate-100 border border-white/10'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    Pending Queue ({requisitions.filter(r => r.requisition_status === 'Pending').length})
-                  </button>
-                )}
+            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-5">
+              <div className="flex flex-wrap items-center gap-1 glass-panel p-1 rounded-xl border border-white/5">
+                <button
+                  onClick={() => setCurrentTab('pending')}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    currentTab === 'pending'
+                      ? 'bg-white/10 text-slate-100 border border-white/10'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Pending ({requisitions.filter(r => r.requisition_status === 'Pending').length})
+                </button>
+                <button
+                  onClick={() => setCurrentTab('approved')}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    currentTab === 'approved'
+                      ? 'bg-white/10 text-slate-100 border border-white/10'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Approved ({requisitions.filter(r => r.requisition_status === 'Approved').length})
+                </button>
+                <button
+                  onClick={() => setCurrentTab('hold')}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    currentTab === 'hold'
+                      ? 'bg-white/10 text-slate-100 border border-white/10'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Hold ({requisitions.filter(r => r.requisition_status === 'Hold').length})
+                </button>
                 <button
                   onClick={() => setCurrentTab('all')}
-                  className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'all'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  All Requisitions ({requisitions.length})
+                  All ({requisitions.length})
                 </button>
                 <button
                   onClick={() => setCurrentTab('directory')}
-                  className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'directory'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
                       : 'text-slate-400 hover:text-slate-200'

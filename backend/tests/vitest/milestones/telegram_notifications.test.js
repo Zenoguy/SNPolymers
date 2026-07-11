@@ -4,7 +4,9 @@ const {
   notifyHoFundRequestSubmitted,
   notifyZoFundRequestHeld,
   notifyZoRequisitionSubmitted,
+  notifyHoRequisitionSubmitted,
   notifyJeRequisitionActed,
+  notifyZoAndHoRequisitionActed,
   notifyAllEstimateFinalApproved
 } = require('../../../src/services/telegram.service');
 
@@ -323,6 +325,127 @@ describe('Telegram Notifications Suite', () => {
                          logs.toLowerCase().includes('failed') ||
                          logs.toLowerCase().includes('warning') ||
                          logs.toLowerCase().includes('no active users');
+    expect(hasAttempted).toBe(true);
+  });
+
+  test('Test 7: notifyHoRequisitionSubmitted logs notification trigger', async () => {
+    process.env.NODE_ENV = 'development';
+
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    let logs = '';
+
+    console.log = (...args) => { logs += args.join(' ') + '\n'; originalLog(...args); };
+    console.warn = (...args) => { logs += args.join(' ') + '\n'; originalWarn(...args); };
+    console.error = (...args) => { logs += args.join(' ') + '\n'; originalError(...args); };
+
+    const mockReq = {
+      requester_user_id: jeUserBackup?.mobile_number || '+918888888888',
+      requisition_no: 'TEST_REQ_NOTIF_HO_SUB',
+      work_order_no: 'WO-001',
+      site_details: 'Main street site',
+      material_main_head: 'Cement',
+      requisition_amount: 50000.00,
+      expen_head_remarks: 'Required cement for slab'
+    };
+
+    try {
+      await notifyHoRequisitionSubmitted(mockReq);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+      process.env.NODE_ENV = originalEnvNodeEnv;
+    }
+
+    const hasAttempted = logs.toLowerCase().includes('sent') ||
+                         logs.toLowerCase().includes('failed') ||
+                         logs.toLowerCase().includes('warning') ||
+                         logs.toLowerCase().includes('no active ho');
+    expect(hasAttempted).toBe(true);
+  });
+
+  test('Test 8: notifyZoAndHoRequisitionActed (Approved) logs notification trigger', async () => {
+    process.env.NODE_ENV = 'development';
+
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    let logs = '';
+
+    console.log = (...args) => { logs += args.join(' ') + '\n'; originalLog(...args); };
+    console.warn = (...args) => { logs += args.join(' ') + '\n'; originalWarn(...args); };
+    console.error = (...args) => { logs += args.join(' ') + '\n'; originalError(...args); };
+
+    const mockReq = {
+      requester_user_id: jeUserBackup?.mobile_number || '+918888888888',
+      requisition_no: 'TEST_REQ_NOTIF_HO_APP',
+      work_order_no: 'WO-001',
+      requisition_amount: 50000.00
+    };
+
+    const mockUpdatedReq = {
+      requisition_status: 'Approved',
+      approved_amount: 45000.00,
+      remarks_approved_authority: 'Approved slightly lower amount',
+      approved_user_id: hoUserBackup?.mobile_number || '+919999999999'
+    };
+
+    try {
+      await notifyZoAndHoRequisitionActed(mockReq, mockUpdatedReq);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+      process.env.NODE_ENV = originalEnvNodeEnv;
+    }
+
+    const hasAttempted = logs.toLowerCase().includes('sent') ||
+                         logs.toLowerCase().includes('failed') ||
+                         logs.toLowerCase().includes('warning') ||
+                         logs.toLowerCase().includes('no active zo/ho');
+    expect(hasAttempted).toBe(true);
+  });
+
+  test('Test 9: notifyZoAndHoRequisitionActed (Hold) logs notification trigger', async () => {
+    process.env.NODE_ENV = 'development';
+
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    let logs = '';
+
+    console.log = (...args) => { logs += args.join(' ') + '\n'; originalLog(...args); };
+    console.warn = (...args) => { logs += args.join(' ') + '\n'; originalWarn(...args); };
+    console.error = (...args) => { logs += args.join(' ') + '\n'; originalError(...args); };
+
+    const mockReq = {
+      requester_user_id: jeUserBackup?.mobile_number || '+918888888888',
+      requisition_no: 'TEST_REQ_NOTIF_HO_HOLD',
+      work_order_no: 'WO-001',
+      requisition_amount: 50000.00
+    };
+
+    const mockUpdatedReq = {
+      requisition_status: 'Hold',
+      remarks_approved_authority: 'Placed on hold for clarification',
+      approved_user_id: zoUserBackup?.mobile_number || '+918000000002'
+    };
+
+    try {
+      await notifyZoAndHoRequisitionActed(mockReq, mockUpdatedReq);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+      process.env.NODE_ENV = originalEnvNodeEnv;
+    }
+
+    const hasAttempted = logs.toLowerCase().includes('sent') ||
+                         logs.toLowerCase().includes('failed') ||
+                         logs.toLowerCase().includes('warning') ||
+                         logs.toLowerCase().includes('no active zo/ho');
     expect(hasAttempted).toBe(true);
   });
 });

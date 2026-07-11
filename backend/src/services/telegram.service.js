@@ -526,7 +526,6 @@ async function notifyZoFundRequestApproved(originalRequest, updatedRequest) {
         `[FUND REQUEST] ZO user ${originalRequest.zo_user_id} has no Telegram chat ID configured. ` +
         `Fund Request: ${originalRequest.fund_request_id}, FR No: ${originalRequest.zo_fr_no}`
       );
-      return;
     }
 
     const activeToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -537,36 +536,83 @@ async function notifyZoFundRequestApproved(originalRequest, updatedRequest) {
       return;
     }
 
+    const recipients = [];
+    if (zoUser && zoUser.telegram_chat_id && zoUser.telegram_chat_id.trim() !== '') {
+      recipients.push(zoUser);
+    }
+
+    // Now query active HO users
+    const { data: hoUsers, error: hoErr } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('role', 'ho')
+      .eq('is_active', true)
+      .not('telegram_chat_id', 'is', null);
+
+    if (hoErr) {
+      console.warn(`[FUND REQUEST] Failed to retrieve HO users:`, hoErr);
+    } else if (hoUsers) {
+      for (const ho of hoUsers) {
+        if (ho.telegram_chat_id && ho.telegram_chat_id.trim() !== '' && ho.telegram_chat_id !== zoUser?.telegram_chat_id) {
+          recipients.push(ho);
+        }
+      }
+    }
+
+    if (recipients.length === 0) {
+      console.warn(
+        `[FUND REQUEST] No active ZO/HO users configured with Telegram chat IDs for fund request approval notification. ` +
+        `FR No: ${originalRequest?.zo_fr_no || 'N/A'}`
+      );
+      return;
+    }
+
     const approvedAmount = Number(updatedRequest.approve_ho_amount);
     const requestedAmount = Number(originalRequest.zo_fr_amount);
     const account = escapeHtml(updatedRequest.transfer_from_account || 'N/A');
 
-    // Escape using HTML-escape rather than markdown regex
     const frNoClean = escapeHtml(originalRequest.zo_fr_no || 'N/A');
     const remarksClean = escapeHtml(updatedRequest.ho_remarks || 'None');
 
+    // Fetch ZO requester name
+    const zoRequesterName = zoUser?.display_name || originalRequest.zo_user_id || 'N/A';
+
+    // Fetch HO actor name
+    const { data: hoActor } = await supabase
+      .from('authorised_users')
+      .select('display_name')
+      .eq('mobile_number', updatedRequest.approve_ho_user_id)
+      .maybeSingle();
+    const hoActorName = hoActor?.display_name || updatedRequest.approve_ho_user_id || 'N/A';
+
     const messageText =
-      `✅ <b>Fund Request Approved</b>\n\n` +
+      `✅ <b>Fund Request Approved by HO</b>\n\n` +
       `<b>Fund Request No:</b> ${frNoClean}\n` +
+      `<b>Requested By ZO:</b> ${escapeHtml(zoRequesterName)}\n` +
       `<b>Requested Amount:</b> ₹${requestedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
       `<b>Approved Amount:</b> ₹${approvedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+      `<b>Approved By HO:</b> ${escapeHtml(hoActorName)}\n` +
       `<b>Transfer Account:</b> ${account}\n` +
       `<b>HO Remarks:</b> ${remarksClean}\n\n` +
-      `Your fund request has been approved. Funds will be transferred from the <b>${account}</b> account.`;
+      `The fund request has been approved. Funds will be transferred from the <b>${account}</b> account.`;
 
     const apiBase = `https://api.telegram.org/bot${activeToken}`;
-    const url = `${apiBase}/sendMessage?chat_id=${encodeURIComponent(zoUser.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!data.ok) {
-      console.warn(
-        `[FUND REQUEST] Telegram notification failed for ${zoUser.display_name}: ${data.description}`
-      );
-    } else {
-      console.log(`[FUND REQUEST] Approval notification sent to ${zoUser.display_name}`);
+    for (const recipient of recipients) {
+      try {
+        const url = `${apiBase}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id.trim())}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!data.ok) {
+          console.warn(
+            `[FUND REQUEST] Telegram notification failed for ${recipient.display_name}: ${data.description}`
+          );
+        } else {
+          console.log(`[FUND REQUEST] Approval notification sent to ${recipient.display_name}`);
+        }
+      } catch (err) {
+        console.warn(`[FUND REQUEST] Failed to send message to ${recipient.display_name}: ${err.message}`);
+      }
     }
-
   } catch (error) {
     console.error(`[FUND REQUEST] notifyZoFundRequestApproved failed: ${error.message}`);
   }
@@ -846,6 +892,79 @@ async function notifyZoRequisitionSubmitted(requisition) {
   }
 }
 
+async function notifyHoRequisitionSubmitted(requisition) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  try {
+    const { data: hoUsers, error } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('role', 'ho')
+      .eq('is_active', true)
+      .not('telegram_chat_id', 'is', null);
+
+    if (error) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve active HO users for requisition: ${error.message}`);
+      return;
+    }
+
+    const recipients = (hoUsers || []).filter(u => u.telegram_chat_id && u.telegram_chat_id.trim() !== '');
+    if (recipients.length === 0) {
+      console.warn(
+        `[TELEGRAM ALERTS] No active HO users configured with Telegram chat IDs for requisition submission. ` +
+        `Requisition No: ${requisition?.requisition_no || 'N/A'}`
+      );
+      return;
+    }
+
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.warn(`[TELEGRAM ALERTS] TELEGRAM_BOT_TOKEN is not set.`);
+      return;
+    }
+
+    const { data: jeUser } = await supabase
+      .from('authorised_users')
+      .select('display_name')
+      .eq('mobile_number', requisition.requester_user_id)
+      .maybeSingle();
+    const jeName = jeUser?.display_name || requisition.requester_user_id || 'N/A';
+
+    const reqNo = escapeHtml(requisition.requisition_no || 'N/A');
+    const workOrder = escapeHtml(requisition.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(requisition.site_details || 'N/A');
+    const materialHead = escapeHtml(requisition.material_main_head || 'N/A');
+    const amount = Number(requisition.requisition_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const remarks = escapeHtml(requisition.expen_head_remarks || 'None');
+
+    const messageText =
+      `📥 <b>New Payment Requisition Submitted</b>\n\n` +
+      `<b>Requisition No:</b> ${reqNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Material Head:</b> ${materialHead}\n` +
+      `<b>Amount:</b> ₹${amount}\n` +
+      `<b>Submitted By:</b> ${escapeHtml(jeName)}\n` +
+      `<b>Remarks:</b> ${remarks}\n\n` +
+      `Please review this requisition on the IDBP dashboard.`;
+
+    for (const recipient of recipients) {
+      try {
+        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!data.ok) {
+          console.warn(`[TELEGRAM ALERTS] Failed to send requisition notification to ${recipient.display_name}: ${data.description}`);
+        }
+      } catch (err) {
+        console.warn(`[TELEGRAM ALERTS] Failed to send requisition notification to ${recipient.display_name}: ${err.message}`);
+      }
+    }
+  } catch (error) {
+    console.error(`[TELEGRAM ALERTS] notifyHoRequisitionSubmitted failed: ${error.message}`);
+  }
+}
+
 async function notifyJeRequisitionActed(originalRequisition, updatedRequisition) {
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -921,6 +1040,115 @@ async function notifyJeRequisitionActed(originalRequisition, updatedRequisition)
     console.error(`[TELEGRAM ALERTS] notifyJeRequisitionActed failed: ${error.message}`);
   }
 }
+
+async function notifyZoAndHoRequisitionActed(originalRequisition, updatedRequisition) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  try {
+    const { data: zoUsers, error: zoErr } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('role', 'zo')
+      .eq('is_active', true)
+      .not('telegram_chat_id', 'is', null);
+
+    const { data: hoUsers, error: hoErr } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('role', 'ho')
+      .eq('is_active', true)
+      .not('telegram_chat_id', 'is', null);
+
+    if (zoErr || hoErr) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve recipients for requisition action:`, zoErr || hoErr);
+      return;
+    }
+
+    const combined = [...(zoUsers || []), ...(hoUsers || [])];
+    const seen = new Set();
+    const recipients = [];
+    for (const r of combined) {
+      if (r.telegram_chat_id && r.telegram_chat_id.trim() !== '' && !seen.has(r.telegram_chat_id)) {
+        seen.add(r.telegram_chat_id);
+        recipients.push(r);
+      }
+    }
+
+    if (recipients.length === 0) {
+      console.warn(
+        `[TELEGRAM ALERTS] No active ZO/HO users configured with Telegram chat IDs for requisition action notification. ` +
+        `Requisition No: ${originalRequisition?.requisition_no || 'N/A'}`
+      );
+      return;
+    }
+
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.warn(`[TELEGRAM ALERTS] TELEGRAM_BOT_TOKEN is not set.`);
+      return;
+    }
+
+    // Fetch actor's display name and role
+    const { data: actorUser } = await supabase
+      .from('authorised_users')
+      .select('display_name, role')
+      .eq('mobile_number', updatedRequisition.approved_user_id)
+      .maybeSingle();
+    const actorName = actorUser?.display_name || updatedRequisition.approved_user_id || 'N/A';
+    const actorRole = (actorUser?.role || 'Authority').toUpperCase();
+
+    const action = updatedRequisition.requisition_status;
+    const reqNo = escapeHtml(originalRequisition.requisition_no || 'N/A');
+    const workOrder = escapeHtml(originalRequisition.work_order_no || 'N/A');
+    const requestedAmount = Number(originalRequisition.requisition_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const remarks = escapeHtml(updatedRequisition.remarks_approved_authority || 'None');
+
+    let messageText = '';
+    if (action === 'Approved') {
+      const approvedAmount = Number(updatedRequisition.approved_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      messageText =
+        `✅ <b>Payment Requisition Approved by ${actorRole}</b>\n\n` +
+        `<b>Requisition No:</b> ${reqNo}\n` +
+        `<b>Work Order:</b> ${workOrder}\n` +
+        `<b>Requested Amount:</b> ₹${requestedAmount}\n` +
+        `<b>Approved Amount:</b> ₹${approvedAmount}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
+        `<b>Remarks:</b> ${remarks}`;
+    } else if (action === 'Hold') {
+      messageText =
+        `⚠️ <b>Payment Requisition Placed on Hold by ${actorRole}</b>\n\n` +
+        `<b>Requisition No:</b> ${reqNo}\n` +
+        `<b>Work Order:</b> ${workOrder}\n` +
+        `<b>Requested Amount:</b> ₹${requestedAmount}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
+        `<b>Remarks:</b> ${remarks}`;
+    } else {
+      messageText =
+        `🔔 <b>Payment Requisition Status Updated by ${actorRole}</b>\n\n` +
+        `<b>Requisition No:</b> ${reqNo}\n` +
+        `<b>Work Order:</b> ${workOrder}\n` +
+        `<b>New Status:</b> ${action}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
+        `<b>Remarks:</b> ${remarks}`;
+    }
+
+    for (const recipient of recipients) {
+      try {
+        const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(recipient.telegram_chat_id)}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!data.ok) {
+          console.warn(`[TELEGRAM ALERTS] Failed to send requisition action notification to ${recipient.display_name}: ${data.description}`);
+        }
+      } catch (err) {
+        console.warn(`[TELEGRAM ALERTS] Failed to send requisition action notification to ${recipient.display_name}: ${err.message}`);
+      }
+    }
+  } catch (error) {
+    console.error(`[TELEGRAM ALERTS] notifyZoAndHoRequisitionActed failed: ${error.message}`);
+  }
+}
+
 
 async function notifyZoAndHoBackdatedProgressSubmitted(progressReport) {
   if (process.env.NODE_ENV === 'test') {
@@ -1202,7 +1430,9 @@ module.exports = {
   notifyHoFundRequestSubmitted,
   notifyZoFundRequestHeld,
   notifyZoRequisitionSubmitted,
+  notifyHoRequisitionSubmitted,
   notifyJeRequisitionActed,
+  notifyZoAndHoRequisitionActed,
   notifyZoAndHoBackdatedProgressSubmitted,
   notifyJeProgressActed,
   notifyAllEstimateFinalApproved

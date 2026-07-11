@@ -196,9 +196,12 @@ async function createRequisition(req, res) {
     }, 0);
     const resRemaining = estimateAmount !== null ? estimateAmount - committedAmt : null;
 
-    const { notifyZoRequisitionSubmitted } = require('../services/telegram.service');
+    const { notifyZoRequisitionSubmitted, notifyHoRequisitionSubmitted } = require('../services/telegram.service');
     notifyZoRequisitionSubmitted(newReq).catch(err => {
       console.error(`[REQUISITION] Telegram notification failed: ${err.message}`);
+    });
+    notifyHoRequisitionSubmitted(newReq).catch(err => {
+      console.error(`[REQUISITION] Telegram notification to HO failed: ${err.message}`);
     });
 
     return res.status(201).json({
@@ -484,9 +487,12 @@ async function actOnRequisition(req, res) {
       });
     }
 
-    const { notifyJeRequisitionActed } = require('../services/telegram.service');
+    const { notifyJeRequisitionActed, notifyZoAndHoRequisitionActed } = require('../services/telegram.service');
     notifyJeRequisitionActed(reqRecord, updated).catch(err => {
       console.error(`[REQUISITION] Telegram notification failed: ${err.message}`);
+    });
+    notifyZoAndHoRequisitionActed(reqRecord, updated).catch(err => {
+      console.error(`[REQUISITION] Telegram ZO/HO notification failed: ${err.message}`);
     });
 
     return res.status(200).json({
