@@ -233,54 +233,54 @@ The platform filters UI menus and enforces API access controls based on four pri
 | Module & Functional Actions | Junior Engineer (JE) | Zonal Office (ZO) | Head Office (HO) | Administrator (Admin) |
 | :--- | :---: | :---: | :---: | :---: |
 | **Authentication & Profile Setup** | | | | |
-| Mobile number entry & OTP authentication | ✅ | ✅ | ✅ | ✅ |
-| Telegram notification linkage setup | ✅ | ✅ | ✅ | ✅ |
-| Change color theme (Dark/Light mode) | ✅ | ✅ | ✅ | ✅ |
+| Mobile number entry & OTP authentication | Yes | Yes | Yes | Yes |
+| Telegram notification linkage setup | Yes | Yes | Yes | Yes |
+| Change color theme (Dark/Light mode) | Yes | Yes | Yes | Yes |
 | **Console Dashboard** | | | | |
-| View Project Status metrics | ✅ | ✅ | ✅ | ✅ |
-| View Cost Estimates statistics | ✅ | ✅ | ✅ | ✅ |
-| View Recent Activity feed | ✅ | ✅ | ✅ | ✅ |
+| View Project Status metrics | Yes | Yes | Yes | Yes |
+| View Cost Estimates statistics | Yes | Yes | Yes | Yes |
+| View Recent Activity feed | Yes | Yes | Yes | Yes |
 | **Material Master** | | | | |
-| Browse material categories & list catalog | ✅ | ✅ | ✅ | ✅ |
-| Search, filter, and sort materials | ✅ | ✅ | ✅ | ✅ |
-| Export catalog items to Excel sheet | ✅ | ✅ | ✅ | ✅ |
-| Create, edit, or toggle status of materials | ❌ | ❌ | ❌ | ✅ |
+| Browse material categories & list catalog | Yes | Yes | Yes | Yes |
+| Search, filter, and sort materials | Yes | Yes | Yes | Yes |
+| Export catalog items to Excel sheet | Yes | Yes | Yes | Yes |
+| Create, edit, or toggle status of materials | No | No | No | Yes |
 | **Cost Estimates** | | | | |
-| View estimates list & individual sheets | ✅ | ✅ | ✅ | ✅ |
-| Create new estimate draft & submit for review | ✅ | ❌ | ❌ | ✅ |
-| Edit own draft or revision-requested sheets | ✅ | ❌ | ❌ | ✅ |
-| Review & intermediate approve (ZO stage) | ❌ | ✅ | ❌ | ✅ |
-| Review & final approve (HO stage) | ❌ | ❌ | ✅ | ✅ |
-| Request revision (from ZO or HO stage) | ❌ | ✅ | ✅ | ✅ |
+| View estimates list & individual sheets | Yes | Yes | Yes | Yes |
+| Create new estimate draft & submit for review | Yes | No | No | Yes |
+| Edit own draft or revision-requested sheets | Yes | No | No | Yes |
+| Review & intermediate approve (ZO stage) | No | Yes | No | Yes |
+| Review & final approve (HO stage) | No | No | Yes | Yes |
+| Request revision (from ZO or HO stage) | No | Yes | Yes | Yes |
 | **Payment Requisitions** | | | | |
-| View requisition records & invoices | ✅ | ✅ | ✅ | ✅ |
-| Create payment requisition & upload invoice PDF | ✅ | ✅ | ✅ | ✅ |
-| Delete requisition record | ❌ | ❌ | ❌ | ✅ |
+| View requisition records & invoices | Yes | Yes | Yes | Yes |
+| Create payment requisition & upload invoice PDF | Yes | Yes | Yes | Yes |
+| Delete requisition record | No | No | No | Yes |
 | **Daily Work Progress** | | | | |
-| View daily progress reports & site history | ✅ | ✅ | ✅ | ✅ |
-| Log new site visit, progress %, and upload photo | ✅ | ❌ | ❌ | ✅ |
-| Edit/add authority evaluation remarks | ❌ | ✅ | ✅ | ✅ |
+| View daily progress reports & site history | Yes | Yes | Yes | Yes |
+| Log new site visit, progress %, and upload photo | Yes | No | No | Yes |
+| Edit/add authority evaluation remarks | No | Yes | Yes | Yes |
 | **Fund Requests** | | | | |
-| View fund requests ledger & charts | ❌ | ✅ | ✅ | ✅ |
-| Create new fund request for a project | ❌ | ✅ | ❌ | ✅ |
-| Cancel own pending fund request | ❌ | ✅ | ❌ | ✅ |
-| Review, approve, or place request on Hold | ❌ | ❌ | ✅ | ✅ |
+| View fund requests ledger & charts | No | Yes | Yes | Yes |
+| Create new fund request for a project | No | Yes | No | Yes |
+| Cancel own pending fund request | No | Yes | No | Yes |
+| Review, approve, or place request on Hold | No | No | Yes | Yes |
 | **RA & Final Bills** | | | | |
-| View running bills ledger & summary statistics | ❌ | ✅ | ✅ | ✅ |
-| Create, calculate, and submit sequential bills | ❌ | ✅ | ❌ | ✅ |
-| Upload final/signed copies of billing files | ❌ | ✅ | ❌ | ✅ |
+| View running bills ledger & summary statistics | No | Yes | Yes | Yes |
+| Create, calculate, and submit sequential bills | No | Yes | No | Yes |
+| Upload final/signed copies of billing files | No | Yes | No | Yes |
 | **Fund Reports** | | | | |
-| View active reports & stats dashboard | ✅ | ✅ | ✅ | ✅ |
-| Create, view details, or edit report logs | ✅ | ✅ | ✅ | ✅ |
-| Soft-delete report (Admin only) | ❌ | ❌ | ❌ | ✅ |
-| View deleted list & restore reports (Admin only) | ❌ | ❌ | ❌ | ✅ |
+| View active reports & stats dashboard | Yes | Yes | Yes | Yes |
+| Create, view details, or edit report logs | Yes | Yes | Yes | Yes |
+| Soft-delete report (Admin only) | No | No | No | Yes |
+| View deleted list & restore reports (Admin only) | No | No | No | Yes |
 | **Administration Console** | | | | |
-| Access Admin Panel dashboard & menu links | ❌ | ❌ | ❌ | ✅ |
-| Add new users to authorized whitelist | ❌ | ❌ | ❌ | ✅ |
-| Edit user roles, display names, and active status | ❌ | ❌ | ❌ | ✅ |
-| Reset user Telegram webhook link | ❌ | ❌ | ❌ | ✅ |
-| Manage global Master Data & Purchase Options | ❌ | ❌ | ❌ | ✅ |
-| Inspect global System Audit Logs (Audit Trail) | ❌ | ❌ | ❌ | ✅ |
+| Access Admin Panel dashboard & menu links | No | No | No | Yes |
+| Add new users to authorized whitelist | No | No | No | Yes |
+| Edit user roles, display names, and active status | No | No | No | Yes |
+| Reset user Telegram webhook link | No | No | No | Yes |
+| Manage global Master Data & Purchase Options | No | No | No | Yes |
+| Inspect global System Audit Logs (Audit Trail) | No | No | No | Yes |
 
 ---
 

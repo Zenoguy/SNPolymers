@@ -321,10 +321,6 @@ const MasterData = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, search]);
-
   const [modal, setModal] = useState(null); // null | { type: 'create'|'edit'|'status', project? }
 
   // ── Data fetching ──
@@ -581,7 +577,10 @@ const MasterData = () => {
         {/* ── View Selection Tabs ── */}
         <div className="flex gap-2 mb-6 border-b border-white/5 pb-4">
           <button
-            onClick={() => setActiveTab('running')}
+            onClick={() => {
+              setActiveTab('running');
+              setCurrentPage(1);
+            }}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
               activeTab === 'running'
                 ? 'bg-amber-500 text-slate-950 shadow-[0_4px_20px_rgba(245,158,11,0.25)]'
@@ -591,7 +590,10 @@ const MasterData = () => {
             Running Projects ({counts.running})
           </button>
           <button
-            onClick={() => setActiveTab('archive')}
+            onClick={() => {
+              setActiveTab('archive');
+              setCurrentPage(1);
+            }}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
               activeTab === 'archive'
                 ? 'bg-amber-500 text-slate-950 shadow-[0_4px_20px_rgba(245,158,11,0.25)]'
@@ -613,7 +615,10 @@ const MasterData = () => {
               type="text"
               placeholder="Search projects…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full glass-input focus:ring-0 outline-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-medium transition"
             />
           </div>

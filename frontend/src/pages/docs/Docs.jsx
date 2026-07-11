@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../components/AuthContext';
+import { useParams, useNavigate } from 'react-router-dom';
 import { docSections, findPageById, getAllPagesFlat } from './docsContent.jsx';
 import BackgroundShapes from '../../components/BackgroundShapes';
-import Sidebar, { MobileHeader } from '../../components/Sidebar';
 
 // Subcomponents
 import DocNavSidebar from './components/DocNavSidebar';
@@ -13,7 +11,6 @@ import DocContent from './components/DocContent';
 const Docs = () => {
   const { pageId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   // Default to first page if pageId is missing
   const activePageId = pageId || 'what-is-idbp';
@@ -47,12 +44,10 @@ const Docs = () => {
   const headings = page.headings || [];
 
   return (
-    <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
+    <div className="h-screen bg-black text-slate-100 flex flex-col font-sans relative overflow-hidden">
       <BackgroundShapes />
-      <Sidebar />
-      <MobileHeader />
 
-      {/* Docs Layout Panel next to Sidebar */}
+      {/* Docs Layout Panel */}
       <div className="flex-grow flex flex-col overflow-hidden relative z-10 doc-portal-layout">
         {/* Background glow animations */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -69,7 +64,7 @@ const Docs = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase md:hidden">
+          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase">
             Documentation Portal
           </span>
         </div>
@@ -91,6 +86,15 @@ const Docs = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-slate-100 transition-all duration-300"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Go Back
+          </button>
         </div>
       </header>
 

@@ -25,6 +25,7 @@ import Requisitions from './pages/Requisitions';
 import DailyProgress from './pages/DailyProgress';
 import RAFinalBill from './pages/RAFinalBill';
 import Docs from './pages/docs/Docs';
+import SystemPolicy from './pages/SystemPolicy';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify-otp" element={<OtpVerify />} />
             <Route path="/telegram-setup" element={<TelegramSetup />} />
+            <Route path="/privacy-policy" element={<SystemPolicy />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/docs/:pageId" element={<Docs />} />
 

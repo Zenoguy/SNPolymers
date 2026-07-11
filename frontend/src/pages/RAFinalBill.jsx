@@ -380,7 +380,6 @@ const RAFinalBill = () => {
   };
 
   // Form Reset
-  const [_, forceUpdate] = useState(0); // Dummy for triggers
   const handleReset = () => {
     const currentWO = formState.work_order_no;
     setFormState({

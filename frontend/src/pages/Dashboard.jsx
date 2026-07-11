@@ -109,8 +109,7 @@ const Dashboard = () => {
                   <h3 className="text-lg font-extrabold mt-1 text-slate-200">Project Management</h3>
                   <p className="text-xs text-slate-400 font-normal mt-4 leading-relaxed">Oversees municipal contractor work schedules, infrastructure tender documents, civil log reports, and fund disbursement records.</p>
                 </div>
-                <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                   <Link
                     to="/estimates"
                     className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
@@ -136,8 +135,7 @@ const Dashboard = () => {
                       Raise and manage payment requisitions against work orders. Upload PDF documentation, declare GST status, and track approval by authority.
                     </p>
                   </div>
-                  <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                  <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                     <Link
                       to="/requisitions"
                       className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
@@ -164,8 +162,7 @@ const Dashboard = () => {
                       Log daily site visit progress reports against work orders. Upload site photos, track cumulative physical progress, and enable authority review with remarks.
                     </p>
                   </div>
-                  <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                  <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                     <Link
                       to="/daily-progress"
                       className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
@@ -193,8 +190,7 @@ const Dashboard = () => {
                       Upload bill copies and monitor billing progress with auto-calculated summaries.
                     </p>
                   </div>
-                  <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-indigo-400 bg-indigo-950/20 border border-indigo-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                  <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                     <Link
                       to="/ra-final-bills"
                       className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
@@ -217,8 +213,7 @@ const Dashboard = () => {
                   <h3 className="text-xl font-extrabold mt-1 text-slate-200">Office Administration Console</h3>
                   <p className="text-xs text-slate-300 font-normal mt-4 leading-relaxed">Central system configurations. Access control management, whitelist keys, live session tracking audits, and compliance metrics.</p>
                 </div>
-                <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                   {user?.role === 'admin' ? (
                     <Link
                       to="/admin"
@@ -245,8 +240,7 @@ const Dashboard = () => {
                     <h3 className="text-lg font-extrabold mt-1 text-slate-200">Fund Requisitions</h3>
                     <p className="text-xs text-slate-400 font-normal mt-4 leading-relaxed">Manages ZO fund requests and HO approval workflows. Tracks CC / OD / CR disbursement accounts.</p>
                   </div>
-                  <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
-                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2 py-0.5 rounded-lg">Active System</span>
+                  <div className="mt-8 flex items-center justify-end border-t border-white/5 pt-4">
                     <Link
                       to="/fund-requests"
                       className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white text-slate-950 hover:bg-slate-100 hover:shadow-lg transition-all duration-300 flex items-center gap-1.5"
