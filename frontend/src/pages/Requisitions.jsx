@@ -1525,7 +1525,7 @@ const Requisitions = () => {
                   className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'pending'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
                   }`}
                 >
                   Pending ({requisitions.filter(r => r.requisition_status === 'Pending').length})
@@ -1535,7 +1535,7 @@ const Requisitions = () => {
                   className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'approved'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
                   }`}
                 >
                   Approved ({requisitions.filter(r => r.requisition_status === 'Approved').length})
@@ -1545,7 +1545,7 @@ const Requisitions = () => {
                   className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'hold'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
                   }`}
                 >
                   Hold ({requisitions.filter(r => r.requisition_status === 'Hold').length})
@@ -1555,7 +1555,7 @@ const Requisitions = () => {
                   className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'all'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
                   }`}
                 >
                   All ({requisitions.length})
@@ -1565,7 +1565,7 @@ const Requisitions = () => {
                   className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentTab === 'directory'
                       ? 'bg-white/10 text-slate-100 border border-white/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
                   }`}
                 >
                   Projects Directory ({
@@ -1700,13 +1700,13 @@ const Requisitions = () => {
               </div>
             ) : (
               /* Requisitions List Table */
-              <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+              <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5 min-h-[400px] flex flex-col">
                 {loading ? (
-                  <div className="flex items-center justify-center p-24">
+                  <div className="flex items-center justify-center flex-1 p-24">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
                   </div>
                 ) : filteredRequisitions.length === 0 ? (
-                  <div className="text-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
+                  <div className="text-center flex-1 flex items-center justify-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
                     No requisitions matching parameters.
                   </div>
                 ) : (
