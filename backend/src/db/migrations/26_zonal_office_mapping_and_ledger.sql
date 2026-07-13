@@ -201,13 +201,30 @@ CREATE OR REPLACE TRIGGER trg_validate_work_order_mapping_zonal_consistency
 -- D. Audit Triggers
 CREATE OR REPLACE FUNCTION public.fn_audit_zonal_modules()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_user_id VARCHAR;
+    v_rec_id  VARCHAR;
 BEGIN
+    IF TG_TABLE_NAME = 'je_zo_mappings' THEN
+        v_user_id := NEW.assigned_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSIF TG_TABLE_NAME = 'work_order_mappings' THEN
+        v_user_id := NEW.assigned_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSIF TG_TABLE_NAME = 'excess_fund_returns' THEN
+        v_user_id := NEW.requested_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSE
+        v_user_id := 'SYSTEM';
+        v_rec_id  := COALESCE(NEW.id::VARCHAR, NEW.zo_user_id);
+    END IF;
+
     INSERT INTO public.audit_log (user_id, action, module_name, record_identifier, old_value, new_value)
     VALUES (
-        COALESCE(NEW.assigned_by, NEW.requested_by, 'SYSTEM'),
+        COALESCE(v_user_id, 'SYSTEM'),
         TG_OP,
         TG_TABLE_NAME,
-        COALESCE(NEW.id::VARCHAR, NEW.zo_user_id),
+        v_rec_id,
         CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END,
         to_jsonb(NEW)
     );

@@ -219,13 +219,30 @@ CREATE TRIGGER trg_validate_work_order_mapping_zonal_consistency
 -- Audit logging trigger function
 CREATE OR REPLACE FUNCTION public.fn_audit_zonal_modules()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_user_id VARCHAR;
+    v_rec_id  VARCHAR;
 BEGIN
+    IF TG_TABLE_NAME = 'je_zo_mappings' THEN
+        v_user_id := NEW.assigned_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSIF TG_TABLE_NAME = 'work_order_mappings' THEN
+        v_user_id := NEW.assigned_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSIF TG_TABLE_NAME = 'excess_fund_returns' THEN
+        v_user_id := NEW.requested_by;
+        v_rec_id  := NEW.id::VARCHAR;
+    ELSE
+        v_user_id := 'SYSTEM';
+        v_rec_id  := COALESCE(NEW.id::VARCHAR, NEW.zo_user_id);
+    END IF;
+
     INSERT INTO public.audit_log (user_id, action, module_name, record_identifier, old_value, new_value)
     VALUES (
-        COALESCE(NEW.assigned_by, NEW.requested_by, 'SYSTEM'),
+        COALESCE(v_user_id, 'SYSTEM'),
         TG_OP,
         TG_TABLE_NAME,
-        COALESCE(NEW.id::VARCHAR, NEW.zo_user_id),
+        v_rec_id,
         CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END,
         to_jsonb(NEW)
     );
@@ -237,6 +254,23 @@ CREATE TRIGGER trg_audit_je_zo_mappings AFTER INSERT OR UPDATE ON public.je_zo_m
 CREATE TRIGGER trg_audit_work_order_mappings AFTER INSERT OR UPDATE ON public.work_order_mappings FOR EACH ROW EXECUTE FUNCTION public.fn_audit_zonal_modules();
 CREATE TRIGGER trg_audit_excess_fund_returns AFTER INSERT OR UPDATE ON public.excess_fund_returns FOR EACH ROW EXECUTE FUNCTION public.fn_audit_zonal_modules();
 ```
+
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M1-TC-01 | All 5 new tables exist | Run `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'` | Returns `je_zo_mappings`, `work_order_mappings`, `zo_balances`, `zo_fund_ledger`, `excess_fund_returns` | DB |
+| M1-TC-02 | Negative balance rejected | `UPDATE zo_balances SET available_balance = -1.00 WHERE zo_user_id = '<any>'` | `ERROR: check constraint "chk_zo_balance_positive"` | DB |
+| M1-TC-03 | ZO auto-balance init trigger | `INSERT INTO authorised_users (..., role='zo')` | A row with `available_balance = 0.00` is auto-inserted into `zo_balances` | DB |
+| M1-TC-04 | Role guard trigger — wrong JE role | `INSERT INTO je_zo_mappings (je_user_id='<HO mobile>', zo_user_id='<ZO mobile>', ...)` | `EXCEPTION: Target user is not a Junior Engineer` | DB |
+| M1-TC-05 | Role guard trigger — wrong ZO role | `INSERT INTO je_zo_mappings (je_user_id='<JE mobile>', zo_user_id='<JE mobile>', ...)` | `EXCEPTION: Target user is not a Zonal Office user` | DB |
+| M1-TC-06 | Unique active JE mapping | Insert two active `je_zo_mappings` rows for the same `je_user_id` | Second insert fails: `ERROR: duplicate key value violates unique constraint "idx_je_zo_mappings_active_unique"` | DB |
+| M1-TC-07 | Unique active WO mapping per JE | Insert two active `work_order_mappings` for same `(work_order_no, je_user_id)` | Second insert fails: unique index violation | DB |
+| M1-TC-08 | Unique ledger per reference | Insert two `zo_fund_ledger` rows with identical `(reference_type, reference_id)` | Second insert fails: `ERROR: duplicate key violates unique constraint "idx_zo_fund_ledger_ref_unique"` | DB |
+| M1-TC-09 | Column `zo_user_id` added to `projects_master` | `SELECT column_name FROM information_schema.columns WHERE table_name='projects_master'` | Contains `zo_user_id` | DB |
+| M1-TC-10 | Column `zo_user_id` added to `requisitions` & `daily_progress_reports` | Same column query on both tables | Both contain `zo_user_id` | DB |
+| M1-TC-11 | Column `work_order_no` added to `fund_requests` | Same column query | Contains `work_order_no` | DB |
+| M1-TC-12 | Audit trigger fires on je_zo_mappings insert | Insert a valid mapping row | A new row exists in `audit_log` with `module_name = 'je_zo_mappings'` and `action = 'INSERT'` | DB |
 
 ### Acceptance Criteria
 - [x] All 5 tables created and schema matches specifications.
@@ -292,6 +326,21 @@ Build Express APIs for creating, listing, and retrieving user mappings, containi
 #### Route registration: `userMappings.routes.js`
 - Mount routes: `POST /` (restricted to admin/ho), `GET /` (accessible to admin, ho, zo).
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M2-TC-01 | Create first-time mapping (happy path) | `POST /api/v1/user-mappings` `{ je_mobile_number, zo_mobile_number }` as Admin | `201 Created` · row in `je_zo_mappings` with `is_active = true` | API |
+| M2-TC-02 | Transfer blocked by open requisitions | JE has requisition with status `'Pending'`; Admin posts a new mapping | `400 Bad Request: "Cannot transfer JE. Uncompleted requisitions remain."` | API |
+| M2-TC-03 | Transfer blocked by hold requisitions | JE has requisition with status `'Hold'`; Admin posts a new mapping | Same 400 error as TC-02 | API |
+| M2-TC-04 | Successful transfer clears old mapping | JE has no open requisitions; Admin transfers to new ZO | Old mapping row `is_active = false`, `deactivated_at` set; new row `is_active = true` | API + DB |
+| M2-TC-05 | WO assignments auto-deactivated on transfer | JE was mapped to WO-A (owned by ZO1); JE is transferred to ZO2 | `work_order_mappings` row for WO-A is `is_active = false` with `reason = 'Transferred'` | API + DB |
+| M2-TC-06 | Role enforcement — JE cannot create mapping | `POST /api/v1/user-mappings` as JE role | `403 Forbidden` | API |
+| M2-TC-07 | Role enforcement — ZO cannot create mapping | `POST /api/v1/user-mappings` as ZO role | `403 Forbidden` | API |
+| M2-TC-08 | ZO `GET /` only sees own JEs | `GET /api/v1/user-mappings` as ZO | Response list contains only rows where `zo_user_id = req.user.mobile_number` | API |
+| M2-TC-09 | Admin `GET /` sees all mappings | `GET /api/v1/user-mappings` as Admin | Response includes mappings across all ZOs | API |
+| M2-TC-10 | Schema validation — missing `je_mobile_number` | `POST /api/v1/user-mappings` `{ zo_mobile_number }` only | `422 Unprocessable Entity` with Zod validation error | API |
+
 ### Acceptance Criteria
 - [x] Creating a mapping for a JE with open/hold requisitions fails with a 400 error.
 - [x] Transfers automatically set `is_active = false` on old mappings and deactivate related Work Order assignments with `reason = 'Transferred'`.
@@ -326,6 +375,20 @@ Create APIs to manage Work Order assignments for JEs, validating that assignment
 #### Route registration: `workOrderMappings.routes.js`
 - Mount routes: `POST /` (admin/ho only), `DELETE /:id` or `PATCH /:id/deactivate` (admin/ho only), `GET /` (admin, ho, zo).
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M3-TC-01 | Assign JE to own ZO's Work Order (happy path) | JE mapped to ZO1; WO owned by ZO1; `POST /api/v1/work-order-mappings` | `201 Created` · row inserted with `is_active = true`, `reason = 'Assigned'` | API |
+| M3-TC-02 | Zonal mismatch rejected at API level | JE mapped to ZO1; WO owned by ZO2; `POST /api/v1/work-order-mappings` | `400 Bad Request: "Junior Engineer belongs to ZO X, but Work Order belongs to ZO Y."` | API |
+| M3-TC-03 | Zonal mismatch also rejected by DB trigger | Bypass API and attempt direct DB insert | `EXCEPTION: Mismatched ZO assignment` | DB |
+| M3-TC-04 | Unmapped JE rejected | JE with no active `je_zo_mappings` row; attempt WO mapping | `400 Bad Request: "Junior Engineer is not assigned to any active Zonal Office."` | API |
+| M3-TC-05 | WO with no owning ZO rejected | `projects_master.zo_user_id` is NULL for WO; attempt assignment | `400 Bad Request: "Work Order has no assigned owning Zonal Office."` | API |
+| M3-TC-06 | Deactivation with valid reason `'Removed'` | `PATCH /api/v1/work-order-mappings/:id/deactivate` `{ reason: 'Removed' }` | `200 OK` · row `is_active = false`, `reason = 'Removed'`, `deactivated_at` set | API |
+| M3-TC-07 | Deactivation with invalid reason fails | `PATCH /api/v1/work-order-mappings/:id/deactivate` `{ reason: 'Gone' }` | `422 Unprocessable Entity: reason must be one of Removed, Project Closed` | API |
+| M3-TC-08 | Duplicate active assignment blocked | Attempt to create a second active mapping for the same `(work_order_no, je_user_id)` | `409 Conflict` (or DB unique violation propagated as 500) | API |
+| M3-TC-09 | ZO can only list WOs under own ZO | `GET /api/v1/work-order-mappings` as ZO | Only WOs where owning `zo_user_id` matches requesting ZO | API |
+
 ### Acceptance Criteria
 - [x] Mapping a JE to a Work Order owned by a different ZO fails.
 - [x] Deactivation requires a valid audit `reason`.
@@ -353,6 +416,19 @@ Build APIs to fetch Zonal Office credit balances and transaction logs, including
     $$\text{Balance} = \sum(\text{Allocations}) - \sum(\text{Spent}) - \sum(\text{Returned})$$
   - Perform `SELECT available_balance FROM zo_balances WHERE zo_user_id = $1 FOR UPDATE`.
   - Update `available_balance = calculated_value` if discrepancies are detected. Log an audit event.
+
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M4-TC-01 | ZO gets own balance only | `GET /api/v1/zo-balances` as ZO | Returns single row matching `zo_user_id = req.user.mobile_number` | API |
+| M4-TC-02 | Admin/HO gets all balances | `GET /api/v1/zo-balances` as Admin | Returns all rows from `zo_balances` | API |
+| M4-TC-03 | JE blocked from balance endpoint | `GET /api/v1/zo-balances` as JE | `403 Forbidden` | API |
+| M4-TC-04 | Ledger contains reference details | `GET /api/v1/zo-balances/ledger` after a fund approval | Response includes `reference_type`, `reference_id`, `transaction_type`, `work_order_no`, `amount` | API |
+| M4-TC-05 | ZO ledger filtered to own transactions | `GET /api/v1/zo-balances/ledger` as ZO | All returned rows have `zo_user_id = req.user.mobile_number` | API |
+| M4-TC-06 | Reconciliation corrects discrepancy | Manually drift `zo_balances.available_balance` in DB; call `POST /api/v1/zo-balances/reconcile` | Balance is corrected to ledger-derived value; audit log records the correction | API + DB |
+| M4-TC-07 | Reconciliation is idempotent | Call reconcile twice on a consistent balance | Balance unchanged; no duplicate audit entries | API |
+| M4-TC-08 | Ledger pagination works | Request page 2 with `?page=2&limit=10` | Returns second page of ledger entries | API |
 
 ### Acceptance Criteria
 - [x] Ledgers return transaction details including reference type and Work Order mappings.
@@ -392,6 +468,21 @@ Develop the Excess Fund Return state machine, validating Zonal balance threshold
   - Change status to `'Awaiting HO Review'` / `'Rejected'`, remarks mandatory.
 * **`hoActionOnReturn(req, res)`** (HO only)
   - Handle modifications (Revise status, cancel, or reissue).
+
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M5-TC-01 | HO creates return request (happy path) | `POST /api/v1/fund-returns` `{ zo_user_id, work_order_no, requested_amount, remarks_ho }` as HO | `201 Created` · status `'Requested'` | API |
+| M5-TC-02 | Non-HO cannot create return request | Same request as ZO role | `403 Forbidden` | API |
+| M5-TC-03 | ZO accepts valid return (happy path) | ZO balance ≥ requested_amount; `PATCH /api/v1/fund-returns/:id/accept` with correct `client_updated_at` | `200 OK` · status `'Completed'` · balance decremented · ledger row inserted | API + DB |
+| M5-TC-04 | Stale `client_updated_at` rejected | HO edits return amount after ZO loads the page; ZO submits with old `updated_at` | `409 Conflict: "Stale acceptance request."` | API |
+| M5-TC-05 | Insufficient balance rejected | ZO balance = ₹10,000; requested_amount = ₹20,000 | `422 Unprocessable Entity: "Insufficient available balance."` | API |
+| M5-TC-06 | Balance not modified on failed acceptance | TC-05 scenario | `zo_balances.available_balance` unchanged after failed call | DB |
+| M5-TC-07 | ZO modifies return request | `PATCH /api/v1/fund-returns/:id/modify` `{ remarks_zo }` as ZO | Status changes to `'Awaiting HO Review'`, `remarks_zo` stored | API |
+| M5-TC-08 | ZO rejects return request | `PATCH /api/v1/fund-returns/:id/reject` `{ remarks_zo }` (mandatory) as ZO | Status `'Rejected'`; empty `remarks_zo` returns 422 | API |
+| M5-TC-09 | HO cancels return request | `PATCH /api/v1/fund-returns/:id/cancel` as HO | Status `'Cancelled'` | API |
+| M5-TC-10 | Duplicate ledger entry blocked | Accept same return twice (or simulate via direct insert) | DB unique constraint prevents duplicate `(reference_type='RETURN', reference_id)` entry | DB |
 
 ### Acceptance Criteria
 - [x] Accepting a return request with stale `client_updated_at` returns 409.
@@ -448,6 +539,23 @@ Update existing transactional endpoints (Requisitions, Daily Progress, Estimates
 * **Creation & List**:
   - Restrict ZO to only view and submit bills for Work Orders mapped to JEs under their ZO.
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M6-TC-01 | JE creates requisition for mapped WO (happy path) | `POST /api/v1/requisitions` with `work_order_no` JE is actively mapped to | `201 Created` · `zo_user_id` auto-populated from `je_zo_mappings` | API |
+| M6-TC-02 | JE blocked from creating requisition for unmapped WO | `POST /api/v1/requisitions` with WO not in JE's active mappings | `403 Forbidden: "JE is not mapped to this Work Order."` | API |
+| M6-TC-03 | ZO approves own requisition → balance decrements | ZO balance = ₹1,00,000; approves ₹40,000 requisition | Balance = ₹60,000; ledger row `transaction_type = 'REQUISITION_APPROVAL'` | API + DB |
+| M6-TC-04 | ZO cannot approve another ZO's requisition | ZO-1 attempts to approve a requisition where `requisition.zo_user_id = ZO-2` | `403 Forbidden` | API |
+| M6-TC-05 | ZO `GET /requisitions` returns only own ZO's requisitions | `GET /api/v1/requisitions` as ZO-1 | Only rows where `zo_user_id = ZO-1 mobile` | API |
+| M6-TC-06 | Requisition approval with insufficient balance fails | ZO balance = ₹10,000; ZO approves ₹50,000 requisition | `422 Unprocessable Entity: "Insufficient available balance."` | API |
+| M6-TC-07 | HO approves Fund Request → ZO balance increments | `PATCH /api/v1/fund-requests/:id/action { action: 'Approve' }` as HO | `zo_balances.available_balance` increases by approved amount; ledger row `transaction_type = 'ALLOCATION'` | API + DB |
+| M6-TC-08 | ZO creates Fund Request with mismatched WO | ZO-1 submits fund request for WO owned by ZO-2 | `400 Bad Request: "Work Order does not belong to your Zonal Office."` | API |
+| M6-TC-09 | Daily progress `zo_user_id` auto-populated | JE creates a daily progress report | `daily_progress_reports.zo_user_id` matches JE's active ZO mapping | DB |
+| M6-TC-10 | ZO filters daily progress to own zone | `GET /api/v1/daily-progress` as ZO | All returned rows have `zo_user_id = req.user.mobile_number` | API |
+| M6-TC-11 | ZO filters estimates to own mapped JEs | `GET /api/v1/estimates` as ZO | Only estimates created by JEs actively mapped to the ZO | API |
+| M6-TC-12 | Duplicate ledger entry on double-approval blocked | Approve same requisition twice (simulate retry) | Second approval fails with DB unique constraint on ledger | DB |
+
 ### Acceptance Criteria
 - [x] ZO users are completely blocked from viewing requisitions, estimates, progress, and bills belonging to other ZOs.
 - [x] Approving a requisition reduces Zonal Balance; approving a fund request increases it.
@@ -474,6 +582,19 @@ Create User Mapping and Work Order Mapping control screens under the Admin/Manag
 #### Work Order Mappings Screen
 - Displays all Work Orders, the owning Zonal Office, and assigned JEs.
 - Includes a "Map JEs" modal enforcing the Zonal Consistency rule.
+
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M7-TC-01 | User Mappings page loads for Admin | Navigate to `/user-mappings` as Admin | Page renders with the full JE/ZO grid and no errors | Frontend |
+| M7-TC-02 | User Mappings page hidden from JE | Navigate to `/user-mappings` as JE | Redirect to dashboard or `403` screen | Frontend |
+| M7-TC-03 | "Assign JE" modal opens and submits | Admin clicks "Assign JE", selects JE + ZO, submits | `POST /api/v1/user-mappings` fires; success toast shown; grid refreshes | Frontend |
+| M7-TC-04 | Transfer validation error displayed | JE has open requisitions; Admin tries to transfer | Error modal lists the open requisitions from the 400 API response | Frontend |
+| M7-TC-05 | Work Order Mappings page loads for HO | Navigate to `/work-order-mappings` as HO | Grid shows Work Orders, owning ZO, and assigned JEs | Frontend |
+| M7-TC-06 | "Map JEs" modal enforces zonal consistency | Admin selects a JE from a different ZO for a WO | `400` error message displayed within modal: "Mismatched ZO assignment" | Frontend |
+| M7-TC-07 | Deactivate mapping with reason dropdown | Admin clicks "Remove" on an active WO assignment | Reason dropdown (Removed / Project Closed) appears before confirm; `PATCH` fires on confirm | Frontend |
+| M7-TC-08 | ZO sees User Mappings in read-only mode | Navigate to `/user-mappings` as ZO | Page loads showing only mappings under their ZO; no create/edit buttons visible | Frontend |
 
 ### Acceptance Criteria
 - [x] Frontend successfully creates/updates mappings for Admin/HO.
@@ -503,6 +624,20 @@ Build dashboards for Zonal Balances, Ledger tracking, and Excess Return flows.
   - Buttons: **Accept** (checks balance, disabled if balance < request), **Request Modification** (shows textbox), **Reject** (shows textbox).
   - Uses the return request's `updated_at` value in the submission payload for optimistic concurrency protection.
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M8-TC-01 | ZO sees own balance card | Navigate to `/zonal-balances` as ZO | Balance card shows correct `available_balance` from API | Frontend |
+| M8-TC-02 | Admin sees all ZO balances | Navigate to `/zonal-balances` as Admin | Table lists all Zonal Offices with their respective balances | Frontend |
+| M8-TC-03 | JE cannot access balances page | Navigate to `/zonal-balances` as JE | Redirect or `403` screen | Frontend |
+| M8-TC-04 | Ledger table loads with correct columns | Open ledger tab | Columns: Date, Transaction Type, Reference Type, Work Order, Amount, Created By | Frontend |
+| M8-TC-05 | Accept button disabled when balance insufficient | Return requested_amount > ZO available_balance | "Accept" button is disabled; tooltip shows insufficient balance message | Frontend |
+| M8-TC-06 | Accept action sends `client_updated_at` | ZO clicks Accept on a return | Request payload includes `client_updated_at` matching the `updated_at` value loaded | Frontend |
+| M8-TC-07 | Stale conflict shows clear error message | HO edits amount; ZO's page is stale; ZO accepts | `409` response triggers a visible conflict warning: "This request was modified. Please refresh." | Frontend |
+| M8-TC-08 | Modify action shows remarks textbox | ZO clicks "Request Modification" | Remarks textarea appears; submission without text is blocked | Frontend |
+| M8-TC-09 | Returns list refreshes after action | ZO completes an accept/reject/modify action | List automatically re-fetches and reflects new status | Frontend |
+
 ### Acceptance Criteria
 - [x] Stale page states display conflict messages upon return actions.
 - [x] Balance and ledger data loads correctly based on user roles.
@@ -525,6 +660,20 @@ Enforce filter criteria and navigation card accessibility across operational vie
 - Restricted access control: ZOs cannot navigate to pages or see items belonging to other zones.
 - Card limits: Add new navigation options for user mapping, work order mapping, balances, and returns on the dashboard for authorized roles.
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M9-TC-01 | Dashboard cards for Admin | Login as Admin | Cards for: User Mappings, WO Mappings, Zonal Balances, Excess Returns, all modules | Frontend |
+| M9-TC-02 | Dashboard cards for ZO | Login as ZO | Cards for: Zonal Balances, Excess Returns, Requisitions, Daily Progress, Estimates; **no** User Mapping or WO Mapping cards | Frontend |
+| M9-TC-03 | Dashboard cards for JE | Login as JE | Cards for: Requisitions, Daily Progress, Estimates only | Frontend |
+| M9-TC-04 | ZO cannot directly navigate to Admin pages | ZO manually navigates to `/user-mappings` | Redirect or `403` screen | Frontend |
+| M9-TC-05 | ZO Requisitions page shows only own zone's data | `GET /api/v1/requisitions` from ZO frontend | Fetch appends ZO filter; table shows only own ZO's requisitions | Frontend + API |
+| M9-TC-06 | ZO Daily Progress shows only own zone's records | `GET /api/v1/daily-progress` from ZO frontend | Records filtered to ZO's mapped JEs | Frontend + API |
+| M9-TC-07 | ZO Estimates shows only own zone's estimates | `GET /api/v1/estimates` from ZO frontend | Filtered to JEs under the ZO | Frontend + API |
+| M9-TC-08 | ZO RA & Final Bills shows only own zone | `GET /api/v1/ra-bills` from ZO frontend | Filtered to WOs under the ZO's mapped JEs | Frontend + API |
+| M9-TC-09 | Page-level filter is server-enforced | Modify frontend JS to remove ZO filter, make API call directly | Server still enforces ZO filter in controller; no cross-zone data returned | API |
+
 ### Acceptance Criteria
 - [x] Dashboard cards show only features matching the user's role authorization matrix.
 - [x] Filter queries are appended dynamically to all resource fetch calls.
@@ -546,6 +695,18 @@ Deploy tests and configure cron tasks for automated nightly reconciliation.
 - Schedule the `reconcileZonalBalances` function using a cron library (e.g. `node-cron` or pg_cron) to execute nightly at **2:00 AM**.
 - Add test triggers to `package.json`: `"test:p7:all": "node tests/milestones/test_milestone_p7_db.js && node tests/milestones/test_milestone_p7_api.js"`.
 
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M10-TC-01 | DB test suite runs without errors | `npm run test:p7:db` | All DB trigger and index tests pass (exit code 0) | QA |
+| M10-TC-02 | API test suite runs without errors | `npm run test:p7:api` | All API integration tests pass (exit code 0) | QA |
+| M10-TC-03 | Combined test script runs both suites | `npm run test:p7:all` | Both suites execute sequentially; overall exit code 0 | QA |
+| M10-TC-04 | Nightly cron logs on startup | Start backend server | Console logs: `Reconciliation scheduler registered — 2:00 AM nightly` | QA |
+| M10-TC-05 | Reconciliation fires at scheduled time | Advance system clock to 2:00 AM in test environment | `reconcileZonalBalances` executes; completion logged | QA |
+| M10-TC-06 | Manual reconcile endpoint accessible | `POST /api/v1/zo-balances/reconcile` as Admin | Triggers reconciliation; returns summary of corrected rows | API |
+| M10-TC-07 | Reconciliation is non-destructive on clean data | Run reconcile when all balances are already consistent | No balance rows updated; audit log records 0 corrections | API + DB |
+
 ### Acceptance Criteria
 - [x] All database and API integration tests execute and pass successfully.
 - [x] The nightly sync scheduler correctly boots.
@@ -556,6 +717,18 @@ Deploy tests and configure cron tasks for automated nightly reconciliation.
 
 ### Objective
 Validate end-to-end operational scenarios across all four roles prior to deployment.
+
+### Test Cases
+
+| ID | Test | Input | Expected Result | Layer |
+|---|---|---|---|---|
+| M11-TC-01 | End-to-end: Setup → Funding → Requisition | UAT Scenario 2 full run | All steps pass; balance correctly decremented | UAT |
+| M11-TC-02 | End-to-end: Insufficient balance block | UAT Scenario 3 full run | Approval correctly blocked at ₹40,000 balance limit | UAT |
+| M11-TC-03 | End-to-end: Excess return workflow | UAT Scenario 4 full run | Return accepted; balance updated; ledger entry confirmed | UAT |
+| M11-TC-04 | End-to-end: JE transfer with de-allocation | UAT Scenario 5 full run | Transfer blocked with open hold; succeeds after cleared; WO mapping deactivated | UAT |
+| M11-TC-05 | Security: ZO cannot access cross-zone data | ZO-1 manually crafts API calls for ZO-2's data | All responses return filtered or `403` | Security |
+| M11-TC-06 | Security: Concurrent balance requests | Spawn 10 parallel requests approving ₹10,000 each against ₹50,000 balance | Only 5 succeed; final balance = ₹0; no negative value | Security |
+| M11-TC-07 | All milestone acceptance criteria confirmed green | Review checklist against deployed staging environment | Every AC checkbox passes | UAT |
 
 ### Exit Criteria
 1. All milestone tests pass.
