@@ -10,7 +10,8 @@ import { useQueryClient } from '@tanstack/react-query';
 const ESTIMATE_STATUS = {
   DRAFT: 'Draft',
   ZO_REVISION_REQUESTED: 'ZO Revision Requested',
-  HO_REVISION_REQUESTED: 'HO Revision Requested'
+  HO_REVISION_REQUESTED: 'HO Revision Requested',
+  ESTIMATE_REOPENED: 'Estimate Reopened'
 };
 
 const formatINR = (value) => {
@@ -604,10 +605,14 @@ const EstimateForm = () => {
               <tbody className="divide-y divide-white/5 text-xs text-slate-300">
                 {paginatedItems.map((item, idx) => {
                   const globalIdx = (currentPage - 1) * itemsPerPage + idx;
-                  const isLocked = user?.role !== 'admin' && isRevisionMode && (
-                    (estimateStatus === ESTIMATE_STATUS.ZO_REVISION_REQUESTED && item.zo_office_approve === 'Approve') ||
-                    (estimateStatus === ESTIMATE_STATUS.HO_REVISION_REQUESTED && item.ho_office_approve === 'Approve')
+                  const isLocked = user?.role !== 'admin' && (
+                    (isRevisionMode && (
+                      (estimateStatus === ESTIMATE_STATUS.ZO_REVISION_REQUESTED && item.zo_office_approve === 'Approve') ||
+                      (estimateStatus === ESTIMATE_STATUS.HO_REVISION_REQUESTED && item.ho_office_approve === 'Approve')
+                    )) ||
+                    (estimateStatus === ESTIMATE_STATUS.ESTIMATE_REOPENED && !!item.item_id)
                   );
+
                   const isRejected = isRevisionMode && (
                     (estimateStatus === ESTIMATE_STATUS.ZO_REVISION_REQUESTED && item.zo_office_approve === 'Not Approve') ||
                     (estimateStatus === ESTIMATE_STATUS.HO_REVISION_REQUESTED && item.ho_office_approve === 'Not Approve')

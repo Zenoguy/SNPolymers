@@ -673,19 +673,25 @@ async function notifyJeRevisionRequested(estimate, revisionLog) {
     const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
     const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
     const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
-    const deadlineFormatted = new Date(revisionLog.revision_deadline).toLocaleString('en-IN', {
-      timeZone: 'Asia/Kolkata'
-    });
+
+    const isReopened = revisionLog.revision_deadline && revisionLog.revision_deadline.startsWith('9999-12-31');
+    const titleText = isReopened
+      ? `🔄 <b>Estimate Reopened (HO)</b>`
+      : `⚠️ <b>Estimate Revision Requested (${stage})</b>`;
+
+    const deadlineLine = isReopened
+      ? `<b>Deadline:</b> No Deadline (IST)\n`
+      : `<b>Deadline:</b> ${new Date(revisionLog.revision_deadline).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST)\n`;
 
     const messageText =
-      `⚠️ <b>Estimate Revision Requested (${stage})</b>\n\n` +
+      `${titleText}\n\n` +
       `<b>Estimate No:</b> ${estimateNo}\n` +
       `<b>Work Order:</b> ${workOrder}\n` +
       `<b>Site Details:</b> ${siteDetails}\n` +
       `<b>Revision Cycle:</b> ${revisionLog.revision_cycle}\n` +
       `<b>Requested By:</b> ${escapeHtml(requestedByName)}\n` +
       `<b>Unapproved Rows:</b> ${notApprovedRows} out of ${totalRows} rows not approved\n` +
-      `<b>Deadline:</b> ${deadlineFormatted} (IST)\n\n` +
+      deadlineLine + '\n' +
       `Please review the remarks and resubmit the revised estimate on the IDBP dashboard.`;
 
     const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(jeUser.telegram_chat_id.trim())}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;

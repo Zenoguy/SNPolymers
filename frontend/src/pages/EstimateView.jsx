@@ -18,7 +18,8 @@ const ESTIMATE_STATUS = {
   REJECTED_BY_ZO: 'Rejected by ZO',
   REJECTED_BY_HO: 'Rejected by HO',
   ZO_REVISION_REQUESTED: 'ZO Revision Requested',
-  HO_REVISION_REQUESTED: 'HO Revision Requested'
+  HO_REVISION_REQUESTED: 'HO Revision Requested',
+  ESTIMATE_REOPENED: 'Estimate Reopened'
 };
 
 const formatINR = (value) => {
@@ -306,7 +307,7 @@ const EstimateView = () => {
   };
 
   const handleReopenEstimate = async () => {
-    if (!window.confirm('Are you sure you want to reopen this estimate? This will reset all ZO/HO approvals and remarks, and place it in the HO Revision stage.')) {
+    if (!window.confirm('Are you sure you want to reopen this estimate? This will reset all ZO/HO approvals and remarks, and place it in the "Estimate Reopened" status. The JE will be able to add new line items and resubmit.')) {
       return;
     }
     setError('');
@@ -331,18 +332,18 @@ const EstimateView = () => {
     return new Date(dateStr).toLocaleString('en-IN');
   };
 
-  const getCategoryTotal = (category) => {
-    const isMaterials = category.toLowerCase() === 'materials';
-    return items
-      .filter(item => {
-        const head = item.material_main_head?.toLowerCase();
-        if (isMaterials) {
-          return head !== 'labour' && head !== 'transport' && head !== 'miscellaneous';
-        }
-        return head === category.toLowerCase();
-      })
-      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  };
+  // const getCategoryTotal = (category) => {
+  //   const isMaterials = category.toLowerCase() === 'materials';
+  //   return items
+  //     .filter(item => {
+  //       const head = item.material_main_head?.toLowerCase();
+  //       if (isMaterials) {
+  //         return head !== 'labour' && head !== 'transport' && head !== 'miscellaneous';
+  //       }
+  //       return head === category.toLowerCase();
+  //     })
+  //     .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  // };
 
   if (loading) {
     return (
@@ -383,7 +384,7 @@ const EstimateView = () => {
   const isCurrentlyInHOReview = estimate.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW;
   
   const showReviewPanel = ((isZO || isAdmin) && isCurrentlyInZOReview) || ((isHO || isAdmin) && isCurrentlyInHOReview);
-  const canEditEstimate = (isJE && [ESTIMATE_STATUS.DRAFT, ESTIMATE_STATUS.ZO_REVISION_REQUESTED, ESTIMATE_STATUS.HO_REVISION_REQUESTED].includes(estimate.estimate_status)) || isAdmin;
+  const canEditEstimate = (isJE && [ESTIMATE_STATUS.DRAFT, ESTIMATE_STATUS.ZO_REVISION_REQUESTED, ESTIMATE_STATUS.HO_REVISION_REQUESTED, ESTIMATE_STATUS.ESTIMATE_REOPENED].includes(estimate.estimate_status)) || isAdmin;
   const canReopen = (isHO || isAdmin) && [
     ESTIMATE_STATUS.FINAL_APPROVED,
     ESTIMATE_STATUS.REJECTED_BY_HO,

@@ -685,9 +685,8 @@ async function reopenEstimate(req, res) {
     if (lastLogError) throw lastLogError;
     const cycle = lastLog ? lastLog.revision_cycle + 1 : 1;
 
-    // Create a new HO revision log cycle with a default 24-hour deadline
-    const durationHours = 24;
-    const revision_deadline = new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString();
+    // Create a new HO revision log cycle with a far-future sentinel deadline to disable countdown & auto-resubmission
+    const revision_deadline = '9999-12-31T23:59:59.000Z';
 
     const { data: logEntry, error: insertError } = await supabase
       .from('estimate_revision_log')
@@ -729,11 +728,11 @@ async function reopenEstimate(req, res) {
 
     if (itemsUpdateError) throw itemsUpdateError;
 
-    // Update estimate header: status to HO Revision Requested and nullify approvals/remarks
+    // Update estimate header: status to Estimate Reopened and nullify approvals/remarks
     const { data: updatedEstimate, error: updateError } = await supabase
       .from('project_cost_estimates')
       .update({
-        estimate_status: ESTIMATE_STATUS.HO_REVISION_REQUESTED,
+        estimate_status: ESTIMATE_STATUS.ESTIMATE_REOPENED,
         zo_approved_by: null,
         zo_approval_date: null,
         zo_remarks: null,

@@ -29,6 +29,8 @@ const getStatusBadgeVariant = (status) => {
       return 'amber';
     case 'HO Revision Requested':
       return 'orange';
+    case 'Estimate Reopened':
+      return 'amber';
     default:
       return 'slate';
   }
@@ -322,6 +324,7 @@ const Estimates = () => {
                   <option value="Rejected by HO">Rejected by HO</option>
                   <option value="ZO Revision Requested">ZO Revision Requested</option>
                   <option value="HO Revision Requested">HO Revision Requested</option>
+                  <option value="Estimate Reopened">Estimate Reopened</option>
                 </Select>
               </div>
             </div>

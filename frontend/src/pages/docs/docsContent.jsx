@@ -402,7 +402,8 @@ export const docSections = [
                   steps={[
                     { title: 'Under HO Review', content: 'HO Director audits the ZO-approved cost estimate.' },
                     { title: 'Final Approved', content: 'The estimate budget is locked, allowing project billing and procurement.' },
-                    { title: 'HO Revision Requested', content: 'Returned to JE for adjustments.' }
+                    { title: 'HO Revision Requested', content: 'Returned to JE for adjustments.' },
+                    { title: 'Estimate Reopened', content: 'A finalized estimate is reopened by HO for appending new items.' }
                   ]}
                 />
               </div>

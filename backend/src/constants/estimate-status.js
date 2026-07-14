@@ -8,7 +8,8 @@ const ESTIMATE_STATUS = {
   UNDER_HO_REVIEW: 'Under HO Review',
   HO_REVISION_REQUESTED: 'HO Revision Requested',
   FINAL_APPROVED: 'Final Approved',
-  REJECTED_BY_HO: 'Rejected by HO'
+  REJECTED_BY_HO: 'Rejected by HO',
+  ESTIMATE_REOPENED: 'Estimate Reopened'
 };
 
 module.exports = ESTIMATE_STATUS;

@@ -54,6 +54,7 @@ async function saveDraftItems(req, res) {
 
     const isZoRevision = estimate.estimate_status === ESTIMATE_STATUS.ZO_REVISION_REQUESTED;
     const isHoRevision = estimate.estimate_status === ESTIMATE_STATUS.HO_REVISION_REQUESTED;
+    const isReopened = estimate.estimate_status === ESTIMATE_STATUS.ESTIMATE_REOPENED;
 
     // Batch fetch materials with a composite lookup strategy to avoid correctness/uniqueness bugs
     // We fetch in chunks of 40 to avoid URL length limitations on large estimate batches (e.g. 500 items)
@@ -113,6 +114,14 @@ async function saveDraftItems(req, res) {
           }
         }
       }
+
+      if (!isAdmin && isReopened) {
+        if (item.item_id && existingMap[item.item_id]) {
+          if (hasItemFieldChanged(existingMap[item.item_id], item)) {
+            return res.status(403).json({ success: false, message: 'Existing items cannot be modified in Estimate Reopened status. Only new rows can be added.' });
+          }
+        }
+      }
     }
 
     const isJE = ['je', 'staff'].includes(req.user.role);
@@ -164,6 +173,8 @@ async function saveDraftItems(req, res) {
           deleteQuery = deleteQuery.or(`zo_office_approve.is.null,zo_office_approve.eq."${APPROVAL_STATUS.REJECTED}"`);
         } else if (isHoRevision) {
           deleteQuery = deleteQuery.or(`ho_office_approve.is.null,ho_office_approve.eq."${APPROVAL_STATUS.REJECTED}"`);
+        } else if (isReopened) {
+          return res.status(403).json({ success: false, message: 'Existing items cannot be deleted in Estimate Reopened status.' });
         }
       }
 

@@ -31,7 +31,8 @@ async function _recalculateEstimateAmount(estimateId, currentStatus) {
     [
       ESTIMATE_STATUS.ZO_APPROVED,
       ESTIMATE_STATUS.UNDER_HO_REVIEW,
-      ESTIMATE_STATUS.HO_REVISION_REQUESTED
+      ESTIMATE_STATUS.HO_REVISION_REQUESTED,
+      ESTIMATE_STATUS.ESTIMATE_REOPENED
     ].includes(currentStatus)
   ) {
     newAmount = (items || [])
