@@ -363,6 +363,17 @@ async function submitReview(req, res) {
       });
     }
 
+    // Trigger Telegram notification if Rejected by ZO or Rejected by HO
+    if (
+      updatedEstimate.estimate_status === ESTIMATE_STATUS.REJECTED_BY_ZO ||
+      updatedEstimate.estimate_status === ESTIMATE_STATUS.REJECTED_BY_HO
+    ) {
+      const { notifyJeEstimateRejected } = require('../services/telegram.service');
+      notifyJeEstimateRejected(updatedEstimate).catch(err => {
+        console.error(`Telegram notification failed: ${err.message}`);
+      });
+    }
+
     return res.status(200).json({
       success: true,
       estimate: updatedEstimate,

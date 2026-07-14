@@ -1419,6 +1419,66 @@ async function notifyJeEstimateZoApproved(estimate) {
   }
 }
 
+async function notifyJeEstimateRejected(estimate) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  try {
+    const { data: jeUser, error } = await supabase
+      .from('authorised_users')
+      .select('display_name, telegram_chat_id')
+      .eq('mobile_number', estimate.created_by)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(`[TELEGRAM ALERTS] Failed to retrieve JE user: ${error.message}`);
+      return;
+    }
+
+    if (!jeUser || !jeUser.telegram_chat_id || jeUser.telegram_chat_id.trim() === '') {
+      return;
+    }
+
+    if (!TELEGRAM_BOT_TOKEN) {
+      return;
+    }
+
+    const estimateNo = escapeHtml(estimate.estimate_no || 'N/A');
+    const amount = Number(estimate.estimate_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const workOrder = escapeHtml(estimate.work_order_no || 'N/A');
+    const siteDetails = escapeHtml(estimate.projects_master?.site_details || 'N/A');
+    
+    let rejectedByRole = 'Zonal Office';
+    let remarks = estimate.zo_remarks || 'No remarks provided.';
+    if (estimate.estimate_status === 'Rejected by HO') {
+      rejectedByRole = 'Head Office';
+      remarks = estimate.ho_remarks || 'No remarks provided.';
+    }
+
+    const messageText = 
+      `❌ <b>Cost Estimate Rejected</b>\n\n` +
+      `<b>Estimate No:</b> ${estimateNo}\n` +
+      `<b>Work Order:</b> ${workOrder}\n` +
+      `<b>Site Details:</b> ${siteDetails}\n` +
+      `<b>Amount:</b> ₹${amount}\n` +
+      `<b>Rejected By:</b> ${rejectedByRole}\n` +
+      `<b>Remarks/Reason:</b> ${escapeHtml(remarks)}\n\n` +
+      `Your cost estimate has been rejected. Please review on the IDBP dashboard.`;
+
+    const url = `${TELEGRAM_API_BASE}/sendMessage?chat_id=${encodeURIComponent(jeUser.telegram_chat_id.trim())}&text=${encodeURIComponent(messageText)}&parse_mode=HTML`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (!data.ok) {
+      console.warn(`[TELEGRAM ALERTS] Failed to send rejection message to JE ${jeUser.display_name} (${jeUser.telegram_chat_id}): ${data.description}`);
+    } else {
+      console.log(`[TELEGRAM ALERTS] Rejection notification sent to JE ${jeUser.display_name}`);
+    }
+  } catch (error) {
+    console.error(`[TELEGRAM ALERTS] notifyJeEstimateRejected failed: ${error.message}`);
+  }
+}
+
 module.exports = {
   sendOtp,
   startPolling,
@@ -1427,6 +1487,8 @@ module.exports = {
   notifyZoEstimateSubmitted,
   notifyHoEstimateApproved,
   notifyJeEstimateZoApproved,
+  notifyJeEstimateRejected,
+  zo_balances_reconcile: () => {}, // placeholder if needed
   notifyZoFundRequestApproved,
   notifyJeRevisionRequested,
   notifyHoFundRequestSubmitted,

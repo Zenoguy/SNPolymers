@@ -774,41 +774,14 @@ const EstimateView = () => {
                   <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-200">3. Estimate Summary</h3>
                 </div>
                 
-                <table className="w-full text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-wider text-slate-500 font-mono">
-                      <th className="pb-2">Description</th>
-                      <th className="pb-2 text-right">Amount (INR)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-300 font-medium">
-                    <tr>
-                      <td className="py-2.5">Total Material Cost</td>
-                      <td className="py-2.5 text-right font-mono">{formatINR(getCategoryTotal('Materials'))}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5">Total Labour Cost</td>
-                      <td className="py-2.5 text-right font-mono">{formatINR(getCategoryTotal('Labour'))}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5">Total Transport Cost</td>
-                      <td className="py-2.5 text-right font-mono">{formatINR(getCategoryTotal('Transport'))}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5">Miscellaneous Cost</td>
-                      <td className="py-2.5 text-right font-mono">{formatINR(getCategoryTotal('Miscellaneous'))}</td>
-                    </tr>
-                    <tr className="border-t-2 border-white/10 font-bold text-slate-100 text-sm">
-                      <td className="py-3 text-amber-500">Grand Total Estimate</td>
-                      <td className="py-3 text-right font-mono text-amber-500">{formatINR(grossTotal)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div className="border-t border-white/5 pt-4 space-y-3">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-semibold">Grand Total Estimate</span>
+                    <span className="font-mono text-amber-500 font-extrabold text-sm">{formatINR(grossTotal)}</span>
+                  </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-400 font-semibold">Work Order Value</span>
-                    <span className="font-mono text-slate-200">{formatINR(woValue)}</span>
+                    <span className="font-mono text-slate-200 font-bold">{formatINR(woValue)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-400 font-semibold">Budget Variance</span>
