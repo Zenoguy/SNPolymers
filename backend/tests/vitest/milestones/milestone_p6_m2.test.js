@@ -26,10 +26,10 @@ describe('Milestone P6-M2 — RA/Final Bill CRUD & Summary Controller', () => {
     testWorkOrder = `TEST_WO_P6M2_${suffix}`;
     testEstimateNo = `EST_P6M2_${suffix}`;
 
-    // 1. Resolve an authorized user (ho, zo, or admin)
+    // 1. Resolve an authorized user (ho or admin)
     const { data: users, error: userError } = await supabase.from('authorised_users')
       .select('mobile_number, role')
-      .in('role', ['ho', 'zo', 'admin'])
+      .in('role', ['ho', 'admin'])
       .limit(1);
 
     if (userError || !users || users.length === 0) {

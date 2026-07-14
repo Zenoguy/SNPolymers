@@ -24,6 +24,17 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
   let jeZoMappingId = null;
 
   beforeAll(async () => {
+    // Clean up users first to prevent conflict
+    await supabase.from('authorised_users').delete().in('mobile_number', [jeUser.mobile_number, jeUser2.mobile_number, zoUser.mobile_number]);
+
+    // Insert Users
+    const { error: userError } = await supabase.from('authorised_users').insert([
+      { mobile_number: jeUser.mobile_number, display_name: 'JE User 1', role: 'je', is_active: true, permissions: {} },
+      { mobile_number: jeUser2.mobile_number, display_name: 'JE User 2', role: 'je', is_active: true, permissions: {} },
+      { mobile_number: zoUser.mobile_number, display_name: 'ZO User', role: 'zo', is_active: true, permissions: {} }
+    ]);
+    if (userError) throw userError;
+
     suffix = crypto.randomUUID().substring(0, 8);
     testWorkOrder = `TEST_WO_P5_${suffix}`;
     testEstimateNo = `EST_P5_${suffix}`;
@@ -56,6 +67,7 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
     }
     // Clean up projects_master (DB cascades or soft/hard deletion rules)
     await supabase.from('projects_master').delete().eq('work_order_no', testWorkOrder);
+    await supabase.from('authorised_users').delete().in('mobile_number', [jeUser.mobile_number, jeUser2.mobile_number, zoUser.mobile_number]);
   });
 
   describe('Progress Report Creation', () => {
