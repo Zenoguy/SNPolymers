@@ -283,9 +283,11 @@ async function updateProjectStatus(req, res) {
 
     if (error) throw error;
 
-    // 3. Cascade: if the new status is 'Closed', deactivate WO mappings then
-    //    auto-deactivate JE-ZO mappings for JEs with no remaining active WOs under this ZO.
-    if (status === 'Closed') {
+    // 3. Cascade: if the new status marks the WO as inactive (Closed or Complete Under Maintenance),
+    //    deactivate WO mappings then auto-deactivate JE-ZO mappings for JEs with no remaining
+    //    active WOs under this ZO.
+    const INACTIVE_STATUSES = ['Closed', 'Complete Under Maintenance'];
+    if (INACTIVE_STATUSES.includes(status)) {
       const zoUserId = current.zo_user_id;
 
       // 3a. Fetch active work_order_mappings for this WO (before deactivating, so we know which JEs to check)
@@ -319,13 +321,14 @@ async function updateProjectStatus(req, res) {
         // 3c. For each affected JE, check if they still have active WO mappings
         //     under the same ZO. If not, auto-deactivate their je_zo_mapping.
         if (zoUserId) {
-          // Fetch all other active projects under this ZO (excluding the one just closed)
+          // Fetch all other projects under this ZO that are still in a truly active state
+          // (i.e., not Closed and not Complete Under Maintenance)
           const { data: zoProjects, error: zoProjErr } = await supabase
             .from('projects_master')
             .select('work_order_no')
             .eq('zo_user_id', zoUserId)
             .neq('work_order_no', work_order_no)
-            .neq('status', 'Closed');
+            .not('status', 'in', `("Closed","Complete Under Maintenance")`);
 
           if (zoProjErr) throw zoProjErr;
 

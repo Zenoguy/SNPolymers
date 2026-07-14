@@ -269,7 +269,7 @@ const UserMappings = () => {
                               {mapping.deactivated_by_name ? (
                                 mapping.deactivated_by_name
                               ) : (
-                                <span className="text-amber-500/80 font-semibold">Auto (Project Closed)</span>
+                                <span className="text-amber-500/80 font-semibold">Auto (Project Inactive)</span>
                               )}
                             </div>
                           </div>
