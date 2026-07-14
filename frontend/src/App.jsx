@@ -28,6 +28,9 @@ import Docs from './pages/docs/Docs';
 import SystemPolicy from './pages/SystemPolicy';
 import UserMappings from './pages/UserMappings';
 import WorkOrderMappings from './pages/WorkOrderMappings';
+import ZonalBalances from './pages/ZonalBalances';
+import ExcessFundReturns from './pages/ExcessFundReturns';
+
 
 
 const queryClient = new QueryClient({
@@ -81,6 +84,8 @@ function App() {
               <Route path="/ra-final-bills" element={<RAFinalBill />} />
               <Route path="/user-mappings" element={<UserMappings />} />
               <Route path="/work-order-mappings" element={<WorkOrderMappings />} />
+              <Route path="/zonal-balances" element={<ZonalBalances />} />
+              <Route path="/excess-fund-returns" element={<ExcessFundReturns />} />
             </Route>
 
             {/* Admin Protected Routes */}
