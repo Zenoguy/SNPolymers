@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import TopNavbar from '../components/TopNavbar';
 import { Button, Input, TextArea, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -459,7 +460,9 @@ const DailyProgress = () => {
       <Sidebar />
       <MobileHeader />
 
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Status Alerts */}
         {displayError && (
@@ -1369,6 +1372,7 @@ const DailyProgress = () => {
           </Modal>
         )}
       </main>
+      </div>
     </div>
   );
 };

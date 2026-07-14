@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import authApi from '../../api/authApi';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
+import TopNavbar from '../../components/TopNavbar';
 
 const AuditLog = () => {
   const [sessions, setSessions] = useState([]);
@@ -88,7 +89,9 @@ const AuditLog = () => {
       <MobileHeader />
 
       {/* Main Grid Panel */}
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10">
         <div className="mb-10 pb-6 border-b border-white/5">
           <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500 font-mono">Console Verification Ledger</span>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-100 mt-1">Session Audit & Integrity Trails</h1>
@@ -208,6 +211,7 @@ const AuditLog = () => {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 };

@@ -30,6 +30,7 @@ const raFinalBillRoutes = require('./routes/raFinalBill.routes');
 const userMappingsRoutes = require('./routes/userMappings.routes');
 const workOrderMappingsRoutes = require('./routes/workOrderMappings.routes');
 const excessFundReturnsRoutes = require('./routes/fundReturns.routes');
+const zoBalancesRoutes = require('./routes/zoBalances.routes');
 
 const { startPolling, registerWebhook } = require('./services/telegram.service');
 const { handleTelegramWebhook } = require('./controllers/telegram.webhook.controller');
@@ -80,6 +81,7 @@ app.use('/api/v1/auth/ra-final-bills', raFinalBillRoutes);
 app.use('/api/v1/auth/user-mappings', userMappingsRoutes);
 app.use('/api/v1/auth/work-order-mappings', workOrderMappingsRoutes);
 app.use('/api/v1/auth/excess-fund-returns', excessFundReturnsRoutes);
+app.use('/api/v1/auth/zo-balances', zoBalancesRoutes);
 
 // Health check route with database connectivity ping
 app.get('/health', async (req, res) => {

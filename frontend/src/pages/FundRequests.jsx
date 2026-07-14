@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import TopNavbar from '../components/TopNavbar';
 import { Button, Input } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -176,7 +177,9 @@ const FundRequests = () => {
       <Sidebar />
       <MobileHeader />
 
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
         {/* Notifications */}
         {displayError && (
@@ -323,6 +326,7 @@ const FundRequests = () => {
           </div>
         )}
       </main>
+      </div>
 
       {/* Confirm Cancel Modal */}
       {cancelTarget && (

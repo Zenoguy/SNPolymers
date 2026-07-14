@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import TopNavbar from '../components/TopNavbar';
 import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProjects } from '../api/projectsApi';
@@ -682,7 +683,9 @@ const RAFinalBill = () => {
         </div>
       )}
 
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         {/* Status Alerts */}
         {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg text-left">
@@ -1182,6 +1185,7 @@ const RAFinalBill = () => {
           </div>
         )}
       </main>
+      </div>
 
       {/* CREATE FORM OVERLAY SLIDE PANEL (No changes requested here) */}
       {/* CREATE FORM OVERLAY SLIDE PANEL (No changes requested here) */}

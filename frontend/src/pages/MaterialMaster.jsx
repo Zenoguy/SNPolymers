@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import TopNavbar from '../components/TopNavbar';
 import { Button, Input, TextArea, Select, Checkbox, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -299,7 +300,9 @@ const MaterialMaster = () => {
       <Sidebar />
       <MobileHeader />
 
-      <main className="flex-grow p-4 md:p-8 overflow-y-auto no-scrollbar max-w-7xl mx-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-4 md:p-8 overflow-y-auto no-scrollbar max-w-7xl mx-auto w-full relative z-10">
         
         {/* Module Header */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-white/5">
@@ -550,6 +553,7 @@ const MaterialMaster = () => {
           </div>
         </div>
       </main>
+      </div>
 
       {/* Create / Edit Modal Dialog */}
       {isModalOpen && (

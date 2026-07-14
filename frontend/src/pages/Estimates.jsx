@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
+import TopNavbar from '../components/TopNavbar';
 import { Button, Input, Select, Badge } from '../components/ui';
 import authApi from '../api/authApi';
 
@@ -124,7 +125,9 @@ const Estimates = () => {
       <Sidebar />
       <MobileHeader />
 
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10 flex flex-col">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10 flex flex-col">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-6 pb-6 border-b border-white/5 shrink-0">
@@ -351,6 +354,7 @@ const Estimates = () => {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 };

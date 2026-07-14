@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
+import TopNavbar from '../../components/TopNavbar';
 import { getProjects, createProject, updateProject, updateProjectStatus } from '../../api/projectsApi';
 import { exportProjectsToExcel } from '../../utils/exportHelpers';
 import { getEligibleZOs } from '../../api/userMappingsApi';
@@ -548,7 +549,9 @@ const MasterData = () => {
       <Sidebar />
       <MobileHeader />
 
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-full mx-auto w-full relative z-10">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-full mx-auto w-full relative z-10">
 
         {/* ── Page Header ── */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 pb-6 border-b border-white/5">
@@ -721,6 +724,7 @@ const MasterData = () => {
           </div>
         )}
       </main>
+      </div>
 
       {/* ── Modals ── */}
       {modal?.type === 'create' && (

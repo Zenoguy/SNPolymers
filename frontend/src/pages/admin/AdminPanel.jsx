@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import authApi from '../../api/authApi';
 import BackgroundShapes from '../../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../../components/Sidebar';
+import TopNavbar from '../../components/TopNavbar';
 
 // Small inline Telegram icon
 const TelegramBadgeIcon = () => (
@@ -195,7 +196,9 @@ const AdminPanel = () => {
       <MobileHeader />
 
       {/* Content */}
-      <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10 font-sans">
+      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
+        <TopNavbar />
+        <main className="flex-grow p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full relative z-10 font-sans">
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 pb-6 border-b border-white/5">
           <div>
@@ -590,6 +593,7 @@ const AdminPanel = () => {
         )}
 
       </main>
+      </div>
     </div>
   );
 };
