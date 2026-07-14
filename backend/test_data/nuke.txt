@@ -11,7 +11,14 @@ TRUNCATE TABLE
   audit_log,
   purchase_data,
   material_master,
-  projects_master
+  projects_master,
+  je_zo_mappings,
+  work_order_mappings,
+  zo_balances,
+  zo_fund_ledger,
+  excess_fund_returns,
+  sessions,
+  otp_requests
 CASCADE;
 
 -- This is FOR DEVELOPEMENT DB ONLY . DO NOT USE THIS IN PROD L NOOBS 

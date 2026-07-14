@@ -14,7 +14,7 @@ async function getProjects(req, res) {
     let dbQuery = supabase.from('projects_master');
 
     if (!hasPagination) {
-      let queryBuilder = dbQuery.select('*');
+      let queryBuilder = dbQuery.select('*, zo_user:authorised_users!zo_user_id(display_name)');
       if (req.user.role === 'zo') {
         queryBuilder = queryBuilder.eq('zo_user_id', req.user.mobile_number);
       }
@@ -30,7 +30,7 @@ async function getProjects(req, res) {
     const limit = Math.min(parseInt(query.limit || 50), 100);
     const offset = (page - 1) * limit;
 
-    let queryBuilder = dbQuery.select('*', { count: 'exact' });
+    let queryBuilder = dbQuery.select('*, zo_user:authorised_users!zo_user_id(display_name)', { count: 'exact' });
     if (req.user.role === 'zo') {
       queryBuilder = queryBuilder.eq('zo_user_id', req.user.mobile_number);
     }
@@ -66,7 +66,7 @@ async function getProjectByWorkOrder(req, res) {
   try {
     const { data: project, error } = await supabase
       .from('projects_master')
-      .select('*')
+      .select('*, zo_user:authorised_users!zo_user_id(display_name)')
       .eq('work_order_no', work_order_no)
       .maybeSingle();
 
@@ -111,7 +111,8 @@ async function createProject(req, res) {
     site_latitude,
     site_longitude,
     project_start_date,
-    project_end_date
+    project_end_date,
+    zo_user_id
   } = req.body;
 
   const valNum = work_order_value;
@@ -136,11 +137,12 @@ async function createProject(req, res) {
           site_longitude: site_longitude !== undefined && site_longitude !== '' ? Number(site_longitude) : null,
           project_start_date: project_start_date || null,
           project_end_date: project_end_date || null,
+          zo_user_id: zo_user_id || null,
           created_by: req.user.mobile_number,
           edited_by: req.user.mobile_number
         }
       ])
-      .select()
+      .select('*, zo_user:authorised_users!zo_user_id(display_name)')
       .single();
 
     if (error) {
@@ -187,7 +189,8 @@ async function updateProject(req, res) {
     site_latitude,
     site_longitude,
     project_start_date,
-    project_end_date
+    project_end_date,
+    zo_user_id
   } = req.body;
 
   const valNum = work_order_value;
@@ -221,10 +224,11 @@ async function updateProject(req, res) {
         site_longitude: site_longitude !== undefined ? (site_longitude === '' || site_longitude === null ? null : Number(site_longitude)) : undefined,
         project_start_date: project_start_date !== undefined ? (project_start_date || null) : undefined,
         project_end_date: project_end_date !== undefined ? (project_end_date || null) : undefined,
+        zo_user_id: zo_user_id !== undefined ? (zo_user_id || null) : undefined,
         edited_by: req.user.mobile_number
       })
       .eq('work_order_no', work_order_no)
-      .select()
+      .select('*, zo_user:authorised_users!zo_user_id(display_name)')
       .single();
 
     if (error) throw error;

@@ -60,6 +60,8 @@ const createProjectSchema = {
     project_end_date: z.string().nullable().optional()
       .refine((val) => !val || /^\d{4}-\d{2}-\d{2}$/.test(val), 'project_end_date must be in YYYY-MM-DD format.'),
 
+    zo_user_id: z.string().nullable().optional(),
+
     status: z.enum(allowedStatuses, {
       errorMap: () => ({ message: `Invalid status. Allowed values are: ${allowedStatuses.join(', ')}` })
     }).optional()
@@ -93,6 +95,8 @@ const updateProjectSchema = {
     zone: z.string({
       required_error: 'All standard fields including work_order_value are required (estimate_no, work_order_value, site_details, state, district, zone, department).'
     }).min(1, 'All standard fields including work_order_value are required (estimate_no, work_order_value, site_details, state, district, zone, department).'),
+
+    zo_user_id: z.string().nullable().optional(),
 
     department: z.string({
       required_error: 'All standard fields including work_order_value are required (estimate_no, work_order_value, site_details, state, district, zone, department).'
