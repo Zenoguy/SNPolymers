@@ -283,6 +283,91 @@ async function updateProjectStatus(req, res) {
 
     if (error) throw error;
 
+    // 3. Cascade: if the new status is 'Closed', deactivate WO mappings then
+    //    auto-deactivate JE-ZO mappings for JEs with no remaining active WOs under this ZO.
+    if (status === 'Closed') {
+      const zoUserId = current.zo_user_id;
+
+      // 3a. Fetch active work_order_mappings for this WO (before deactivating, so we know which JEs to check)
+      const { data: activeWoMappings, error: woFetchErr } = await supabase
+        .from('work_order_mappings')
+        .select('id, je_user_id')
+        .eq('work_order_no', work_order_no)
+        .eq('is_active', true);
+
+      if (woFetchErr) throw woFetchErr;
+
+      if (activeWoMappings && activeWoMappings.length > 0) {
+        const affectedJeIds = [...new Set(activeWoMappings.map(m => m.je_user_id))];
+
+        // 3b. Bulk-deactivate all active work_order_mappings for this WO.
+        // NOTE: Must happen BEFORE deactivating je_zo_mappings — DB trigger on
+        // work_order_mappings validates that the JE has an active ZO mapping.
+        const { error: woBulkErr } = await supabase
+          .from('work_order_mappings')
+          .update({
+            is_active: false,
+            reason: 'Project Closed',
+            deactivated_at: new Date().toISOString(),
+            deactivated_by: req.user.mobile_number
+          })
+          .eq('work_order_no', work_order_no)
+          .eq('is_active', true);
+
+        if (woBulkErr) throw woBulkErr;
+
+        // 3c. For each affected JE, check if they still have active WO mappings
+        //     under the same ZO. If not, auto-deactivate their je_zo_mapping.
+        if (zoUserId) {
+          // Fetch all other active projects under this ZO (excluding the one just closed)
+          const { data: zoProjects, error: zoProjErr } = await supabase
+            .from('projects_master')
+            .select('work_order_no')
+            .eq('zo_user_id', zoUserId)
+            .neq('work_order_no', work_order_no)
+            .neq('status', 'Closed');
+
+          if (zoProjErr) throw zoProjErr;
+
+          const otherActiveWoNos = (zoProjects || []).map(p => p.work_order_no);
+
+          for (const jeId of affectedJeIds) {
+            let hasRemainingActiveWo = false;
+
+            if (otherActiveWoNos.length > 0) {
+              const { data: remaining, error: remainErr } = await supabase
+                .from('work_order_mappings')
+                .select('id')
+                .eq('je_user_id', jeId)
+                .eq('is_active', true)
+                .in('work_order_no', otherActiveWoNos)
+                .limit(1);
+
+              if (remainErr) throw remainErr;
+              hasRemainingActiveWo = remaining && remaining.length > 0;
+            }
+
+            if (!hasRemainingActiveWo) {
+              // Auto-deactivate the JE-ZO mapping. deactivated_by is NULL (system-triggered).
+              const { error: jeZoDeactivErr } = await supabase
+                .from('je_zo_mappings')
+                .update({
+                  is_active: false,
+                  deactivated_at: new Date().toISOString(),
+                  deactivated_by: null
+                })
+                .eq('je_user_id', jeId)
+                .eq('zo_user_id', zoUserId)
+                .eq('is_active', true);
+
+              if (jeZoDeactivErr) throw jeZoDeactivErr;
+              console.log(`[Auto-deactivate] JE ${jeId} unmapped from ZO ${zoUserId} — no active WOs remaining.`);
+            }
+          }
+        }
+      }
+    }
+
     return res.status(200).json({
       success: true,
       project: updated,

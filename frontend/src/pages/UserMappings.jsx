@@ -265,7 +265,12 @@ const UserMappings = () => {
                               Deactivated: {new Date(mapping.deactivated_at).toLocaleString()}
                             </div>
                             <div className="text-slate-500 text-[10px]">
-                              By: {mapping.deactivated_by_name}
+                              By:{' '}
+                              {mapping.deactivated_by_name ? (
+                                mapping.deactivated_by_name
+                              ) : (
+                                <span className="text-amber-500/80 font-semibold">Auto (Project Closed)</span>
+                              )}
                             </div>
                           </div>
                         ) : (
