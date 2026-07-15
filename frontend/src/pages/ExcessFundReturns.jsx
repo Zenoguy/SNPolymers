@@ -617,7 +617,7 @@ const ExcessFundReturns = () => {
               <button onClick={() => setShowActionModal(false)} className="text-slate-400 hover:text-slate-200 text-lg">&times;</button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
               {actionError && (
                 <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold leading-relaxed">
                   {actionError}
