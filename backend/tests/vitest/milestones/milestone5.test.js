@@ -59,11 +59,26 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
         zone: 'Kolkata Zone',
         department: 'PWD',
         status: 'Running',
+        zo_user_id: mobileZO,
         created_by: mobileAdmin,
         edited_by: mobileAdmin
       }
     ]);
     if (projError) throw projError;
+
+    // Add JE-ZO mappings
+    const { error: jeZoErr } = await supabase.from('je_zo_mappings').insert([
+      { je_user_id: mobileJE_Owner, zo_user_id: mobileZO, is_active: true, assigned_by: mobileAdmin },
+      { je_user_id: mobileJE_Other, zo_user_id: mobileZO, is_active: true, assigned_by: mobileAdmin }
+    ]);
+    if (jeZoErr) throw jeZoErr;
+
+    // Map JEs to activeWorkOrder
+    const { error: mapErr } = await supabase.from('work_order_mappings').insert([
+      { work_order_no: activeWorkOrder, je_user_id: mobileJE_Owner, is_active: true, assigned_by: mobileAdmin, reason: 'Assigned' },
+      { work_order_no: activeWorkOrder, je_user_id: mobileJE_Other, is_active: true, assigned_by: mobileAdmin, reason: 'Assigned' }
+    ]);
+    if (mapErr) throw mapErr;
 
     // Insert Materials
     const { data: testMats, error: matsError } = await supabase.from('material_master').insert([
@@ -151,6 +166,8 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
       }).in('estimate_id', testEstIds);
     }
 
+    await supabase.from('work_order_mappings').delete().in('je_user_id', [mobileJE_Owner, mobileJE_Other]);
+    await supabase.from('je_zo_mappings').delete().in('je_user_id', [mobileJE_Owner, mobileJE_Other]);
     await supabase.from('projects_master').delete().like('work_order_no', 'TEST_WO_M5_%');
     if (insertedMaterialIds.length > 0) {
       await supabase.from('material_master').delete().in('id', insertedMaterialIds);
@@ -371,10 +388,19 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
           zone: 'Kolkata Zone',
           department: 'PWD',
           status: 'Running',
+          zo_user_id: mobileZO,
           created_by: mobileAdmin,
           edited_by: mobileAdmin
         }
       ]);
+
+      await supabase.from('work_order_mappings').insert({
+        work_order_no: activeWorkOrder2,
+        je_user_id: mobileJE_Owner,
+        is_active: true,
+        assigned_by: mobileAdmin,
+        reason: 'Assigned'
+      });
 
       const resCreate = mockRes();
       await createEstimate({
@@ -451,8 +477,16 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
       const suffix3 = crypto.randomUUID().substring(0, 8);
       const activeWorkOrder3 = `TEST_WO_M5_ZO_AR_${suffix3}`;
       await supabase.from('projects_master').insert([
-        { work_order_no: activeWorkOrder3, estimate_no: `EST_M5_ZAR_${suffix3}`, work_order_value: 500000.00, site_details: 'Staging ZAR', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', created_by: mobileAdmin, edited_by: mobileAdmin }
+        { work_order_no: activeWorkOrder3, estimate_no: `EST_M5_ZAR_${suffix3}`, work_order_value: 500000.00, site_details: 'Staging ZAR', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', zo_user_id: mobileZO, created_by: mobileAdmin, edited_by: mobileAdmin }
       ]);
+
+      await supabase.from('work_order_mappings').insert({
+        work_order_no: activeWorkOrder3,
+        je_user_id: mobileJE_Owner,
+        is_active: true,
+        assigned_by: mobileAdmin,
+        reason: 'Assigned'
+      });
 
       const resCreate = mockRes();
       await createEstimate({
@@ -536,8 +570,16 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
       const suffix4 = crypto.randomUUID().substring(0, 8);
       const activeWorkOrder4 = `TEST_WO_M5_HO_AR_${suffix4}`;
       await supabase.from('projects_master').insert([
-        { work_order_no: activeWorkOrder4, estimate_no: `EST_M5_HAR_${suffix4}`, work_order_value: 500000.00, site_details: 'Staging HAR', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', created_by: mobileAdmin, edited_by: mobileAdmin }
+        { work_order_no: activeWorkOrder4, estimate_no: `EST_M5_HAR_${suffix4}`, work_order_value: 500000.00, site_details: 'Staging HAR', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', zo_user_id: mobileZO, created_by: mobileAdmin, edited_by: mobileAdmin }
       ]);
+
+      await supabase.from('work_order_mappings').insert({
+        work_order_no: activeWorkOrder4,
+        je_user_id: mobileJE_Owner,
+        is_active: true,
+        assigned_by: mobileAdmin,
+        reason: 'Assigned'
+      });
 
       const resCreate = mockRes();
       await createEstimate({
@@ -613,8 +655,16 @@ describe('Milestone 5 — Cost Estimates Review & Approvals API', () => {
       const suffix5 = crypto.randomUUID().substring(0, 8);
       const activeWorkOrder5 = `TEST_WO_M5_GUARD_${suffix5}`;
       await supabase.from('projects_master').insert([
-        { work_order_no: activeWorkOrder5, estimate_no: `EST_M5_G_${suffix5}`, work_order_value: 500000.00, site_details: 'Staging G', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', created_by: mobileAdmin, edited_by: mobileAdmin }
+        { work_order_no: activeWorkOrder5, estimate_no: `EST_M5_G_${suffix5}`, work_order_value: 500000.00, site_details: 'Staging G', state: 'West Bengal', district: 'Kolkata', zone: 'Kolkata Zone', department: 'PWD', status: 'Running', zo_user_id: mobileZO, created_by: mobileAdmin, edited_by: mobileAdmin }
       ]);
+
+      await supabase.from('work_order_mappings').insert({
+        work_order_no: activeWorkOrder5,
+        je_user_id: mobileJE_Owner,
+        is_active: true,
+        assigned_by: mobileAdmin,
+        reason: 'Assigned'
+      });
 
       const resCreate = mockRes();
       await createEstimate({

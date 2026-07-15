@@ -54,11 +54,26 @@ describe('Milestone 4 — Cost Estimates Submission & Revision Workflow API', ()
         zone: 'Kolkata Zone',
         department: 'PWD',
         status: 'Running',
+        zo_user_id: mobileZO,
         created_by: mobileAdmin,
         edited_by: mobileAdmin
       }
     ]);
     if (projError) throw projError;
+
+    // Add JE-ZO mappings
+    const { error: jeZoErr } = await supabase.from('je_zo_mappings').insert([
+      { je_user_id: mobileJE_Owner, zo_user_id: mobileZO, is_active: true, assigned_by: mobileAdmin },
+      { je_user_id: mobileJE_Other, zo_user_id: mobileZO, is_active: true, assigned_by: mobileAdmin }
+    ]);
+    if (jeZoErr) throw jeZoErr;
+
+    // Map JEs to activeWorkOrder
+    const { error: mapErr } = await supabase.from('work_order_mappings').insert([
+      { work_order_no: activeWorkOrder, je_user_id: mobileJE_Owner, is_active: true, assigned_by: mobileAdmin, reason: 'Assigned' },
+      { work_order_no: activeWorkOrder, je_user_id: mobileJE_Other, is_active: true, assigned_by: mobileAdmin, reason: 'Assigned' }
+    ]);
+    if (mapErr) throw mapErr;
 
     // Insert Material
     const { data: testMats, error: matsError } = await supabase.from('material_master').insert([
@@ -112,6 +127,8 @@ describe('Milestone 4 — Cost Estimates Submission & Revision Workflow API', ()
     if (insertedMaterialIds.length > 0) {
       await supabase.from('material_master').delete().in('id', insertedMaterialIds);
     }
+    await supabase.from('work_order_mappings').delete().in('work_order_no', [activeWorkOrder]);
+    await supabase.from('je_zo_mappings').delete().in('je_user_id', [mobileJE_Owner, mobileJE_Other]);
     await supabase.from('projects_master').delete().eq('work_order_no', activeWorkOrder);
     if (activeWorkOrder2) {
       await supabase.from('projects_master').delete().eq('work_order_no', activeWorkOrder2);
@@ -520,6 +537,7 @@ describe('Milestone 4 — Cost Estimates Submission & Revision Workflow API', ()
           zone: 'Kolkata Zone',
           department: 'PWD',
           status: 'Running',
+          zo_user_id: mobileZO,
           created_by: mobileAdmin,
           edited_by: mobileAdmin
         }
