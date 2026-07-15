@@ -289,6 +289,11 @@ async function rejectReturnRequest(req, res) {
 
     if (error) throw error;
 
+    const { notifyHoExcessReturnRejected } = require('../services/telegram.service');
+    notifyHoExcessReturnRejected(updated).catch(err => {
+      console.error(`[EXCESS RETURN] Telegram notification failed: ${err.message}`);
+    });
+
     return res.status(200).json({
       success: true,
       returnRequest: updated,
@@ -347,6 +352,11 @@ async function modifyReturnRequest(req, res) {
       .single();
 
     if (error) throw error;
+
+    const { notifyHoExcessReturnModified } = require('../services/telegram.service');
+    notifyHoExcessReturnModified(updated).catch(err => {
+      console.error(`[EXCESS RETURN] Telegram notification failed: ${err.message}`);
+    });
 
     return res.status(200).json({
       success: true,
