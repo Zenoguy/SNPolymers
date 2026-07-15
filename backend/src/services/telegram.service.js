@@ -1545,7 +1545,7 @@ async function notifyHoExcessReturnAccepted(returnRequest) {
     const { data: hoUsers, error: hoErr } = await supabase
       .from('authorised_users')
       .select('display_name, telegram_chat_id')
-      .eq('role', 'ho')
+      .in('role', ['ho', 'admin'])
       .eq('is_active', true)
       .not('telegram_chat_id', 'is', null);
 
