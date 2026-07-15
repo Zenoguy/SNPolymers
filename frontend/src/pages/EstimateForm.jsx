@@ -378,6 +378,14 @@ const EstimateForm = () => {
 
   const handleSubmit = async () => {
     if (isExpired) return;
+
+    const grossTotal = calculateGrossTotal();
+    const woValue = projectMeta.workOrderValue || 0;
+    if (grossTotal > woValue) {
+      setError(`Cannot submit estimate. Total estimate cost (${formatINR(grossTotal)}) exceeds the Work Order Value (${formatINR(woValue)}).`);
+      return;
+    }
+
     if (!window.confirm('Submit this cost estimate for review? You will not be able to edit items unless a revision is requested.')) return;
     
     setError('');

@@ -299,6 +299,40 @@ describe('Milestone 4 — Cost Estimates Submission & Revision Workflow API', ()
       expect(res.statusCode).toBe(403);
       expect(res.jsonData.message).toContain('Access denied');
     });
+
+    test('Test 5b: Blocks submitEstimate when total cost exceeds work order value with 422', async () => {
+      expect(createdEstimateId).not.toBeNull();
+
+      // Clean items first
+      await supabase.from('project_cost_estimate_items').delete().eq('estimate_id', createdEstimateId);
+
+      // Save draft with a very high total cost exceeding the 1,000,000 work_order_value limit
+      const resSave = mockRes();
+      await saveDraftItems({
+        params: { id: createdEstimateId },
+        user: { mobile_number: mobileJE_Owner, role: 'je' },
+        body: {
+          items: [{
+            material_main_head: 'Raw Materials',
+            material_sub_head: 'Cement',
+            material_details: `Test Cement ${suffix}`,
+            unit: 'Bag',
+            qty: 10000,
+            rate: 200, // Total = 2,000,000 (exceeds 1,000,000 work_order_value)
+            rate_reference: 'Ref'
+          }]
+        }
+      }, resSave);
+
+      const res = mockRes();
+      await submitEstimate({
+        params: { id: createdEstimateId },
+        user: { mobile_number: mobileJE_Owner, role: 'je' }
+      }, res);
+
+      expect(res.statusCode).toBe(422);
+      expect(res.jsonData.message).toContain('exceeds the Work Order Value');
+    });
   });
 
   describe('Submit Cycles & Revision Gating', () => {

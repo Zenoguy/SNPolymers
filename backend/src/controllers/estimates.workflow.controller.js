@@ -69,6 +69,31 @@ async function submitEstimate(req, res) {
       });
     }
 
+    // Work Order Value budget limit check
+    const { data: project, error: projectError } = await supabase
+      .from('projects_master')
+      .select('work_order_value')
+      .eq('work_order_no', estimate.work_order_no)
+      .maybeSingle();
+
+    if (projectError) throw projectError;
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Associated Work Order not found.'
+      });
+    }
+
+    const totalEstimateAmount = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    const workOrderValue = Number(project.work_order_value) || 0;
+
+    if (totalEstimateAmount > workOrderValue) {
+      return res.status(422).json({
+        success: false,
+        message: `Estimate submission rejected. Total estimate cost (₹${totalEstimateAmount.toFixed(2)}) exceeds the Work Order Value (₹${workOrderValue.toFixed(2)}).`
+      });
+    }
+
     // Completeness validation
     const errors = [];
     items.forEach((item, index) => {
