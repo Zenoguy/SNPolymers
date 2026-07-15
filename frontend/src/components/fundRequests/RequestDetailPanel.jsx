@@ -92,7 +92,7 @@ const RequestDetailPanel = ({
     if (isCreate && selectedWorkOrder) {
       // Find selected project value
       const proj = projects.find((p) => p.work_order_no === selectedWorkOrder);
-      const woVal = proj ? Number(proj.work_order_value || 0) : 0;
+      const woVal = proj ? Number(proj.approved_estimate_amount || 0) : 0;
       setSelectedProjectValue(woVal);
 
       // Fetch all fund requests for this work order to find cumulative approved amount
@@ -112,7 +112,7 @@ const RequestDetailPanel = ({
         })
         .catch((err) => {
           console.error('Failed to fetch fund requests for capacity check', err);
-          setRemainingCapacity(woVal); // Fallback to WO value on error
+          setRemainingCapacity(woVal); // Fallback to estimate value on error
         });
     } else {
       setSelectedProjectValue(0);
@@ -137,7 +137,7 @@ const RequestDetailPanel = ({
         // 2. Project value
         const projectsList = projectsRes.data?.projects || [];
         const matchedProject = projectsList.find((p) => p.work_order_no === request.work_order_no);
-        const woVal = matchedProject ? Number(matchedProject.work_order_value || 0) : 0;
+        const woVal = matchedProject ? Number(matchedProject.approved_estimate_amount || 0) : 0;
         setDetailProjectValue(woVal);
 
         // 3. Cumulative approved and remaining capacity
@@ -434,7 +434,7 @@ const RequestDetailPanel = ({
                     {selectedWorkOrder && (
                       <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-white/[0.01] border border-white/5 text-xs text-left mt-2">
                         <div>
-                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">WO Value</span>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Approved Estimate Value</span>
                           <span className="font-bold text-slate-300 font-mono">{formatCurrency(selectedProjectValue)}</span>
                         </div>
                         <div>
@@ -502,10 +502,10 @@ const RequestDetailPanel = ({
                 <span className="font-bold text-slate-300 font-mono">{request.work_order_no || '—'}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">WO Value</span>
-                <span className="font-bold text-slate-300 font-mono">
-                  {loadingContext ? 'Loading...' : formatCurrency(detailProjectValue)}
-                </span>
+                 <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Approved Estimate Value</span>
+                 <span className="font-bold text-slate-300 font-mono">
+                   {loadingContext ? 'Loading...' : formatCurrency(detailProjectValue)}
+                 </span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Remaining Capacity</span>

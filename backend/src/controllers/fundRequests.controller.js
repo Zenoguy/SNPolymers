@@ -76,7 +76,7 @@ async function createFundRequest(req, res) {
     // Verify that the Work Order has a Final Approved cost estimate
     const { data: approvedEstimate, error: estErr } = await supabase
       .from('project_cost_estimates')
-      .select('estimate_id')
+      .select('estimate_id, estimate_amount')
       .eq('work_order_no', work_order_no.trim())
       .eq('estimate_status', 'Final Approved')
       .maybeSingle();
@@ -102,12 +102,13 @@ async function createFundRequest(req, res) {
       (sum, r) => sum + Number(r.approve_ho_amount || 0),
       0
     );
-    const remainingCapacity = Number(project.work_order_value || 0) - cumulativeApproved;
+    const estimateAmount = Number(approvedEstimate.estimate_amount || 0);
+    const remainingCapacity = estimateAmount - cumulativeApproved;
 
     if (amount > remainingCapacity) {
       return res.status(400).json({
         success: false,
-        message: `Requested amount (₹${amount.toLocaleString('en-IN')}) cannot exceed the remaining Work Order funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
+        message: `Requested amount (₹${amount.toLocaleString('en-IN')}) cannot exceed the remaining Cost Estimate funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
       });
     }
 
@@ -364,16 +365,17 @@ async function actOnFundRequest(req, res) {
         });
       }
 
-      // Fetch project to get work_order_value
-      const { data: project, error: projErr } = await supabase
-        .from('projects_master')
-        .select('work_order_value')
+      // Fetch final approved estimate amount
+      const { data: approvedEstimate, error: estErr } = await supabase
+        .from('project_cost_estimates')
+        .select('estimate_amount')
         .eq('work_order_no', fr.work_order_no)
+        .eq('estimate_status', 'Final Approved')
         .maybeSingle();
 
-      if (projErr) throw projErr;
-      if (!project) {
-        return res.status(400).json({ success: false, message: 'Work Order not found.' });
+      if (estErr) throw estErr;
+      if (!approvedEstimate) {
+        return res.status(400).json({ success: false, message: 'Work Order does not have a Final Approved cost estimate.' });
       }
 
       // Fetch approved fund requests for this work order to calculate remaining capacity
@@ -389,12 +391,13 @@ async function actOnFundRequest(req, res) {
         (sum, r) => sum + Number(r.approve_ho_amount || 0),
         0
       );
-      const remainingCapacity = Number(project.work_order_value || 0) - cumulativeApproved;
+      const estimateAmount = Number(approvedEstimate.estimate_amount || 0);
+      const remainingCapacity = estimateAmount - cumulativeApproved;
 
       if (hoAmount > remainingCapacity) {
         return res.status(400).json({
           success: false,
-          message: `Approved amount (₹${hoAmount.toLocaleString('en-IN')}) cannot exceed the remaining Work Order funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
+          message: `Approved amount (₹${hoAmount.toLocaleString('en-IN')}) cannot exceed the remaining Cost Estimate funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
         });
       }
 

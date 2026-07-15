@@ -14,13 +14,20 @@ async function getProjects(req, res) {
     let selectQuery = '*, zo_user:authorised_users!zo_user_id(display_name)';
     let dbQuery = supabase.from('projects_master').select(selectQuery, hasPagination ? { count: 'exact' } : {});
 
-    if (query.has_approved_estimate === 'true') {
-      const { data: approvedEsts, error: estError } = await supabase
-        .from('project_cost_estimates')
-        .select('work_order_no')
-        .eq('estimate_status', 'Final Approved');
+    // Fetch all final approved estimate amounts to map them
+    const { data: approvedEsts, error: estError } = await supabase
+      .from('project_cost_estimates')
+      .select('work_order_no, estimate_amount')
+      .eq('estimate_status', 'Final Approved');
 
-      if (estError) throw estError;
+    if (estError) throw estError;
+
+    const estimateAmountMap = {};
+    (approvedEsts || []).forEach(e => {
+      estimateAmountMap[e.work_order_no] = Number(e.estimate_amount || 0);
+    });
+
+    if (query.has_approved_estimate === 'true') {
       const approvedWOs = (approvedEsts || []).map(e => e.work_order_no);
       dbQuery = dbQuery.in('work_order_no', approvedWOs.length > 0 ? approvedWOs : ['dummy_work_order_no']);
     }
@@ -34,7 +41,13 @@ async function getProjects(req, res) {
         .order('work_order_no', { ascending: true });
 
       if (error) throw error;
-      return res.status(200).json({ success: true, projects });
+
+      const enriched = (projects || []).map(p => ({
+        ...p,
+        approved_estimate_amount: estimateAmountMap[p.work_order_no] || 0
+      }));
+
+      return res.status(200).json({ success: true, projects: enriched });
     }
 
     // Paginated flow
@@ -48,9 +61,14 @@ async function getProjects(req, res) {
 
     if (error) throw error;
 
+    const enriched = (projects || []).map(p => ({
+      ...p,
+      approved_estimate_amount: estimateAmountMap[p.work_order_no] || 0
+    }));
+
     return res.status(200).json({
       success: true,
-      projects,
+      projects: enriched,
       pagination: {
         page,
         limit,
