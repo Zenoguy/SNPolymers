@@ -11,7 +11,8 @@ async function getProjects(req, res) {
     const query = req.query || {};
     const hasPagination = query.page !== undefined || query.limit !== undefined;
 
-    let dbQuery = supabase.from('projects_master');
+    let selectQuery = '*, zo_user:authorised_users!zo_user_id(display_name)';
+    let dbQuery = supabase.from('projects_master').select(selectQuery, hasPagination ? { count: 'exact' } : {});
 
     if (query.has_approved_estimate === 'true') {
       const { data: approvedEsts, error: estError } = await supabase
@@ -24,12 +25,12 @@ async function getProjects(req, res) {
       dbQuery = dbQuery.in('work_order_no', approvedWOs.length > 0 ? approvedWOs : ['dummy_work_order_no']);
     }
 
+    if (req.user.role === 'zo') {
+      dbQuery = dbQuery.eq('zo_user_id', req.user.mobile_number);
+    }
+
     if (!hasPagination) {
-      let queryBuilder = dbQuery.select('*, zo_user:authorised_users!zo_user_id(display_name)');
-      if (req.user.role === 'zo') {
-        queryBuilder = queryBuilder.eq('zo_user_id', req.user.mobile_number);
-      }
-      const { data: projects, error } = await queryBuilder
+      const { data: projects, error } = await dbQuery
         .order('work_order_no', { ascending: true });
 
       if (error) throw error;
@@ -41,11 +42,7 @@ async function getProjects(req, res) {
     const limit = Math.min(parseInt(query.limit || 50), 100);
     const offset = (page - 1) * limit;
 
-    let queryBuilder = dbQuery.select('*, zo_user:authorised_users!zo_user_id(display_name)', { count: 'exact' });
-    if (req.user.role === 'zo') {
-      queryBuilder = queryBuilder.eq('zo_user_id', req.user.mobile_number);
-    }
-    const { data: projects, count, error } = await queryBuilder
+    const { data: projects, count, error } = await dbQuery
       .order('work_order_no', { ascending: true })
       .range(offset, offset + limit - 1);
 
