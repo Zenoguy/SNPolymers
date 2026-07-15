@@ -34,9 +34,15 @@ const hoActionReturnSchema = {
   body: z.object({
     status: z.enum(['Requested', 'Cancelled'], {
       errorMap: () => ({ message: "status must be either 'Requested' or 'Cancelled'." })
-    }),
+    }).optional(),
+    action: z.enum(['Cancel', 'Reissue'], {
+      errorMap: () => ({ message: "action must be either 'Cancel' or 'Reissue'." })
+    }).optional(),
     requested_amount: z.number().positive().optional(),
     remarks_ho: z.string().trim().optional()
+  }).refine(data => data.status || data.action, {
+    message: "Either 'status' or 'action' is required.",
+    path: ['status']
   })
 };
 

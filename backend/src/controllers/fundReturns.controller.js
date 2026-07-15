@@ -382,7 +382,11 @@ async function hoActionOnReturn(req, res) {
 
   if (!validate(req, res, hoActionReturnSchema)) return;
 
-  const { status, requested_amount, remarks_ho } = req.body;
+  let { status, action, requested_amount, remarks_ho } = req.body;
+  if (action && !status) {
+    if (action === 'Cancel') status = 'Cancelled';
+    if (action === 'Reissue') status = 'Requested';
+  }
 
   try {
     const { data: returnRequest, error: fetchErr } = await supabase
