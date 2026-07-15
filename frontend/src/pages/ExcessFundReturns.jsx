@@ -53,6 +53,7 @@ const ExcessFundReturns = () => {
   const [hoActionTarget, setHoActionTarget] = useState(null); // return request object
   const [hoSelectedAction, setHoSelectedAction] = useState('Cancel'); // 'Cancel' | 'Reissue'
   const [hoActionRemarks, setHoActionRemarks] = useState('');
+  const [hoRequestedAmount, setHoRequestedAmount] = useState('');
   const [submittingHoAction, setSubmittingHoAction] = useState(false);
   const [hoActionError, setHoActionError] = useState('');
 
@@ -277,6 +278,7 @@ const ExcessFundReturns = () => {
     setHoActionError('');
     setHoSelectedAction('Cancel');
     setHoActionRemarks('');
+    setHoRequestedAmount(ret.requested_amount);
     setHoActionTarget(ret);
     setShowHoActionModal(true);
   };
@@ -290,7 +292,8 @@ const ExcessFundReturns = () => {
 
     setSubmittingHoAction(true);
     try {
-      const response = await actionOnReturnRequest(hoActionTarget.id, hoSelectedAction, hoActionRemarks);
+      const reqAmt = hoSelectedAction === 'Reissue' ? parseFloat(hoRequestedAmount) : undefined;
+      const response = await actionOnReturnRequest(hoActionTarget.id, hoSelectedAction, hoActionRemarks, reqAmt);
       if (response.data?.success) {
         setSuccess(`Return request successfully actioned (${hoSelectedAction}).`);
         setShowHoActionModal(false);
@@ -813,9 +816,29 @@ const ExcessFundReturns = () => {
                   required
                 >
                   <option value="Cancel" className="bg-neutral-900 text-slate-100">Cancel Request (Delete/Archive)</option>
-                  <option value="Reissue" className="bg-neutral-900 text-slate-100">Reissue (Reset Status to 'Requested')</option>
+                  {hoActionTarget.status !== 'Rejected' && (
+                    <option value="Reissue" className="bg-neutral-900 text-slate-100">Reissue (Reset Status to 'Requested')</option>
+                  )}
                 </select>
               </div>
+
+              {hoSelectedAction === 'Reissue' && (
+                <div className="space-y-2">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                    New Requested Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="Enter new requested amount..."
+                    value={hoRequestedAmount}
+                    onChange={(e) => setHoRequestedAmount(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-amber-500/50"
+                    required
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-400">Resolution Remarks</label>
