@@ -112,21 +112,13 @@ const ZonalBalances = () => {
             <button
               onClick={handleReconcile}
               disabled={reconciling}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase bg-white text-black hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase bg-white text-black hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
+              title="Refresh and sync zonal balances"
             >
-              {reconciling ? (
-                <>
-                  <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-black mr-1" />
-                  Reconciling...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
-                  </svg>
-                  Reconcile Balances
-                </>
-              )}
+              <svg className={`w-4 h-4 ${reconciling ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+              </svg>
+              {reconciling ? 'Refreshing...' : 'Refresh'}
             </button>
           )}
         </div>
@@ -135,10 +127,10 @@ const ZonalBalances = () => {
         {success && (
           <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center justify-between">
             <div>
-              <span>{success}</span>
+              <span>Zonal balances refreshed successfully.</span>
               {reconcileResult && (
                 <div className="text-[10px] text-emerald-400/80 mt-1 font-mono">
-                  Checked: {reconcileResult.checked} | Corrected: {reconcileResult.corrected}
+                  Checked: {reconcileResult.checked} | Updated: {reconcileResult.corrected}
                 </div>
               )}
             </div>
