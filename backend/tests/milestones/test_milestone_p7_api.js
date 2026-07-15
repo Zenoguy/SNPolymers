@@ -142,6 +142,11 @@ async function runApiTests() {
       estimate_no: `EST_${suffix}`,
       zo_user_id: zoMobile2, // Owning Zonal Office is ZO 2
       work_order_value: 50000.00,
+      site_details: 'Testing Site',
+      state: 'West Bengal',
+      district: 'Kolkata',
+      zone: 'Kolkata Zone',
+      department: 'PWD',
       status: 'Running',
       created_by: adminMobile,
       edited_by: adminMobile
@@ -179,16 +184,36 @@ async function runApiTests() {
       assigned_by: adminMobile
     });
 
+    // Create a mock project for the requisition
+    const mockWO = `WO_MOCK_${suffix}`;
+    await supabase.from('projects_master').insert({
+      work_order_no: mockWO,
+      estimate_no: `EST_MOCK_${suffix}`,
+      zo_user_id: zoMobile,
+      work_order_value: 50000.00,
+      site_details: 'Testing Site',
+      state: 'West Bengal',
+      district: 'Kolkata',
+      zone: 'Kolkata Zone',
+      department: 'PWD',
+      status: 'Running',
+      created_by: adminMobile,
+      edited_by: adminMobile
+    });
+
     // Create a mock pending requisition for this JE
     const reqNo = `REQ_${suffix}`;
-    await supabase.from('requisitions').insert({
+    const { error: reqErr } = await supabase.from('requisitions').insert({
       requisition_no: reqNo,
-      work_order_no: `WO_MOCK_${suffix}`,
+      work_order_no: mockWO,
+      estimate_no: `EST_MOCK_${suffix}`,
       requisition_amount: 15000.00,
-      status: 'Pending', // pending requisitions block transfers
+      requisition_status: 'Pending', // pending requisitions block transfers
       created_by: jeMobile,
+      requester_user_id: jeUserId,
       zo_user_id: zoMobile
     });
+    if (reqErr) throw reqErr;
 
     // Attempt to transfer JE to ZO 2
     const transferRes = await fetch(`${BASE_URL}/user-mappings`, {
@@ -209,6 +234,7 @@ async function runApiTests() {
 
     // Cleanup requisition
     await supabase.from('requisitions').delete().eq('requisition_no', reqNo);
+    await supabase.from('projects_master').delete().eq('work_order_no', mockWO);
     await supabase.from('je_zo_mappings').delete().eq('je_user_id', jeMobile);
 
     console.log('--- ALL API INTEGRATION TESTS PASSED SUCCESSFULLY (Exit 0) ---');
@@ -222,6 +248,7 @@ async function runApiTests() {
     console.log('[TEST] Cleaning up test records...');
     try {
       if (server) server.close();
+      await supabase.from('projects_master').delete().in('work_order_no', [`WO_${suffix}`, `WO_MOCK_${suffix}`]);
       await supabase.from('sessions').delete().in('id', [adminSessionId, zoSessionId, zoSessionId2]);
       await supabase.from('authorised_users').delete().in('mobile_number', [adminMobile, zoMobile, zoMobile2, jeMobile]);
     } catch (e) {

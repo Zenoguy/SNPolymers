@@ -361,6 +361,11 @@ async function runUatTests() {
       estimate_no: `EST_CONCUR_${suffix}`,
       zo_user_id: zoMobile2,
       work_order_value: 150000.00,
+      site_details: 'Testing Site',
+      state: 'West Bengal',
+      district: 'Kolkata',
+      zone: 'Kolkata Zone',
+      department: 'PWD',
       status: 'Running',
       created_by: adminMobile,
       edited_by: adminMobile
@@ -376,15 +381,18 @@ async function runUatTests() {
     console.log('[SCENARIO 6] Creating 10 parallel requisitions of ₹10,000 each...');
     const reqIds = [];
     for (let i = 0; i < 10; i++) {
-      const res = await supabase.from('requisitions').insert({
+      const { data, error } = await supabase.from('requisitions').insert({
         requisition_no: `REQ_CONCUR_${i}_${suffix}`,
         work_order_no: concurrentWO,
+        estimate_no: `EST_CONCUR_${suffix}`,
         requisition_amount: 10000.00,
-        status: 'Pending',
+        requisition_status: 'Pending',
         created_by: jeMobile,
+        requester_user_id: jeUserId,
         zo_user_id: zoMobile2
       }).select().single();
-      reqIds.push(res.data.id);
+      if (error) throw error;
+      reqIds.push(data.requisition_id || data.id);
     }
 
     // Fire 10 parallel approval requests concurrently

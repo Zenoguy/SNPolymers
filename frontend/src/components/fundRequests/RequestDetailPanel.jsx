@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import TimelineProgress from './TimelineProgress';
+import { getProjects } from '../../api/projectsApi';
+import { getZonalBalances } from '../../api/zoBalancesApi';
+import { getFundRequests } from '../../api/fundRequests';
 
 const formatCurrency = (val) =>
   val != null ? `₹ ${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
@@ -38,6 +41,20 @@ const RequestDetailPanel = ({
   const [zoFrAmount, setZoFrAmount] = useState('');
   const [zoRemarks, setZoRemarks] = useState('');
 
+  // Projects and capacity states for creation mode
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState('');
+  const [selectedProjectValue, setSelectedProjectValue] = useState(0);
+  const [remainingCapacity, setRemainingCapacity] = useState(null);
+
+  // Detail context states (for viewing mode)
+  const [detailProjectValue, setDetailProjectValue] = useState(null);
+  const [detailCumulativeApproved, setDetailCumulativeApproved] = useState(0);
+  const [detailRemainingCapacity, setDetailRemainingCapacity] = useState(null);
+  const [detailZoBalance, setDetailZoBalance] = useState(null);
+  const [loadingContext, setLoadingContext] = useState(false);
+
   // HO action states
   const [hoAction, setHoAction] = useState('Approve');
   const [hoAmount, setHoAmount] = useState('');
@@ -45,6 +62,104 @@ const RequestDetailPanel = ({
   const [hoRemarks, setHoRemarks] = useState('');
   const [actionSubmitting, setActionSubmitting] = useState(false);
   const [actionError, setActionError] = useState('');
+
+  // Load projects list for dropdown in creation mode
+  useEffect(() => {
+    if (isCreate && user) {
+      setLoadingProjects(true);
+      getProjects()
+        .then((res) => {
+          const list = res.data?.projects || [];
+          // Filter: Owned by ZO and status is Active (Running) or Under Maintenance (Complete Under Maintenance)
+          const eligible = list.filter(
+            (p) =>
+              p.zo_user_id === user.mobile_number &&
+              (p.status === 'Running' || p.status === 'Complete Under Maintenance')
+          );
+          setProjects(eligible);
+        })
+        .catch((err) => {
+          console.error('Failed to load projects mapping', err);
+        })
+        .finally(() => {
+          setLoadingProjects(false);
+        });
+    }
+  }, [isCreate, user]);
+
+  // Recalculate remaining capacity when Work Order is selected in creation mode
+  useEffect(() => {
+    if (isCreate && selectedWorkOrder) {
+      // Find selected project value
+      const proj = projects.find((p) => p.work_order_no === selectedWorkOrder);
+      const woVal = proj ? Number(proj.work_order_value || 0) : 0;
+      setSelectedProjectValue(woVal);
+
+      // Fetch all fund requests for this work order to find cumulative approved amount
+      getFundRequests()
+        .then((res) => {
+          const list = res.data?.fundRequests || [];
+          const approved = list.filter(
+            (r) =>
+              r.work_order_no === selectedWorkOrder &&
+              r.request_status === 'Approved'
+          );
+          const cumulative = approved.reduce(
+            (sum, r) => sum + Number(r.approve_ho_amount || 0),
+            0
+          );
+          setRemainingCapacity(woVal - cumulative);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch fund requests for capacity check', err);
+          setRemainingCapacity(woVal); // Fallback to WO value on error
+        });
+    } else {
+      setSelectedProjectValue(0);
+      setRemainingCapacity(null);
+    }
+  }, [isCreate, selectedWorkOrder, projects]);
+
+  // Load context details (WO value, cumulative approved, remaining capacity, ZO balance) in viewing mode
+  useEffect(() => {
+    if (!isCreate && request) {
+      setLoadingContext(true);
+      Promise.all([
+        getProjects(),
+        getZonalBalances(),
+        getFundRequests()
+      ]).then(([projectsRes, balancesRes, requestsRes]) => {
+        // 1. Zonal balance
+        const balances = balancesRes.data?.balances || [];
+        const matchedBalance = balances.find((b) => b.zo_user_id === request.zo_user_id);
+        setDetailZoBalance(matchedBalance ? matchedBalance.available_balance : 0);
+
+        // 2. Project value
+        const projectsList = projectsRes.data?.projects || [];
+        const matchedProject = projectsList.find((p) => p.work_order_no === request.work_order_no);
+        const woVal = matchedProject ? Number(matchedProject.work_order_value || 0) : 0;
+        setDetailProjectValue(woVal);
+
+        // 3. Cumulative approved and remaining capacity
+        const allRequests = requestsRes.data?.fundRequests || [];
+        const approved = allRequests.filter(
+          (r) =>
+            r.work_order_no === request.work_order_no &&
+            r.request_status === 'Approved'
+        );
+        const cumulative = approved.reduce(
+          (sum, r) => sum + Number(r.approve_ho_amount || 0),
+          0
+        );
+        setDetailCumulativeApproved(cumulative);
+        setDetailRemainingCapacity(woVal - cumulative);
+      }).catch((err) => {
+        console.error('Failed to load request context details', err);
+      }).finally(() => {
+        setLoadingContext(false);
+      });
+    }
+  }, [isCreate, request]);
 
   // General comments/discussion feed
   const [comments, setComments] = useState([]);
@@ -103,6 +218,10 @@ const RequestDetailPanel = ({
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedWorkOrder) {
+      setActionError('Work Order selection is required.');
+      return;
+    }
     if (!zoFrNo.trim()) {
       setActionError('Fund Request Number is required.');
       return;
@@ -112,11 +231,16 @@ const RequestDetailPanel = ({
       setActionError('Amount must be a positive number.');
       return;
     }
+    if (remainingCapacity !== null && parsedAmount > remainingCapacity) {
+      setActionError(`Requested amount cannot exceed the remaining Work Order funding capacity of ${formatCurrency(remainingCapacity)}.`);
+      return;
+    }
 
     setActionError('');
     setActionSubmitting(true);
     try {
       await onSave({
+        work_order_no: selectedWorkOrder,
         zo_fr_no: zoFrNo.trim(),
         zo_fr_amount: parsedAmount,
         zo_remarks: zoRemarks.trim() || null
@@ -145,6 +269,10 @@ const RequestDetailPanel = ({
       }
       if (parsedAmount > parseFloat(request.zo_fr_amount)) {
         setActionError(`Approved amount cannot exceed requested amount of ${formatCurrency(request.zo_fr_amount)}`);
+        return;
+      }
+      if (detailRemainingCapacity !== null && parsedAmount > detailRemainingCapacity) {
+        setActionError(`Approved amount cannot exceed the remaining Work Order funding capacity of ${formatCurrency(detailRemainingCapacity)}.`);
         return;
       }
       if (!hoAccount) {
@@ -287,6 +415,39 @@ const RequestDetailPanel = ({
 
               {/* Form/Request Metadata & remarks */}
               <div className="md:col-span-2 space-y-4">
+                {isCreate && (
+                  <div>
+                    <label className="block text-[8px] font-bold uppercase tracking-widest text-slate-500 mb-1">Work Order (Project)</label>
+                    <select
+                      value={selectedWorkOrder}
+                      onChange={(e) => setSelectedWorkOrder(e.target.value)}
+                      disabled={actionSubmitting || loadingProjects}
+                      className="w-full glass-input rounded-lg px-3 py-1.5 font-semibold text-xs bg-slate-900 border border-white/10 text-slate-100"
+                    >
+                      <option value="">-- Select Work Order --</option>
+                      {projects.map((p) => (
+                        <option key={p.work_order_no} value={p.work_order_no}>
+                          {p.work_order_no} - {p.project_name} ({p.status})
+                        </option>
+                      ))}
+                    </select>
+                    {selectedWorkOrder && (
+                      <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-white/[0.01] border border-white/5 text-xs text-left mt-2">
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">WO Value</span>
+                          <span className="font-bold text-slate-300 font-mono">{formatCurrency(selectedProjectValue)}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Remaining Capacity</span>
+                          <span className="font-bold text-amber-400 font-mono">
+                            {remainingCapacity !== null ? formatCurrency(remainingCapacity) : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4 text-xs">
                   {isCreate ? (
                     <div>
@@ -333,6 +494,33 @@ const RequestDetailPanel = ({
 
             </div>
           </div>
+
+          {!isCreate && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 rounded-3xl bg-white/[0.02] border border-white/5 text-xs text-left">
+              <div>
+                <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Work Order</span>
+                <span className="font-bold text-slate-300 font-mono">{request.work_order_no || '—'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">WO Value</span>
+                <span className="font-bold text-slate-300 font-mono">
+                  {loadingContext ? 'Loading...' : formatCurrency(detailProjectValue)}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">Remaining Capacity</span>
+                <span className="font-bold text-amber-400 font-mono">
+                  {loadingContext ? 'Loading...' : formatCurrency(detailRemainingCapacity)}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-bold">ZO Available Balance</span>
+                <span className="font-bold text-emerald-400 font-mono">
+                  {loadingContext ? 'Loading...' : formatCurrency(detailZoBalance)}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Card D: Approval Timeline bar component */}
           {!isCreate && <TimelineProgress status={request.request_status} />}

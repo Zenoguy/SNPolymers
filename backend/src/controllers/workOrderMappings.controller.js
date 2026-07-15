@@ -100,7 +100,7 @@ async function createWorkOrderMapping(req, res) {
     if (jeZoMapping.zo_user_id !== project.zo_user_id) {
       return res.status(400).json({
         success: false,
-        message: `Mismatched ZO assignment. Junior Engineer belongs to ZO ${jeZoMapping.zo_user_id}, but Work Order belongs to ZO ${project.zo_user_id}.`
+        message: `Zonal Office mismatch: Junior Engineer belongs to ZO ${jeZoMapping.zo_user_id}, but Work Order belongs to ZO ${project.zo_user_id}.`
       });
     }
 

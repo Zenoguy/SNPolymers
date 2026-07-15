@@ -58,7 +58,7 @@ async function createFundRequest(req, res) {
     // Verify work order matches ZO
     const { data: project, error: projErr } = await supabase
       .from('projects_master')
-      .select('zo_user_id, status')
+      .select('zo_user_id, status, work_order_value')
       .eq('work_order_no', work_order_no.trim())
       .maybeSingle();
 
@@ -69,8 +69,30 @@ async function createFundRequest(req, res) {
     if (project.zo_user_id !== req.user.mobile_number) {
       return res.status(400).json({ success: false, message: 'Work Order mismatch with Zonal Office.' });
     }
-    if (project.status === 'Closed') {
-      return res.status(400).json({ success: false, message: 'Cannot request funds for a closed Work Order.' });
+    if (project.status !== 'Running' && project.status !== 'Complete Under Maintenance') {
+      return res.status(400).json({ success: false, message: 'Work Order must be Active (Running) or Under Maintenance.' });
+    }
+
+    // Fetch approved fund requests for this work order to calculate remaining capacity
+    const { data: approvedReqs, error: approvedErr } = await supabase
+      .from('fund_requests')
+      .select('approve_ho_amount')
+      .eq('work_order_no', work_order_no.trim())
+      .eq('request_status', 'Approved');
+
+    if (approvedErr) throw approvedErr;
+
+    const cumulativeApproved = (approvedReqs || []).reduce(
+      (sum, r) => sum + Number(r.approve_ho_amount || 0),
+      0
+    );
+    const remainingCapacity = Number(project.work_order_value || 0) - cumulativeApproved;
+
+    if (amount > remainingCapacity) {
+      return res.status(400).json({
+        success: false,
+        message: `Requested amount (₹${amount.toLocaleString('en-IN')}) cannot exceed the remaining Work Order funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
+      });
     }
 
     const { data: newFr, error: insertError } = await supabase
@@ -323,6 +345,40 @@ async function actOnFundRequest(req, res) {
         return res.status(400).json({
           success: false,
           message: `transfer_from_account is required for approval. Valid values: ${VALID_TRANSFER_ACCOUNTS.join(', ')}.`
+        });
+      }
+
+      // Fetch project to get work_order_value
+      const { data: project, error: projErr } = await supabase
+        .from('projects_master')
+        .select('work_order_value')
+        .eq('work_order_no', fr.work_order_no)
+        .maybeSingle();
+
+      if (projErr) throw projErr;
+      if (!project) {
+        return res.status(400).json({ success: false, message: 'Work Order not found.' });
+      }
+
+      // Fetch approved fund requests for this work order to calculate remaining capacity
+      const { data: approvedReqs, error: approvedErr } = await supabase
+        .from('fund_requests')
+        .select('approve_ho_amount')
+        .eq('work_order_no', fr.work_order_no)
+        .eq('request_status', 'Approved');
+
+      if (approvedErr) throw approvedErr;
+
+      const cumulativeApproved = (approvedReqs || []).reduce(
+        (sum, r) => sum + Number(r.approve_ho_amount || 0),
+        0
+      );
+      const remainingCapacity = Number(project.work_order_value || 0) - cumulativeApproved;
+
+      if (hoAmount > remainingCapacity) {
+        return res.status(400).json({
+          success: false,
+          message: `Approved amount (₹${hoAmount.toLocaleString('en-IN')}) cannot exceed the remaining Work Order funding capacity (₹${remainingCapacity.toLocaleString('en-IN')}).`
         });
       }
 
