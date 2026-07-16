@@ -28,6 +28,17 @@ async function resolveDisplayNames(mobiles) {
   return userMap;
 }
 
+async function getMappedJeMobiles(zoMobile) {
+  const { data: mappings, error } = await supabase
+    .from('je_zo_mappings')
+    .select('je_user_id')
+    .eq('zo_user_id', zoMobile)
+    .eq('is_active', true);
+
+  if (error) throw error;
+  return (mappings || []).map(m => m.je_user_id);
+}
+
 /**
  * POST /api/v1/auth/daily-progress
  * Creates a new daily work progress report (JE only).
@@ -56,6 +67,23 @@ async function createProgressReport(req, res) {
     if (projectErr) throw projectErr;
     if (!project) {
       return res.status(404).json({ success: false, message: 'Work order not found.' });
+    }
+
+    // Verify JE is mapped to this Work Order
+    const { data: woMapping, error: woMapErr } = await supabase
+      .from('work_order_mappings')
+      .select('id')
+      .eq('je_user_id', req.user.mobile_number)
+      .eq('work_order_no', work_order_no.trim())
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (woMapErr) throw woMapErr;
+    if (!woMapping) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not mapped to this Work Order.'
+      });
     }
 
     const ALLOWED_PROJECT_STATUSES = ['Running'];
@@ -115,7 +143,7 @@ async function createProgressReport(req, res) {
       daily_site_photo_url: daily_site_photo_url.trim(),
       original_photo_filename: original_photo_filename?.trim() || null,
       remarks_after_site_visit: remarks_after_site_visit?.trim() || null,
-      approval_status: isBackDate ? 'Pending' : 'Approved'
+      approval_status: 'Pending'
     };
 
     // 3. Perform insert and handle unique constraint violation
@@ -176,7 +204,8 @@ async function getProgressReports(req, res) {
     if (req.user.role === 'je') {
       dbQuery = dbQuery.eq('created_by', req.user.mobile_number);
     } else if (req.user.role === 'zo') {
-      dbQuery = dbQuery.eq('zo_user_id', req.user.mobile_number);
+      const jeMobiles = await getMappedJeMobiles(req.user.mobile_number);
+      dbQuery = dbQuery.in('created_by', jeMobiles.length > 0 ? jeMobiles : ['dummy_je_mobile']);
     } else {
       // HO/Admin can filter by created_by
       if (query.created_by) {
@@ -283,8 +312,11 @@ async function getProgressReportById(req, res) {
       return res.status(404).json({ success: false, message: 'Report not found.' });
     }
 
-    if (req.user.role === 'zo' && report.zo_user_id !== req.user.mobile_number) {
-      return res.status(404).json({ success: false, message: 'Report not found.' });
+    if (req.user.role === 'zo') {
+      const jeMobiles = await getMappedJeMobiles(req.user.mobile_number);
+      if (!jeMobiles.includes(report.created_by)) {
+        return res.status(404).json({ success: false, message: 'Report not found.' });
+      }
     }
 
     // Resolve display names
@@ -364,8 +396,11 @@ async function addAuthorityRemarks(req, res) {
     }
 
     // ZO authorization guard
-    if (req.user.role === 'zo' && report.zo_user_id !== req.user.mobile_number) {
-      return res.status(403).json({ success: false, message: 'Access denied. You can only action reports within your Zonal Office.' });
+    if (req.user.role === 'zo') {
+      const jeMobiles = await getMappedJeMobiles(req.user.mobile_number);
+      if (!jeMobiles.includes(report.created_by)) {
+        return res.status(403).json({ success: false, message: 'Access denied. You can only action reports for JEs mapped to your Zonal Office.' });
+      }
     }
 
     // 3. Build update payload (overwrites previous remarks by design)

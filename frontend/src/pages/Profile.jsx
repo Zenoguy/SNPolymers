@@ -168,6 +168,7 @@ const Profile = () => {
                             <thead>
                               <tr className="text-[10px] text-slate-500 uppercase tracking-wider border-b border-white/5">
                                 <th className="pb-2">Work Order No</th>
+                                <th className="pb-2">Zonal Office</th>
                                 <th className="pb-2">Dept</th>
                                 <th className="pb-2">Zone/District</th>
                                 <th className="pb-2">Status</th>
@@ -177,6 +178,7 @@ const Profile = () => {
                               {roleData.workOrders.map((wo) => (
                                 <tr key={wo.work_order_no}>
                                   <td className="py-2.5 font-bold text-slate-100">{wo.work_order_no}</td>
+                                  <td className="py-2.5 text-slate-200">{roleData.zoDetails?.display_name || '—'}</td>
                                   <td className="py-2.5">{wo.department}</td>
                                   <td className="py-2.5">{wo.zone} / {wo.district}</td>
                                   <td className="py-2.5">
@@ -219,11 +221,13 @@ const Profile = () => {
                                 <td className="py-2.5 font-semibold text-amber-500">{report.physical_work_progress}%</td>
                                 <td className="py-2.5">
                                   <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${
-                                    report.approved_user_id 
+                                    report.approval_status === 'Approved' 
                                       ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                      : report.approval_status === 'Rejected'
+                                      ? 'bg-red-500/10 text-red-400 border border-red-500/20'
                                       : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                   }`}>
-                                    {report.approved_user_id ? 'Approved' : 'Pending Review'}
+                                    {report.approval_status === 'Approved' ? 'Approved' : report.approval_status === 'Rejected' ? 'Rejected' : 'Pending Review'}
                                   </span>
                                 </td>
                               </tr>
@@ -280,48 +284,40 @@ const Profile = () => {
                           <div className="text-xs text-slate-500 py-4 text-center">No ledger transactions found.</div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Column 2: Mapped Junior Engineers Tree */}
+                    </div>                    {/* Column 2: Connected Junior Engineers & Work Orders */}
                     <div className="glass-panel p-6 rounded-3xl">
-                      <h3 className="text-sm uppercase font-bold tracking-widest text-slate-400 mb-4 border-b border-white/5 pb-2">Mapped Junior Engineers</h3>
-                      
-                      {roleData.workOrders?.length > 0 ? (
+                      <h3 className="text-sm uppercase font-bold tracking-widest text-slate-400 mb-4 border-b border-white/5 pb-2">Connected JEs & Work Orders</h3>
+                      {roleData.jes?.length > 0 ? (
                         <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 no-scrollbar">
-                          {roleData.workOrders.map((wo) => {
-                            // Find JEs mapped to this specific work order
-                            const mappedJEs = roleData.jeMappings?.filter(m => m.work_order_no === wo.work_order_no) || [];
-                            
+                          {roleData.jes.map((je) => {
+                            const jeWOs = roleData.jeMappings?.filter(m => m.je_user_id === je.mobile_number) || [];
                             return (
-                              <div key={wo.work_order_no} className="relative pl-3 border-l border-dashed border-white/10 space-y-2">
-                                {/* Root node of the tree: Work Order */}
-                                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/2 border border-white/5 relative">
-                                  {/* Dot indicator on the connection line */}
-                                  <div className="absolute -left-[17px] top-4.5 w-2 h-2 rounded-full bg-slate-900 border border-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.4)] z-10" />
-                                  <div className="truncate">
-                                    <div className="text-[10px] font-black text-slate-200">{wo.work_order_no}</div>
-                                    <div className="text-[9px] text-slate-400 truncate">{wo.site_details}</div>
+                              <div key={je.mobile_number} className="p-3.5 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-all duration-300">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-bold text-xs text-slate-200">{je.display_name}</div>
+                                    <div className="text-[10px] text-slate-500 mt-0.5">{je.mobile_number}</div>
                                   </div>
+                                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${
+                                    je.is_active
+                                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                      : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                  }`}>
+                                    {je.is_active ? 'Active' : 'Inactive'}
+                                  </span>
                                 </div>
-
-                                {/* Child nodes: Mapped JEs */}
-                                <div className="pl-4 space-y-2 relative">
-                                  {mappedJEs.length > 0 ? (
-                                    mappedJEs.map((je) => (
-                                      <div key={je.mobile_number} className="flex items-center gap-2 p-1.5 rounded-lg bg-white/2 border border-white/5 relative">
-                                        {/* Connector branch line */}
-                                        <div className="absolute -left-4 top-3 w-4 h-0.5 border-t border-dashed border-white/20" />
-                                        <div className="truncate">
-                                          <div className="text-[10px] font-bold text-slate-300 truncate">{je.display_name}</div>
-                                          <div className="text-[8px] text-slate-500">{je.mobile_number}</div>
-                                        </div>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <div className="flex items-center gap-1 text-[9px] text-slate-500 pl-1">
-                                      <div className="absolute -left-4 top-2 w-4 h-0.5 border-t border-dashed border-white/10" />
-                                      No JEs mapped.
+                                <div className="mt-3">
+                                  <div className="text-[9px] uppercase font-bold tracking-widest text-slate-500 mb-1.5">Assigned Work Orders</div>
+                                  {jeWOs.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {jeWOs.map((wo) => (
+                                        <span key={wo.work_order_no} className="px-2 py-0.5 rounded-lg bg-slate-900 border border-white/5 text-[10px] font-mono text-slate-300">
+                                          {wo.work_order_no}
+                                        </span>
+                                      ))}
                                     </div>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-600 italic">No assigned work orders.</span>
                                   )}
                                 </div>
                               </div>
@@ -329,7 +325,7 @@ const Profile = () => {
                           })}
                         </div>
                       ) : (
-                        <div className="text-xs text-slate-500 py-4">No active work orders mapped.</div>
+                        <div className="text-xs text-slate-500 py-4 text-center">No Junior Engineers mapped.</div>
                       )}
                     </div>
 

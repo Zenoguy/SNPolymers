@@ -415,7 +415,7 @@ async function getProfileData(req, res) {
       // Analytics: Daily progress reports & Cost Estimates
       const { data: progressReports } = await supabase
         .from('daily_progress_reports')
-        .select('report_id, site_visit_date, physical_work_progress, approved_user_id, work_order_no')
+        .select('report_id, site_visit_date, physical_work_progress, approved_user_id, approval_status, work_order_no')
         .eq('created_by', userRecord.mobile_number)
         .order('site_visit_date', { ascending: false });
 

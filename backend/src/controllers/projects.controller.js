@@ -34,6 +34,15 @@ async function getProjects(req, res) {
 
     if (req.user.role === 'zo') {
       dbQuery = dbQuery.eq('zo_user_id', req.user.mobile_number);
+    } else if (req.user.role === 'je') {
+      const { data: mappings, error: mapErr } = await supabase
+        .from('work_order_mappings')
+        .select('work_order_no')
+        .eq('je_user_id', req.user.mobile_number)
+        .eq('is_active', true);
+      if (mapErr) throw mapErr;
+      const mappedWOs = (mappings || []).map(m => m.work_order_no);
+      dbQuery = dbQuery.in('work_order_no', mappedWOs.length > 0 ? mappedWOs : ['dummy_work_order_no']);
     }
 
     if (!hasPagination) {
@@ -104,6 +113,20 @@ async function getProjectByWorkOrder(req, res) {
 
     if (req.user.role === 'zo' && project.zo_user_id !== req.user.mobile_number) {
       return res.status(404).json({ success: false, message: 'Project not found.' });
+    }
+
+    if (req.user.role === 'je') {
+      const { data: woMapping, error: mapErr } = await supabase
+        .from('work_order_mappings')
+        .select('id')
+        .eq('je_user_id', req.user.mobile_number)
+        .eq('work_order_no', work_order_no)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (mapErr) throw mapErr;
+      if (!woMapping) {
+        return res.status(404).json({ success: false, message: 'Project not found.' });
+      }
     }
 
     return res.status(200).json({ success: true, project });

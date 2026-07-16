@@ -482,6 +482,24 @@ describe('Milestone P7-M6 — Operational Modules Integration Tests', () => {
     expect(resBillZo1.statusCode).toBe(201);
     billId = resBillZo1.jsonData.bill.bill_id;
 
+    // 2b. Create for Work Order 1 as Admin -> Should succeed
+    const reqBillAdmin = {
+      user: { mobile_number: adminMobile, role: 'admin' },
+      body: {
+        work_order_no: workOrder1,
+        payment_type: 'RA Bill 2',
+        bill_date: new Date().toISOString().split('T')[0],
+        bill_no: `BILL-M6-Admin-${suffix}`,
+        gross_bill: 1000.00,
+        agency_payment: 1000.00,
+        bill_copy_url: 'path/copy2',
+        original_bill_filename: 'bill2.pdf'
+      }
+    };
+    const resBillAdmin = mockRes();
+    await createBill(reqBillAdmin, resBillAdmin);
+    expect(resBillAdmin.statusCode).toBe(201);
+
     // 3. List bills as ZO 2 -> Should not see this bill
     const reqListBillZo2 = {
       user: { mobile_number: zo2Mobile, role: 'zo' },
@@ -510,5 +528,41 @@ describe('Milestone P7-M6 — Operational Modules Integration Tests', () => {
     const resSumZo2 = mockRes();
     await getBillSummaryByWorkOrder(reqSumZo2, resSumZo2);
     expect(resSumZo2.statusCode).toBe(404);
+  });
+
+  test('M6-TC-07: JE projects visibility boundaries (Projects Directory gating)', async () => {
+    // 1. List projects as JE -> should only see workOrder1, not workOrder2
+    const reqListJe = {
+      user: { mobile_number: jeMobile, role: 'je' },
+      query: {}
+    };
+    const resListJe = mockRes();
+    await getProjects(reqListJe, resListJe);
+    expect(resListJe.statusCode).toBe(200);
+
+    const hasWorkOrder1 = resListJe.jsonData.projects.some(p => p.work_order_no === workOrder1);
+    const hasWorkOrder2 = resListJe.jsonData.projects.some(p => p.work_order_no === workOrder2);
+
+    expect(hasWorkOrder1).toBe(true);
+    expect(hasWorkOrder2).toBe(false);
+
+    // 2. Fetch project details for workOrder1 (mapped) as JE -> Should return 200
+    const reqDetailOk = {
+      user: { mobile_number: jeMobile, role: 'je' },
+      params: { work_order_no: workOrder1 }
+    };
+    const resDetailOk = mockRes();
+    await getProjectByWorkOrder(reqDetailOk, resDetailOk);
+    expect(resDetailOk.statusCode).toBe(200);
+    expect(resDetailOk.jsonData.project.work_order_no).toBe(workOrder1);
+
+    // 3. Fetch project details for workOrder2 (unmapped) as JE -> Should return 404
+    const reqDetailFail = {
+      user: { mobile_number: jeMobile, role: 'je' },
+      params: { work_order_no: workOrder2 }
+    };
+    const resDetailFail = mockRes();
+    await getProjectByWorkOrder(reqDetailFail, resDetailFail);
+    expect(resDetailFail.statusCode).toBe(404);
   });
 });

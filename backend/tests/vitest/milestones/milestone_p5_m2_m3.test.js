@@ -22,6 +22,7 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
   const jeUser2 = { role: 'je', mobile_number: '+918000000003' };
   const zoUser = { role: 'zo', mobile_number: '+918000000001' };
   let jeZoMappingId = null;
+  let workOrderMappingId = null;
 
   beforeAll(async () => {
     // Safely upsert users to prevent duplicate key violations and foreign key delete failures
@@ -50,6 +51,11 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
     // Setup isolated project
     await setupProject(testWorkOrder, testEstimateNo, 1000000.00, jeUser.mobile_number);
 
+    // Assign owning Zonal Office to the project
+    await supabase.from('projects_master')
+      .update({ zo_user_id: zoUser.mobile_number })
+      .eq('work_order_no', testWorkOrder);
+
     // Setup active JE-ZO mapping so createProgressReport can resolve zo_user_id
     const { data: mappingData } = await supabase.from('je_zo_mappings').insert({
       je_user_id: jeUser.mobile_number,
@@ -58,11 +64,24 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
       assigned_by: zoUser.mobile_number
     }).select('id').single();
     jeZoMappingId = mappingData?.id || null;
+
+    // Setup Work Order mapping so JE is mapped to the work order
+    const { data: woMappingData } = await supabase.from('work_order_mappings').insert({
+      work_order_no: testWorkOrder,
+      je_user_id: jeUser.mobile_number,
+      is_active: true,
+      reason: 'Assigned',
+      assigned_by: zoUser.mobile_number
+    }).select('id').single();
+    workOrderMappingId = woMappingData?.id || null;
   });
 
   afterAll(async () => {
     if (jeZoMappingId) {
       await supabase.from('je_zo_mappings').delete().eq('id', jeZoMappingId);
+    }
+    if (workOrderMappingId) {
+      await supabase.from('work_order_mappings').delete().eq('id', workOrderMappingId);
     }
     // Clean up projects_master (DB cascades or soft/hard deletion rules)
     await supabase.from('projects_master').delete().eq('work_order_no', testWorkOrder);
