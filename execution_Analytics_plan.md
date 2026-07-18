@@ -1048,28 +1048,50 @@ Build the flagship tabbed Project Digital Twin view compiling the full project l
 ## M7 — Integration & End-to-End Verification
 
 ### Objective
-Establish comprehensive automated validation test suites and verify system capabilities under different role constraints.
+Establish comprehensive automated validation test suites to verify system capabilities under different role constraints, and ensure the new analytics database structures do not introduce regressions into existing core workflows (Estimates, Requisitions, DPR, and Fund allocation).
 
 ### Files Created or Modified
-- `[NEW]` [milestone_p8_m1.test.js](file:///Users/aswint/Documents/GitHub/SNPolymers/backend/tests/vitest/milestones/milestone_p8_m1.test.js) *(Views assertion)*
-- `[NEW]` [milestone_p8_m2.test.js](file:///Users/aswint/Documents/GitHub/SNPolymers/backend/tests/vitest/milestones/milestone_p8_m2.test.js) *(Endpoints validation)*
+- `[NEW]` [milestone_p8_m1.test.js](file:///Users/aswint/Documents/GitHub/SNPolymers/backend/tests/vitest/milestones/milestone_p8_m1.test.js) *(DB views regression tests)*
+- `[NEW]` [milestone_p8_m2.test.js](file:///Users/aswint/Documents/GitHub/SNPolymers/backend/tests/vitest/milestones/milestone_p8_m2.test.js) *(API endpoints & RBAC safety tests)*
 
 ### Implementation Work
 
-#### 1. Implement `milestone_p8_m1.test.js`
-- Assert all 8 materialized views are created and initialized.
-- Call database function `refresh_analytics_views` using the `service_role` client and verify it executes without database errors.
-- Verify that a test project with injected budget overruns is flagged in `budget_leakage_mv`.
+#### 1. Implement `milestone_p8_m1.test.js` (Database Regression Proofing)
+The database regression tests must verify that the new materialized views and refresh triggers do not interfere with standard transactional CRUD behavior.
+- **Test Case 1.1: Materialized Views Exist & Compile**: Query each of the 8 views to assert columns are exact.
+- **Test Case 1.2: Idempotent & Transaction-Safe Refresh**: Call `refresh_analytics_views()` multiple times to assert it does not lock baseline tables or fail under concurrent reads.
+- **Test Case 1.3: Trigger Mutex & Append-Only Assertions**: Mutate a mock project, a mock requisition, and a mock estimate. Verify that:
+  - Base mutations succeed (no blocking or deadlocks from triggers).
+  - The immutability of `audit_log` is preserved (attempting to update or delete `audit_log` rows raises DB exceptions).
+- **Test Case 1.4: Null Handling & Empty-State Robustness**: Clear test projects, refresh, and assert that health views and KPI views return default values (e.g. `0` or `0.00` via `COALESCE`) rather than `null` values that would break frontend page rendering.
+- **Test Case 1.5: Accuracy & Formula Verifications**:
+  - Insert a project with a baseline budget of 100,000 INR and requisitions totaling 120,000 INR. Assert `budget_leakage_mv` flags `has_budget_overrun = TRUE` and `anomaly_score` increases correctly.
+  - Insert project timelines where current date is past `project_end_date` but `physical_progress < 100`. Assert `zone_performance_mv.delayed_projects` increments.
 
-#### 2. Implement `milestone_p8_m2.test.js`
-- Assert HO analytics routes return HTTP 403 when called with a ZO or JE user token.
-- Assert `/zo/productivity` only returns rows matching the ZO's zone mobile ID.
-- **Audit Isolation UAT checks (Critical)**:
-  - Injected direct audits (where `record_identifier` is a `work_order_no` belonging to the ZO's zone) must appear in the recent activity feed for that ZO.
-  - Injected indirect audits (where `record_identifier` is a `requisition_id`, `estimate_id`, `id` (dpr), or `fund_request_id` belonging to the ZO's zone's work order) must also appear in the recent activity feed for that ZO.
-  - Verify that no audits belonging to a different ZO's projects (direct or indirect) appear in the result payload.
-- Assert that Digital Twin endpoints return 403 for unauthorized JE tokens.
+#### 2. Implement `milestone_p8_m2.test.js` (API & Workflow Regression Proofing)
+The API tests must verify security restrictions and confirm that core business transactions continue to update statistics correctly.
+- **Test Case 2.1: Strict Security Checkpoints (RBAC)**:
+  - Assert HO routes (`/analytics/ho/*`, `/analytics/audit-log`) return HTTP 403 when called with a ZO or JE token.
+  - Assert `/zo/productivity` only returns rows matching the ZO's zone mobile ID when called by a ZO, but returns all when called by HO/Admin.
+  - Assert that Digital Twin endpoints return 403 for unauthorized JE tokens (unassigned work orders).
+- **Test Case 2.2: ZO Recent Activity Isolation & Link Resolution**:
+  - Create a new project assigned to ZO A, along with a related estimate, requisition, and progress report.
+  - Create a project assigned to ZO B with its own entities.
+  - Perform actions generating audit entries (submit estimate, approve requisition).
+  - Call `GET /api/v1/auth/analytics/recent-activity` with ZO A's token. Assert it returns both the direct project audit AND the indirect estimate/requisition audits belonging to ZO A.
+  - Assert ZO A's response contains **zero** audit logs from ZO B's entities (proving total isolation).
+- **Test Case 2.3: Requisition Mutation & Balance Deduction Regression**:
+  - Call `/api/v1/auth/requisitions` to submit and approve a new requisition. Assert ZO balance is deducted correctly.
+  - Trigger refresh and call GET `/api/v1/auth/analytics/project/:work_order_no/digital-twin`. Assert the new requisition amount is reflected in the financial progress card.
+- **Test Case 2.4: Estimate Revision Regression**:
+  - Walk a cost estimate through a rejection and revision request flow.
+  - Verify that the standard revision history APIs still function, and verify that the `estimate_accuracy_mv` updates the `number_of_revisions` count after view refresh.
+- **Test Case 2.5: Progress Report & Streak Analytics Check**:
+  - Submit a new Daily Progress Report for a project. Assert the streak updates correctly in the user table.
+  - Refresh views, fetch `/api/v1/auth/analytics/zo/productivity` and assert that the new streak count is immediately available.
 
 ### Acceptance Criteria
-- [ ] All automated tests run and pass.
-- [ ] Manual UAT checks confirm that the 15-minute background refresh service functions properly.
+- [ ] All automated Vitest tests run and pass without syntax errors or connection hangs.
+- [ ] No regression detected in core estimate/requisition endpoints after migrating the database views.
+- [ ] Background service execution successfully logs outputs and refreshes data without database transaction lockouts.
+
