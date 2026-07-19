@@ -208,6 +208,18 @@ const Estimates = () => {
                     Draft Sheets
                   </Button>
                 </div>
+
+                {/* Search input option */}
+                <div className="mt-5 pt-5 border-t border-white/5 space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Search Sheets</span>
+                  <Input
+                    type="text"
+                    placeholder="Enter WO or Est No..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    size="sm"
+                  />
+                </div>
               </div>
               
               {/* Plus Button inside MY Sheets card to Initialize New Sheet */}
@@ -295,18 +307,8 @@ const Estimates = () => {
               )}
             </div>
 
-            {/* 3. Bottom Controls: Search Bar and Filters */}
-            <div className="border-t border-white/5 pt-5 flex flex-col sm:flex-row gap-4 shrink-0 items-center justify-between z-10">
-              <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center flex-grow max-w-lg">
-                <Input
-                  type="text"
-                  placeholder="Search by Work Order or Estimate No..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  size="sm"
-                />
-              </div>
-
+            {/* 3. Bottom Controls: Filters */}
+            <div className="border-t border-white/5 pt-5 flex flex-col sm:flex-row gap-4 shrink-0 items-center justify-end z-10">
               <div className="w-full sm:w-auto flex gap-3 items-center shrink-0">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">Status</span>
                 <Select
