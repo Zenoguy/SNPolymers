@@ -257,6 +257,10 @@ const RequestDetailPanel = ({
       setActionError(`Requested amount cannot exceed the remaining Work Order funding capacity of ${formatCurrency(remainingCapacity)}.`);
       return;
     }
+    if (!zoRemarks.trim()) {
+      setActionError('Remarks are required to submit a fund request.');
+      return;
+    }
 
     setActionError('');
     setActionSubmitting(true);
@@ -495,14 +499,17 @@ const RequestDetailPanel = ({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[8px] font-bold uppercase tracking-widest text-slate-500 mb-1">Remarks</label>
+                 <div>
+                  <label className="block text-[8px] font-bold uppercase tracking-widest text-slate-500 mb-1">
+                    Remarks <span className="text-red-500 font-bold">*</span>
+                  </label>
                   {isCreate ? (
                     <textarea
                       value={zoRemarks}
                       onChange={(e) => setZoRemarks(e.target.value)}
                       placeholder="Add request remarks..."
                       rows={2}
+                      required
                       disabled={actionSubmitting}
                       className="w-full glass-input rounded-xl px-3 py-2 text-xs transition resize-none outline-none focus:ring-0"
                     />
