@@ -3,7 +3,7 @@ import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { Button, Input } from '../components/ui';
+import { Button, Input, Modal } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Subcomponents
@@ -182,20 +182,6 @@ const FundRequests = () => {
         <TopNavbar />
         <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
         
-        {/* Notifications */}
-        {displayError && (
-          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-            {displayError}
-          </div>
-        )}
-        {success && (
-          <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl text-xs text-emerald-300 mb-5 flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            {success}
-          </div>
-        )}
-
         {showDetailOrForm ? (
           /* Detail/Creation Mode Panel */
           <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
@@ -348,6 +334,73 @@ const FundRequests = () => {
             exportFundRequestsToExcel(filteredRequests, dateRange);
           }}
         />
+      {/* ── PREMIUM SUCCESS MODAL ── */}
+      {success && (
+        <Modal
+          isOpen={true}
+          onClose={() => setSuccess('')}
+          title="Action Successful"
+          subtitle="Fund Request Management"
+          size="sm"
+          footer={
+            <Button
+              variant="amber"
+              onClick={() => setSuccess('')}
+              className="w-full py-3 text-xs uppercase tracking-wider font-extrabold"
+            >
+              Continue
+            </Button>
+          }
+        >
+          <div className="text-center py-6 space-y-5 animate-fadeIn">
+            {/* Animated checkmark container */}
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 p-0.5 shadow-lg shadow-emerald-500/20 flex items-center justify-center animate-bounce">
+              <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title & Description */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-500 font-bold">Transaction Complete</span>
+              <h3 className="text-lg font-extrabold text-white tracking-tight">Ledger Status Updated</h3>
+              <p className="text-xs text-slate-400 leading-relaxed px-4">{success}</p>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── VALIDATION ERROR MODAL ── */}
+      {displayError && (
+        <Modal
+          isOpen={true}
+          onClose={() => setError('')}
+          title="Action Blocked"
+          subtitle="Validation Alert"
+          size="sm"
+          footer={
+            <Button
+              variant="primary"
+              onClick={() => setError('')}
+              className="w-full"
+            >
+              Understood
+            </Button>
+          }
+        >
+          <div className="text-center py-4 space-y-4">
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-xs text-slate-300 px-4 leading-relaxed font-semibold">
+              {displayError}
+            </p>
+          </div>
+        </Modal>
       )}
     </div>
   );
