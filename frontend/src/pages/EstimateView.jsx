@@ -65,6 +65,8 @@ const EstimateView = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPremiumSuccess, setShowPremiumSuccess] = useState(false);
+  const [successDetails, setSuccessDetails] = useState({ title: '', message: '', estimateNo: '', status: '' });
 
   // Fetch estimate details using React Query
   const { data: estimateData, isLoading: loading, error: queryError } = useQuery({
@@ -263,7 +265,14 @@ const EstimateView = () => {
       // 2. Submit Final Review
       const res = await authApi.post(`/estimates/${id}/submit-review`, { remarks: reviewRemarks });
       if (res.data?.success) {
-        setSuccess('Review finalized successfully.');
+        const nextStatus = res.data.estimate?.estimate_status || 'Updated';
+        setSuccessDetails({
+          title: 'Review Finalized Successfully',
+          message: `The estimate review decisions have been logged and the status has transitioned to ${nextStatus}.`,
+          estimateNo: estimate.estimate_no || 'N/A',
+          status: nextStatus
+        });
+        setShowPremiumSuccess(true);
         queryClient.invalidateQueries({ queryKey: ['estimate', id] });
         queryClient.invalidateQueries({ queryKey: ['estimates'] });
       }
@@ -1204,6 +1213,57 @@ const EstimateView = () => {
                 rows={6}
                 autoFocus
               />
+            </div>
+          </Modal>
+        {/* ── PREMIUM SUCCESS MODAL ── */}
+        {showPremiumSuccess && (
+          <Modal
+            isOpen={true}
+            onClose={() => setShowPremiumSuccess(false)}
+            title=""
+            subtitle=""
+            size="sm"
+            footer={
+              <Button
+                variant="amber"
+                onClick={() => setShowPremiumSuccess(false)}
+                className="w-full py-3 text-xs uppercase tracking-wider font-extrabold"
+              >
+                Continue to Console
+              </Button>
+            }
+          >
+            <div className="text-center py-6 space-y-5 animate-fadeIn">
+              {/* Animated checkmark container */}
+              <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 p-0.5 shadow-lg shadow-emerald-500/20 flex items-center justify-center animate-bounce">
+                <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                  <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Title & Description */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-500 font-bold">Transaction Confirmed</span>
+                <h3 className="text-xl font-extrabold text-white tracking-tight">{successDetails.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed px-2">{successDetails.message}</p>
+              </div>
+
+              {/* Details box */}
+              <div className="glass-panel p-4 rounded-2xl border border-white/5 bg-white/[0.01] text-left space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">Estimate Reference:</span>
+                  <span className="font-mono font-bold text-slate-200">{successDetails.estimateNo}</span>
+                </div>
+                <div className="h-px bg-white/5" />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">New Status:</span>
+                  <span className="font-bold text-emerald-400 uppercase tracking-wide bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px]">
+                    {successDetails.status}
+                  </span>
+                </div>
+              </div>
             </div>
           </Modal>
         )}
