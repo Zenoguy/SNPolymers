@@ -105,9 +105,21 @@ const EstimateView = () => {
     const isHoStage = estimate?.estimate_status === ESTIMATE_STATUS.UNDER_HO_REVIEW;
     
     items.forEach(item => {
+      let defaultApprove = '';
+      let defaultRemarks = '';
+
+      if (isZoStage) {
+        defaultApprove = item.zo_office_approve || '';
+        defaultRemarks = item.zo_remarks || '';
+      } else if (isHoStage) {
+        // For HO review, fall back to ZO's decisions/remarks if HO hasn't made a decision yet
+        defaultApprove = item.ho_office_approve || item.zo_office_approve || '';
+        defaultRemarks = item.ho_remarks || item.zo_remarks || '';
+      }
+
       initialDecisions[item.item_id] = {
-        approve_status: isZoStage ? (item.zo_office_approve || '') : isHoStage ? (item.ho_office_approve || '') : '',
-        remarks: isZoStage ? (item.zo_remarks || '') : isHoStage ? (item.ho_remarks || '') : '',
+        approve_status: defaultApprove,
+        remarks: defaultRemarks,
         source_of_purchase: item.source_of_purchase || ''
       };
     });

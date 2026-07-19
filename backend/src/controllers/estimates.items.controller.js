@@ -267,6 +267,28 @@ async function saveDraftItems(req, res) {
 }
 
 /**
+ * Helper: Checks if the incoming row approval payload represents an actual change compared to the DB.
+ */
+function hasApprovalChanged(dbItem, app, stage) {
+  const incomingApprove = app.approve_status || null;
+  const incomingRemarks = app.remarks && app.remarks.trim() !== '' ? app.remarks : null;
+  const incomingSource = app.source_of_purchase && app.source_of_purchase.trim() !== '' ? app.source_of_purchase : null;
+
+  const dbRemarks = stage === 'ZO' ? dbItem.zo_remarks : dbItem.ho_remarks;
+  const dbApprove = stage === 'ZO' ? dbItem.zo_office_approve : dbItem.ho_office_approve;
+
+  const remarksChanged = (dbRemarks || null) !== incomingRemarks;
+  const approveChanged = (dbApprove || null) !== incomingApprove;
+
+  let sourceChanged = false;
+  if (stage === 'HO') {
+    sourceChanged = (dbItem.source_of_purchase || null) !== incomingSource;
+  }
+
+  return approveChanged || remarksChanged || sourceChanged;
+}
+
+/**
  * POST /api/v1/auth/estimates/:id/row-approvals
  * Saves row-level decisions (Approve/Not Approve) atomically.
  */
@@ -308,7 +330,7 @@ async function submitRowApprovals(req, res) {
     // Verify all items exist and belong to this estimate
     const { data: dbItems, error: itemsFetchError } = await supabase
       .from('project_cost_estimate_items')
-      .select('item_id, zo_office_approve, ho_office_approve')
+      .select('item_id, zo_office_approve, ho_office_approve, zo_remarks, ho_remarks, source_of_purchase')
       .eq('estimate_id', id)
       .in('item_id', itemIds);
 
@@ -330,13 +352,17 @@ async function submitRowApprovals(req, res) {
       if (dbItem) {
         // A. Permanent lock for HO-approved rows (anyone)
         if (dbItem.ho_office_approve === APPROVAL_STATUS.APPROVED) {
-          return res.status(403).json({ success: false, message: 'Final approved rows are locked and cannot be modified.' });
+          if (hasApprovalChanged(dbItem, app, stage)) {
+            return res.status(403).json({ success: false, message: 'Final approved rows are locked and cannot be modified.' });
+          }
         }
 
         // B. HO decision lock (ZO/JE cannot modify)
         if (dbItem.ho_office_approve === APPROVAL_STATUS.APPROVED || dbItem.ho_office_approve === APPROVAL_STATUS.REJECTED) {
           if (!['ho', 'admin'].includes(effectiveRole)) {
-            return res.status(403).json({ success: false, message: 'Rows with HO decisions cannot be approved/rejected at ZO level.' });
+            if (hasApprovalChanged(dbItem, app, stage)) {
+              return res.status(403).json({ success: false, message: 'Rows with HO decisions cannot be approved/rejected at ZO level.' });
+            }
           }
         }
       }
