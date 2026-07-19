@@ -528,4 +528,11 @@ body.light .doc-prose code {
   color: #b45309; /* amber-700 */
 }
 
+.tooltip-popover {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 10px 45px rgba(0, 0, 0, 0.6) !important;
+}
+
 

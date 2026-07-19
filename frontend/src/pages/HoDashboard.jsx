@@ -34,7 +34,7 @@ const InfoTooltip = ({ content, position = 'center' }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <div className={`absolute top-full mt-2 w-64 p-3.5 rounded-xl border border-white/20 bg-slate-900 shadow-[0_10px_40px_rgba(0,0,0,0.8)] text-xs text-slate-200 font-medium tracking-wide leading-relaxed opacity-0 scale-95 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 z-[100] ${positionClasses[position]}`}>
+      <div className={`absolute top-full mt-2 w-64 p-3.5 rounded-xl border border-white/20 bg-slate-900 tooltip-popover text-xs text-slate-200 font-medium tracking-wide leading-relaxed opacity-0 scale-95 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 z-[100] ${positionClasses[position]}`}>
         {content}
       </div>
     </div>
