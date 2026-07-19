@@ -31,11 +31,13 @@ const userMappingsRoutes = require('./routes/userMappings.routes');
 const workOrderMappingsRoutes = require('./routes/workOrderMappings.routes');
 const excessFundReturnsRoutes = require('./routes/fundReturns.routes');
 const zoBalancesRoutes = require('./routes/zoBalances.routes');
+const analyticsRoutes = require('./routes/analytics.routes');
 
 const { startPolling, registerWebhook } = require('./services/telegram.service');
 const { handleTelegramWebhook } = require('./controllers/telegram.webhook.controller');
 const { startReconciliationScheduler } = require('./services/reconciliation.service');
 const { startStreakReminderScheduler } = require('./services/streakNotification.service');
+const { startAnalyticsRefreshScheduler } = require('./services/analyticsRefresh.service');
 
 
 const { globalLimiter } = require('./middleware/rateLimiter');
@@ -83,6 +85,7 @@ app.use('/api/v1/auth/user-mappings', userMappingsRoutes);
 app.use('/api/v1/auth/work-order-mappings', workOrderMappingsRoutes);
 app.use('/api/v1/auth/excess-fund-returns', excessFundReturnsRoutes);
 app.use('/api/v1/auth/zo-balances', zoBalancesRoutes);
+app.use('/api/v1/auth/analytics', analyticsRoutes);
 
 // Health check route with database connectivity ping
 app.get('/health', async (req, res) => {
@@ -126,6 +129,8 @@ if (require.main === module) {
     startReconciliationScheduler();
     // Start daily 1:00 PM streak reminder scheduler
     startStreakReminderScheduler();
+    // Start periodic 15-minute materialized views refresh scheduler
+    startAnalyticsRefreshScheduler();
   });
 }
 
