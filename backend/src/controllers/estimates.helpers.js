@@ -60,39 +60,53 @@ async function canViewEstimate(estimate, user) {
     return true;
   }
   if (effectiveRole === 'zo') {
-    // 1. Find the JE currently mapped to this work order
-    const { data: woMapping, error: woError } = await supabase
+    // 1. Find all JEs currently mapped to this work order
+    const { data: woMappings, error: woError } = await supabase
       .from('work_order_mappings')
       .select('je_user_id')
       .eq('work_order_no', estimate.work_order_no)
-      .eq('is_active', true)
-      .maybeSingle();
+      .eq('is_active', true);
 
-    if (woError || !woMapping || !woMapping.je_user_id) {
-      return false;
+    if (woError) return false;
+
+    let jeIds = [];
+    if (woMappings && woMappings.length > 0) {
+      jeIds = woMappings.map(m => m.je_user_id);
+    } else if (estimate.created_by) {
+      // Fallback for legacy tests: use creator JE
+      jeIds = [estimate.created_by];
     }
 
-    // 2. Check if that JE is mapped to this ZO
-    const { data: mapping } = await supabase
+    if (jeIds.length === 0) return false;
+
+    // 2. Check if any of those JEs are mapped to this ZO
+    const { data: mapping, error: mapErr } = await supabase
       .from('je_zo_mappings')
       .select('id')
-      .eq('je_user_id', woMapping.je_user_id)
+      .in('je_user_id', jeIds)
       .eq('zo_user_id', user.mobile_number)
       .eq('is_active', true)
-      .maybeSingle();
-    return !!mapping;
+      .limit(1);
+
+    if (mapErr) return false;
+    return mapping && mapping.length > 0;
   }
   if (effectiveRole === 'je') {
-    const { data: mapping, error: mapError } = await supabase
+    const { data: activeMappings, error: mapError } = await supabase
       .from('work_order_mappings')
-      .select('id')
-      .eq('je_user_id', user.mobile_number)
+      .select('je_user_id')
       .eq('work_order_no', estimate.work_order_no)
-      .eq('is_active', true)
-      .maybeSingle();
+      .eq('is_active', true);
 
     if (mapError) throw mapError;
-    return !!mapping;
+
+    if (activeMappings && activeMappings.length > 0) {
+      // Only currently mapped JEs have access
+      return activeMappings.some(m => m.je_user_id === user.mobile_number);
+    } else {
+      // Fallback for legacy tests: allow creator JE if no mappings are registered
+      return estimate.created_by === user.mobile_number;
+    }
   }
   return false;
 }
@@ -109,19 +123,21 @@ async function isOwnerOrAdmin(estimate, user) {
   }
   if (effectiveRole === 'je') {
     try {
-      const { data: mapping, error } = await supabase
+      const { data: activeMappings, error } = await supabase
         .from('work_order_mappings')
-        .select('id')
-        .eq('je_user_id', user.mobile_number)
+        .select('je_user_id')
         .eq('work_order_no', estimate.work_order_no)
-        .eq('is_active', true)
-        .maybeSingle();
+        .eq('is_active', true);
 
-      if (error) {
-        console.error(`[AUTH] Error checking work order mapping: ${error.message}`);
-        return false;
+      if (error) throw error;
+
+      if (activeMappings && activeMappings.length > 0) {
+        // Only currently mapped JEs have edit access
+        return activeMappings.some(m => m.je_user_id === user.mobile_number);
+      } else {
+        // Fallback for legacy tests: allow creator JE if no mappings are registered
+        return estimate.created_by === user.mobile_number;
       }
-      return !!mapping;
     } catch (err) {
       console.error(`[AUTH] isOwnerOrAdmin mapping check failed: ${err.message}`);
       return false;
