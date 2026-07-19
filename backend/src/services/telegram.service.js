@@ -851,6 +851,14 @@ async function notifyZoFundRequestHeld(originalRequest, updatedRequest) {
       return;
     }
 
+    // Fetch HO actor name
+    const { data: hoActor } = await supabase
+      .from('authorised_users')
+      .select('display_name')
+      .eq('mobile_number', updatedRequest.approve_ho_user_id)
+      .maybeSingle();
+    const hoActorName = hoActor?.display_name || updatedRequest.approve_ho_user_id || 'N/A';
+
     const requestedAmount = Number(originalRequest.zo_fr_amount);
     const frNoClean = escapeHtml(originalRequest.zo_fr_no || 'N/A');
     const remarksClean = escapeHtml(updatedRequest.ho_remarks || 'None');
@@ -859,6 +867,7 @@ async function notifyZoFundRequestHeld(originalRequest, updatedRequest) {
       `⚠️ <b>Fund Request Placed on Hold</b>\n\n` +
       `<b>Fund Request No:</b> ${frNoClean}\n` +
       `<b>Requested Amount:</b> ₹${requestedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+      `<b>Action By HO:</b> ${escapeHtml(hoActorName)}\n` +
       `<b>HO Remarks:</b> ${remarksClean}\n\n` +
       `Your fund request has been placed on hold. Please check the dashboard for details.`;
 
@@ -1058,6 +1067,15 @@ async function notifyJeRequisitionActed(originalRequisition, updatedRequisition)
       return;
     }
 
+    // Fetch actor's display name
+    const { data: actorUser } = await supabase
+      .from('authorised_users')
+      .select('display_name, role')
+      .eq('mobile_number', updatedRequisition.approved_user_id)
+      .maybeSingle();
+    const actorName = actorUser?.display_name || updatedRequisition.approved_user_id || 'N/A';
+    const actorRole = (actorUser?.role || 'Authority').toUpperCase();
+
     const action = updatedRequisition.requisition_status;
     const reqNo = escapeHtml(originalRequisition.requisition_no || 'N/A');
     const workOrder = escapeHtml(originalRequisition.work_order_no || 'N/A');
@@ -1068,27 +1086,30 @@ async function notifyJeRequisitionActed(originalRequisition, updatedRequisition)
     if (action === 'Approved') {
       const approvedAmount = Number(updatedRequisition.approved_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       messageText =
-        `✅ <b>Payment Requisition Approved</b>\n\n` +
+        `✅ <b>Payment Requisition Approved by ${actorRole}</b>\n\n` +
         `<b>Requisition No:</b> ${reqNo}\n` +
         `<b>Work Order:</b> ${workOrder}\n` +
         `<b>Requested Amount:</b> ₹${requestedAmount}\n` +
         `<b>Approved Amount:</b> ₹${approvedAmount}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
         `<b>Remarks:</b> ${remarks}\n\n` +
         `Your payment requisition has been approved.`;
     } else if (action === 'Hold') {
       messageText =
-        `⚠️ <b>Payment Requisition Placed on Hold</b>\n\n` +
+        `⚠️ <b>Payment Requisition Placed on Hold by ${actorRole}</b>\n\n` +
         `<b>Requisition No:</b> ${reqNo}\n` +
         `<b>Work Order:</b> ${workOrder}\n` +
         `<b>Requested Amount:</b> ₹${requestedAmount}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
         `<b>Remarks:</b> ${remarks}\n\n` +
         `Your payment requisition has been placed on hold. Please check the dashboard for details.`;
     } else {
       messageText =
-        `🔔 <b>Payment Requisition Status Updated</b>\n\n` +
+        `🔔 <b>Payment Requisition Status Updated by ${actorRole}</b>\n\n` +
         `<b>Requisition No:</b> ${reqNo}\n` +
         `<b>Work Order:</b> ${workOrder}\n` +
         `<b>New Status:</b> ${action}\n` +
+        `<b>Action By:</b> ${escapeHtml(actorName)} (${actorRole})\n` +
         `<b>Remarks:</b> ${remarks}`;
     }
 
@@ -1570,10 +1591,16 @@ async function notifyJeEstimateRejected(estimate) {
     
     let rejectedByRole = 'Zonal Office';
     let remarks = estimate.zo_remarks || 'No remarks provided.';
+    let actorMobile = estimate.zo_approved_by;
     if (estimate.estimate_status === 'Rejected by HO') {
       rejectedByRole = 'Head Office';
       remarks = estimate.ho_remarks || 'No remarks provided.';
+      actorMobile = estimate.ho_approved_by;
     }
+    if (!actorMobile) {
+      actorMobile = estimate.last_modified_by;
+    }
+    const actorName = await getDisplayName(actorMobile);
 
     const messageText = 
       `❌ <b>Cost Estimate Rejected</b>\n\n` +
@@ -1581,7 +1608,7 @@ async function notifyJeEstimateRejected(estimate) {
       `<b>Work Order:</b> ${workOrder}\n` +
       `<b>Site Details:</b> ${siteDetails}\n` +
       `<b>Amount:</b> ₹${amount}\n` +
-      `<b>Rejected By:</b> ${rejectedByRole}\n` +
+      `<b>Rejected By:</b> ${escapeHtml(actorName)} (${rejectedByRole})\n` +
       `<b>Remarks/Reason:</b> ${escapeHtml(remarks)}\n\n` +
       `Your cost estimate has been rejected. Please review on the IDBP dashboard.`;
 
@@ -1621,12 +1648,20 @@ async function notifyZoExcessReturnRequested(returnRequest) {
 
     if (!TELEGRAM_BOT_TOKEN) return;
 
+    const { data: actorUser } = await supabase
+      .from('authorised_users')
+      .select('display_name')
+      .eq('mobile_number', returnRequest.requested_by)
+      .maybeSingle();
+    const actorName = actorUser?.display_name || returnRequest.requested_by || 'N/A';
+
     const amount = Number(returnRequest.requested_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const remarks = escapeHtml(returnRequest.remarks_ho || 'None');
 
     const messageText =
       `💸 <b>Excess Fund Return Requested</b>\n\n` +
       `<b>Requested Amount:</b> ₹${amount}\n` +
+      `<b>Requested By HO:</b> ${escapeHtml(actorName)}\n` +
       `<b>Remarks:</b> ${remarks}\n\n` +
       `Please accept this return request and configure the work order allocation breakdown on the IDBP console.`;
 
@@ -1686,7 +1721,7 @@ async function notifyHoExcessReturnAccepted(returnRequest) {
 
     const messageText =
       `✅ <b>Excess Fund Return Accepted</b>\n\n` +
-      `<b>Zonal Office:</b> ${escapeHtml(zoName)}\n` +
+      `<b>Accepted By ZO:</b> ${escapeHtml(zoName)}\n` +
       `<b>Returned Amount:</b> ₹${amount}\n` +
       breakdownText + `\n\n` +
       `The funds have been successfully debited from the Zonal Office available balance.`;
@@ -1741,7 +1776,7 @@ async function notifyHoExcessReturnRejected(returnRequest) {
 
     const messageText =
       `❌ <b>Excess Fund Return Rejected</b>\n\n` +
-      `<b>Zonal Office:</b> ${escapeHtml(zoName)}\n` +
+      `<b>Rejected By ZO:</b> ${escapeHtml(zoName)}\n` +
       `<b>Requested Amount:</b> ₹${amount}\n` +
       `<b>ZO Remarks/Reason:</b> ${remarks}\n\n` +
       `The return request has been rejected by the Zonal Office.`;
@@ -1796,7 +1831,7 @@ async function notifyHoExcessReturnModified(returnRequest) {
 
     const messageText =
       `🔄 <b>Excess Fund Return Modification Requested</b>\n\n` +
-      `<b>Zonal Office:</b> ${escapeHtml(zoName)}\n` +
+      `<b>Requested By ZO:</b> ${escapeHtml(zoName)}\n` +
       `<b>Requested Amount:</b> ₹${amount}\n` +
       `<b>ZO Remarks/Reason:</b> ${remarks}\n\n` +
       `The Zonal Office has requested a modification for this return request. Please review on the IDBP dashboard.`;
