@@ -200,7 +200,9 @@ body.light .bg-indigo-500\/20 {
 }
 body.light .text-indigo-300,
 body.light .text-indigo-400,
-body.light .text-indigo-500 {
+body.light .text-indigo-500,
+body.light .dark\:text-indigo-300,
+body.light .dark\:text-indigo-400 {
   color: #3730a3 !important;
   font-weight: 800 !important;
 }
@@ -217,7 +219,10 @@ body.light .bg-emerald-500\/20 {
 }
 body.light .text-emerald-300,
 body.light .text-emerald-400,
-body.light .text-emerald-500 {
+body.light .text-emerald-500,
+body.light .dark\:text-emerald-200,
+body.light .dark\:text-emerald-300,
+body.light .dark\:text-emerald-400 {
   color: #065f46 !important;
   font-weight: 800 !important;
 }
@@ -234,7 +239,10 @@ body.light .bg-red-500\/20 {
 }
 body.light .text-red-300,
 body.light .text-red-400,
-body.light .text-red-500 {
+body.light .text-red-500,
+body.light .dark\:text-red-200,
+body.light .dark\:text-red-300,
+body.light .dark\:text-red-400 {
   color: #991b1b !important;
   font-weight: 800 !important;
 }
@@ -251,7 +259,10 @@ body.light .bg-amber-500\/20 {
 }
 body.light .text-amber-300,
 body.light .text-amber-400,
-body.light .text-amber-500 {
+body.light .text-amber-500,
+body.light .dark\:text-amber-200,
+body.light .dark\:text-amber-300,
+body.light .dark\:text-amber-400 {
   color: #92400e !important;
   font-weight: 800 !important;
 }
