@@ -214,7 +214,7 @@ async function getRecentActivity(req, res) {
       const [estimatesRes, requisitionsRes, progressRes, fundRequestsRes] = await Promise.all([
         supabase.from('project_cost_estimates').select('estimate_id').in('work_order_no', woList),
         supabase.from('requisitions').select('requisition_id').in('work_order_no', woList),
-        supabase.from('daily_progress_reports').select('id').in('work_order_no', woList),
+        supabase.from('daily_progress_reports').select('report_id').in('work_order_no', woList),
         supabase.from('fund_requests').select('fund_request_id').in('work_order_no', woList)
       ]);
 
@@ -228,7 +228,7 @@ async function getRecentActivity(req, res) {
         ...woList,
         ...(estimatesRes.data || []).map(e => e.estimate_id.toString()),
         ...(requisitionsRes.data || []).map(r => r.requisition_id.toString()),
-        ...(progressRes.data || []).map(p => p.id.toString()),
+        ...(progressRes.data || []).map(p => p.report_id.toString()),
         ...(fundRequestsRes.data || []).map(f => f.fund_request_id.toString())
       ];
 
@@ -348,7 +348,7 @@ async function getProjectDigitalTwin(req, res) {
     const [estimatesRes, requisitionsRes, progressRes, fundRequestsRes] = await Promise.all([
       supabase.from('project_cost_estimates').select('estimate_id').eq('work_order_no', work_order_no),
       supabase.from('requisitions').select('requisition_id').eq('work_order_no', work_order_no),
-      supabase.from('daily_progress_reports').select('id').eq('work_order_no', work_order_no),
+      supabase.from('daily_progress_reports').select('report_id').eq('work_order_no', work_order_no),
       supabase.from('fund_requests').select('fund_request_id').eq('work_order_no', work_order_no)
     ]);
 
@@ -361,7 +361,7 @@ async function getProjectDigitalTwin(req, res) {
       work_order_no,
       ...(estimatesRes.data || []).map(e => e.estimate_id.toString()),
       ...(requisitionsRes.data || []).map(r => r.requisition_id.toString()),
-      ...(progressRes.data || []).map(p => p.id.toString()),
+      ...(progressRes.data || []).map(p => p.report_id.toString()),
       ...(fundRequestsRes.data || []).map(f => f.fund_request_id.toString())
     ];
 

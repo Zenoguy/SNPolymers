@@ -31,6 +31,10 @@ import WorkOrderMappings from './pages/WorkOrderMappings';
 import ZonalBalances from './pages/ZonalBalances';
 import ExcessFundReturns from './pages/ExcessFundReturns';
 import Profile from './pages/Profile';
+import HoDashboard from './pages/HoDashboard';
+import ZoDashboard from './pages/ZoDashboard';
+import AuditComplianceCenter from './pages/AuditComplianceCenter';
+import ProjectDigitalTwin from './pages/ProjectDigitalTwin';
 
 
 
@@ -96,6 +100,22 @@ function App() {
               <Route path="/admin/sessions" element={<AuditLog />} />
               <Route path="/admin/master-data" element={<MasterData />} />
               <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
+            </Route>
+
+            {/* HO/Admin Analytics Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['ho', 'admin']} />}>
+              <Route path="/analytics/ho" element={<HoDashboard />} />
+              <Route path="/analytics/audit" element={<AuditComplianceCenter />} />
+            </Route>
+
+            {/* ZO/HO/Admin Analytics Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
+              <Route path="/analytics/zo" element={<ZoDashboard />} />
+            </Route>
+
+            {/* JE/ZO/HO/Admin Digital Twin Route */}
+            <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
+              <Route path="/projects/:work_order_no/digital-twin" element={<ProjectDigitalTwin />} />
             </Route>
 
             {/* Fallback Catch All */}

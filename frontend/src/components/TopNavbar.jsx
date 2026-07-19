@@ -28,6 +28,12 @@ const TopNavbar = () => {
     return null;
   };
 
+  const getAnalyticsRoute = () => {
+    if (['ho', 'admin'].includes(role)) return '/analytics/ho';
+    if (role === 'zo') return '/analytics/zo';
+    return null;
+  };
+
   const getAdminRoute = () => {
     if (isAdmin) return '/admin';
     return null;
@@ -84,6 +90,21 @@ const TopNavbar = () => {
             ),
             to: getMappingRoute(),
             isActive: ['/work-order-mappings', '/user-mappings'].some(p => currentPath.startsWith(p))
+          }
+        ]
+      : []),
+    // Analytics & Metrics Module
+    ...(isAuthorizedZOOrHOOrAdmin && getAnalyticsRoute()
+      ? [
+          {
+            label: 'Analytics',
+            icon: (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            ),
+            to: getAnalyticsRoute(),
+            isActive: ['/analytics', '/digital-twin'].some(p => currentPath.includes(p))
           }
         ]
       : []),
