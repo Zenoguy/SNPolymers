@@ -739,19 +739,7 @@ async function reopenEstimate(req, res) {
       throw insertError;
     }
 
-    // Reset all item-level ZO/HO approvals/remarks to null
-    const { error: itemsUpdateError } = await supabase
-      .from('project_cost_estimate_items')
-      .update({
-        zo_office_approve: null,
-        zo_remarks: null,
-        ho_office_approve: null,
-        ho_remarks: null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('estimate_id', id);
-
-    if (itemsUpdateError) throw itemsUpdateError;
+    // We do not reset existing item-level approvals or remarks to preserve immutable decisions.
 
     // Update estimate header: status to Estimate Reopened and nullify approvals/remarks
     const { data: updatedEstimate, error: updateError } = await supabase
