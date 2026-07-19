@@ -320,7 +320,7 @@ const HoDashboard = () => {
                                   <tr key={idx} className="hover:bg-white/5 transition-colors">
                                     <td className="py-4 text-xs font-extrabold text-amber-500">#{rank}</td>
                                     <td className="py-4 text-xs font-bold text-slate-200">{row.zone}</td>
-                                    <td className="py-4 text-xs font-bold text-slate-400 text-center">{row.active_projects || 0}</td>
+                                    <td className="py-4 text-xs font-bold text-slate-400 text-center">{row.running_projects || 0}</td>
                                     <td className={`py-4 text-xs font-bold text-center ${row.average_timeline_slack_days > 15 ? 'text-rose-400' : 'text-slate-400'}`}>
                                       {row.average_timeline_slack_days || 0}d
                                     </td>
@@ -440,9 +440,9 @@ const HoDashboard = () => {
                     <div className="space-y-4 overflow-y-auto no-scrollbar max-h-[380px]">
                       {leakages.map((item, idx) => {
                         const score = Number(item.anomaly_score || 0);
-                        const severityColor = score >= 80 
+                        const severityColor = score >= 4 
                           ? 'border-rose-500/20 bg-rose-950/10 text-rose-400 hover:border-rose-500/40' 
-                          : score >= 50
+                          : score >= 1
                           ? 'border-amber-500/20 bg-amber-950/10 text-amber-400 hover:border-amber-500/40'
                           : 'border-white/5 bg-slate-900/40 text-slate-400 hover:border-white/15';
 

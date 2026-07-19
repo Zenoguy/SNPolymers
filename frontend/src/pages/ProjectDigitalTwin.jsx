@@ -38,6 +38,9 @@ const ProjectDigitalTwin = () => {
   const materials = twinData?.materials || [];
   const approvals = twinData?.approvals || [];
   const budget = twinData?.budget || {};
+  const approvedRequisitionAmt = budget.approved_requisitions_amount || 0;
+  const overrunAmt = Math.max(0, approvedRequisitionAmt - (overview.work_order_value || 0));
+  const overrunPct = Math.max(0, (budget.budget_variance_pct || 0) - 100);
   const audits = twinData?.audits || [];
 
   // Tab definitions
@@ -181,12 +184,12 @@ const ProjectDigitalTwin = () => {
                       </div>
                       <div className="glass-panel p-4 rounded-2xl bg-white/[0.01]">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Spent (Approved Requisitions)</span>
-                        <div className="text-lg font-black text-emerald-400 mt-1">{formatINR(budget.total_requisition_approved)}</div>
+                        <div className="text-lg font-black text-emerald-400 mt-1">{formatINR(approvedRequisitionAmt)}</div>
                       </div>
                       <div className="glass-panel p-4 rounded-2xl bg-white/[0.01]">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Overrun Deviation</span>
-                        <div className={`text-lg font-black mt-1 ${budget.overrun_amount > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
-                          {formatINR(budget.overrun_amount)} ({Number(budget.overrun_pct || 0).toFixed(1)}%)
+                        <div className={`text-lg font-black mt-1 ${overrunAmt > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                          {formatINR(overrunAmt)} ({Number(overrunPct).toFixed(1)}%)
                         </div>
                       </div>
                     </div>
@@ -196,9 +199,9 @@ const ProjectDigitalTwin = () => {
                       <div className="h-4 bg-white/5 border border-white/5 rounded-full overflow-hidden flex">
                         <div
                           className={`h-full rounded-full transition-all duration-1000 ${
-                            Number(budget.overrun_pct) > 0 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-indigo-500'
+                            Number(overrunPct) > 0 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-indigo-500'
                           }`}
-                          style={{ width: `${Math.min(100, (Number(budget.total_requisition_approved) / Number(overview.work_order_value || 1)) * 100)}%` }}
+                          style={{ width: `${Math.min(100, (Number(approvedRequisitionAmt) / Number(overview.work_order_value || 1)) * 100)}%` }}
                         />
                       </div>
                     </div>
@@ -338,9 +341,9 @@ const ProjectDigitalTwin = () => {
                                 <td className="py-3 text-center text-slate-300 font-mono">{Number(row.duration_hours || 0).toFixed(1)}h</td>
                                 <td className="py-3 text-right">
                                   <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                                    row.sla_breached ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                    row.is_violated ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                   }`}>
-                                    {row.sla_breached ? 'Breached' : 'Within Limit'}
+                                    {row.is_violated ? 'Breached' : 'Within Limit'}
                                   </span>
                                 </td>
                               </tr>
@@ -396,8 +399,8 @@ const ProjectDigitalTwin = () => {
                       <div className="space-y-3">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block">Risk Matrix Flags</span>
                         <div className="space-y-2">
-                          <p className={`flex items-center gap-2 font-bold ${Number(budget.overrun_pct) > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
-                            <span>{Number(budget.overrun_pct) > 0 ? '🔴' : '⚪'}</span> Budget Overrun Anomaly
+                          <p className={`flex items-center gap-2 font-bold ${Number(overrunPct) > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
+                            <span>{Number(overrunPct) > 0 ? '🔴' : '⚪'}</span> Budget Overrun Anomaly
                           </p>
                           <p className={`flex items-center gap-2 font-bold ${overview.schedule_slack_days > 15 ? 'text-rose-400' : 'text-slate-500'}`}>
                             <span>{overview.schedule_slack_days > 15 ? '🔴' : '⚪'}</span> Timeline Schedule Delay
@@ -434,9 +437,9 @@ const ProjectDigitalTwin = () => {
                   <div className="space-y-6">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Triggered Notifications</h2>
                     <div className="space-y-3">
-                      {budget.overrun_amount > 0 && (
+                      {overrunAmt > 0 && (
                         <div className="p-4 rounded-xl border border-rose-500/10 bg-rose-950/10 text-rose-400 text-xs font-bold">
-                          ⚠️ WARNING: Project budget has been overrun by {formatINR(budget.overrun_amount)}.
+                          ⚠️ WARNING: Project budget has been overrun by {formatINR(overrunAmt)}.
                         </div>
                       )}
                       {overview.schedule_slack_days > 15 && (
@@ -444,7 +447,7 @@ const ProjectDigitalTwin = () => {
                           ⚠️ NOTICE: Project is delayed by {overview.schedule_slack_days} days behind baseline.
                         </div>
                       )}
-                      {(!budget.overrun_amount || budget.overrun_amount <= 0) && (!overview.schedule_slack_days || overview.schedule_slack_days <= 15) && (
+                      {(!overrunAmt || overrunAmt <= 0) && (!overview.schedule_slack_days || overview.schedule_slack_days <= 15) && (
                         <div className="text-slate-500 text-xs py-8 text-center uppercase tracking-widest">No active warnings flagged</div>
                       )}
                     </div>
