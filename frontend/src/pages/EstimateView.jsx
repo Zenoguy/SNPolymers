@@ -58,6 +58,9 @@ const EstimateView = () => {
   // Reopen Confirm Modal State
   const [showReopenConfirmModal, setShowReopenConfirmModal] = useState(false);
 
+  // Remarks Modal State (For large comments popover)
+  const [remarksModalData, setRemarksModalData] = useState(null); // { itemId, remarks, placeholder }
+
   // General States
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -140,6 +143,21 @@ const EstimateView = () => {
     }
 
     setRowDecisions(updated);
+  };
+
+  const openRemarksModal = (itemId, currentRemarks, placeholder) => {
+    setRemarksModalData({ itemId, remarks: currentRemarks || '', placeholder });
+  };
+
+  const handleRemarksModalChange = (val) => {
+    setRemarksModalData((prev) => (prev ? { ...prev, remarks: val } : null));
+  };
+
+  const saveRemarksModal = () => {
+    if (remarksModalData) {
+      handleDecisionChange(remarksModalData.itemId, 'remarks', remarksModalData.remarks);
+      setRemarksModalData(null);
+    }
   };
 
   const handleStartReview = async () => {
@@ -702,12 +720,12 @@ const EstimateView = () => {
                                   type="text"
                                   placeholder={isRejected ? 'Remarks mandatory' : 'Optional comments'}
                                   value={dec?.remarks || ''}
-                                  onChange={(e) => handleDecisionChange(item.item_id, 'remarks', e.target.value)}
-                                  className={`w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs ${
+                                  onClick={() => openRemarksModal(item.item_id, dec?.remarks || '', isRejected ? 'Remarks mandatory' : 'Optional comments')}
+                                  readOnly
+                                  className={`w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs cursor-pointer hover:bg-white/10 transition-colors ${
                                     isRejected && !dec?.remarks?.trim() ? 'border border-red-500/50 bg-red-950/10' : ''
                                   }`}
                                   disabled={submitting}
-                                  required={isRejected}
                                 />
                               </td>
                             </>
@@ -1145,6 +1163,47 @@ const EstimateView = () => {
                 </div>
                 Are you sure you want to reopen this estimate? This will reset all ZO/HO approvals and remarks, and place it in the "Estimate Reopened" status. The JE will be able to add new line items and resubmit.
               </div>
+            </div>
+          </Modal>
+        )}
+
+        {/* ── ITEM REMARKS MODAL ── */}
+        {remarksModalData && (
+          <Modal
+            isOpen={true}
+            onClose={() => setRemarksModalData(null)}
+            title="Item Remarks"
+            subtitle="Review Decisions"
+            size="sm"
+            footer={
+              <div className="flex justify-end gap-3 w-full">
+                <Button
+                  variant="secondary"
+                  onClick={() => setRemarksModalData(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={saveRemarksModal}
+                >
+                  Done
+                </Button>
+              </div>
+            }
+          >
+            <div className="space-y-4 text-left">
+              <p className="text-xs text-slate-400">
+                Enter detailed review comments or reasons for rejection.
+              </p>
+              <TextArea
+                label="Remarks"
+                value={remarksModalData.remarks}
+                onChange={(e) => handleRemarksModalChange(e.target.value)}
+                placeholder={remarksModalData.placeholder}
+                rows={6}
+                autoFocus
+              />
             </div>
           </Modal>
         )}
