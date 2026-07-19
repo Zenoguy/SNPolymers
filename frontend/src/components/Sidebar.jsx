@@ -632,9 +632,9 @@ const Sidebar = () => {
       onMouseLeave={() => setIsHovered(false)}
       className={`hidden md:flex flex-col glass-nav border-r border-white/5 sticky top-0 h-screen z-20 shrink-0 overflow-y-auto transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'w-20 px-3 py-6' : 'w-72 p-6'}`}
     >
-      <div className="flex items-center gap-3 mb-10 overflow-hidden shrink-0">
+      <div className={`flex items-center ${displayCollapsed ? 'justify-center' : 'gap-3'} mb-10 overflow-hidden shrink-0`}>
         <Link to="/dashboard" className="shrink-0 flex items-center justify-center">
-          <img src="/assets/logo.png" alt="SN Polymers Pvt LTD Logo" className={`w-auto object-contain transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'h-8' : 'h-10'}`} />
+          <img src="/assets/logo.png" alt="SN Polymers Pvt LTD Logo" className={`w-auto object-contain transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'h-11' : 'h-12'}`} />
         </Link>
         <div className={`flex flex-col transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left ${displayCollapsed ? 'max-w-0 opacity-0 scale-95 pointer-events-none' : 'max-w-[200px] opacity-100 scale-100 ml-1'}`}>
           <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase whitespace-nowrap">
