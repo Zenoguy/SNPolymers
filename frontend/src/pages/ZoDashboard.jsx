@@ -36,7 +36,7 @@ const InfoTooltip = ({ content, position = 'center' }) => {
 
   return (
     <div className="absolute top-4 right-4 group cursor-pointer z-40">
-      <div className="p-1.5 rounded-full bg-slate-800/30 hover:bg-slate-700/50 transition-colors">
+      <div className="transition-colors">
         <svg className="w-5 h-5 text-amber-400/80 group-hover:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>

@@ -146,7 +146,19 @@ const ProjectDigitalTwin = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
                       <div className="space-y-3">
                         <p><span className="text-slate-500 block">Work Order Number</span> <span className="text-slate-200 font-extrabold text-sm">{overview.work_order_no}</span></p>
-                        <p><span className="text-slate-500 block">Estimate ID Link</span> <span className="text-slate-300 font-extrabold">{overview.estimate_no || 'N/A'}</span></p>
+                        <p>
+                          <span className="text-slate-500 block">Estimate ID Link</span>
+                          {overview.estimate_id && overview.estimate_id !== 'N/A' ? (
+                            <button
+                              onClick={() => navigate(`/estimates/${overview.estimate_id}`)}
+                              className="text-sky-400 font-extrabold hover:underline text-left"
+                            >
+                              {overview.estimate_no} ↗
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 font-extrabold">{overview.estimate_no || 'N/A'}</span>
+                          )}
+                        </p>
                         <p><span className="text-slate-500 block">State</span> <span className="text-slate-200 font-bold">{overview.state}</span></p>
                         <p><span className="text-slate-500 block">District</span> <span className="text-slate-200 font-bold">{overview.district}</span></p>
                       </div>
@@ -216,7 +228,7 @@ const ProjectDigitalTwin = () => {
                       <div className="space-y-4">
                         <div>
                           <span className="text-slate-500">Physical Work Progress</span>
-                          <div className="text-3xl font-black mt-1 text-amber-500">{overview.physical_work_progress || 0}%</div>
+                          <div className="text-3xl font-black mt-1 text-amber-500">{overview.physical_progress || 0}%</div>
                         </div>
                         <div>
                           <span className="text-slate-500">Last Progress Submission</span>
@@ -423,7 +435,7 @@ const ProjectDigitalTwin = () => {
                       <div className="glass-panel p-4 rounded-2xl bg-white/[0.01] space-y-2">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block">Project Forecast Velocity</span>
                         <div className="text-slate-200 font-extrabold text-sm">
-                          {overview.physical_work_progress > 0 
+                          {overview.physical_progress > 0 
                             ? 'Reporting steady progress rate' 
                             : 'Awaiting progress reporting setup'}
                         </div>
@@ -497,9 +509,9 @@ const ProjectDigitalTwin = () => {
                           <span className="font-bold text-slate-200">Main Cost Estimate</span>
                           <span className="text-[10px] text-slate-500 block mt-0.5">Reference: {overview.estimate_no || 'EST-N/A'}</span>
                         </div>
-                        {overview.estimate_no && (
+                        {overview.estimate_id && overview.estimate_id !== 'N/A' && (
                           <button
-                            onClick={() => navigate(`/estimates/${overview.estimate_no}`)}
+                            onClick={() => navigate(`/estimates/${overview.estimate_id}`)}
                             className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider text-amber-500 transition"
                           >
                             Open Estimate

@@ -382,8 +382,10 @@ async function getProjectDigitalTwin(req, res) {
     if (auditsRes.error) throw auditsRes.error;
 
     const enrichedAudits = await enrichAuditsWithUserNames(auditsRes.data || []);
+    const matchedEstimate = (estimatesRes.data || [])[0];
     const overviewData = overviewRes.data ? {
       ...overviewRes.data,
+      estimate_id: matchedEstimate ? matchedEstimate.estimate_id : null,
       site_latitude: coordsRes.data?.site_latitude || null,
       site_longitude: coordsRes.data?.site_longitude || null
     } : null;
