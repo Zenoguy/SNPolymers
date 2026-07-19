@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import BackgroundShapes from '../components/BackgroundShapes';
 import Sidebar, { MobileHeader } from '../components/Sidebar';
-import { Button, Input, TextArea, Select } from '../components/ui';
+import { Button, Input, TextArea, Select, Modal } from '../components/ui';
 import authApi from '../api/authApi';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -494,40 +494,63 @@ const EstimateForm = () => {
         )}
 
         {error && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn">
-            <div className="glass-panel p-8 rounded-3xl max-w-md w-full border border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.2)] relative overflow-hidden mx-4">
-              {/* Ambient Red Glow */}
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="flex flex-col items-center text-center">
-                {/* Warning/Error Icon */}
-                <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-6 shadow-inner animate-pulse">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-
-                <h3 className="text-base font-black text-slate-100 uppercase tracking-widest mb-3">Submission Blocked</h3>
-                <p className="text-xs text-slate-400 font-medium mb-6 leading-relaxed">
-                  {error}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => setError('')}
-                  className="w-full bg-red-500 hover:bg-red-600 text-slate-950 font-bold py-3 px-6 rounded-2xl transition duration-300 shadow-[0_0_20px_rgba(239,68,68,0.25)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]"
-                >
-                  Modify Estimate
-                </button>
+          <Modal
+            isOpen={true}
+            onClose={() => setError('')}
+            title="Action Rejected"
+            subtitle="Validation Alert"
+            size="sm"
+            footer={
+              <Button
+                variant="primary"
+                onClick={() => setError('')}
+                className="w-full bg-red-500 hover:bg-red-600 text-slate-950 font-bold"
+              >
+                Modify Estimate
+              </Button>
+            }
+          >
+            <div className="text-center py-4 space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
               </div>
+              <p className="text-xs text-slate-300 px-4 leading-relaxed font-semibold">
+                {error}
+              </p>
             </div>
-          </div>
+          </Modal>
         )}
 
         {success && (
-          <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl text-xs text-emerald-300 mb-6">
-            {success}
-          </div>
+          <Modal
+            isOpen={true}
+            onClose={() => setSuccess('')}
+            title="Action Successful"
+            subtitle="JE Console"
+            size="sm"
+            footer={
+              <Button
+                variant="amber"
+                onClick={() => setSuccess('')}
+                className="w-full"
+              >
+                Continue
+              </Button>
+            }
+          >
+            <div className="text-center py-4 space-y-4 animate-fadeIn">
+              <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-xs text-slate-300 px-4 leading-relaxed font-semibold">
+                {success}
+              </p>
+            </div>
+          </Modal>
         )}
 
         {/* Header Form */}
