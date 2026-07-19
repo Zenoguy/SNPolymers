@@ -262,7 +262,7 @@ const ProjectDigitalTwin = () => {
                 {/* 4. Materials Variance Tab */}
                 {activeTab === 'materials' && (
                   <div className="space-y-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Materials Quantity Variance</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Materials Cost Variance</h2>
                     {materials.length === 0 ? (
                       <div className="text-slate-500 text-xs py-10 text-center uppercase tracking-widest">No materials variance registered</div>
                     ) : (
@@ -271,32 +271,37 @@ const ProjectDigitalTwin = () => {
                           <thead>
                             <tr className="border-b border-white/5 pb-2 text-slate-500">
                               <th className="py-2">Material Head</th>
-                              <th className="py-2 text-center">Estimated Qty</th>
-                              <th className="py-2 text-center">Approved Qty</th>
-                              <th className="py-2 text-center">Qty Variance</th>
-                              <th className="py-2 text-right">Variance Score</th>
+                              <th className="py-2 text-center">Estimated Budget</th>
+                              <th className="py-2 text-center">Approved Spend</th>
+                              <th className="py-2 text-center">Budget Variance</th>
+                              <th className="py-2 text-right">Deviation Status</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/5">
-                            {materials.map((item, idx) => (
-                              <tr key={idx} className="hover:bg-white/5 transition-colors">
-                                <td className="py-3 font-bold text-slate-200">{item.material_main_head}</td>
-                                <td className="py-3 text-center text-slate-400">{Number(item.total_estimated_qty).toFixed(1)}</td>
-                                <td className="py-3 text-center text-slate-400">{Number(item.total_approved_qty).toFixed(1)}</td>
-                                <td className={`py-3 text-center font-bold ${Number(item.quantity_variance) > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
-                                  {Number(item.quantity_variance) > 0 ? `+${Number(item.quantity_variance).toFixed(1)}` : Number(item.quantity_variance).toFixed(1)}
-                                </td>
-                                <td className="py-3 text-right">
-                                  <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                                    item.variance_severity === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
-                                    item.variance_severity === 'Warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                    'bg-white/5 text-slate-400'
-                                  }`}>
-                                    {item.variance_severity}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
+                            {materials.map((item, idx) => {
+                              const devPct = Number(item.variance_pct || 0);
+                              const severity = devPct > 15 ? 'Critical' : devPct > 5 ? 'Warning' : 'Normal';
+                              
+                              return (
+                                <tr key={idx} className="hover:bg-white/5 transition-colors">
+                                  <td className="py-3 font-bold text-slate-200">{item.material_main_head}</td>
+                                  <td className="py-3 text-center text-slate-400 font-mono">{formatINR(item.estimated_amount)}</td>
+                                  <td className="py-3 text-center text-slate-400 font-mono">{formatINR(item.approved_amount)}</td>
+                                  <td className={`py-3 text-center font-bold font-mono ${Number(item.variance_amount) > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                                    {Number(item.variance_amount) > 0 ? `+${formatINR(item.variance_amount)}` : formatINR(item.variance_amount)}
+                                  </td>
+                                  <td className="py-3 text-right">
+                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                                      severity === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                                      severity === 'Warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                      'bg-white/5 text-slate-400'
+                                    }`}>
+                                      {severity} ({devPct.toFixed(1)}%)
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
