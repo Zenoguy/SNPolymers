@@ -232,9 +232,10 @@ export const MobileHeader = () => {
             </button>
             <Link
               to="/profile"
-              className="text-[9px] bg-slate-900 border border-white/10 text-slate-200 font-extrabold uppercase tracking-widest px-2.5 py-1.5 rounded-lg"
+              className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-500 flex items-center justify-center font-black text-slate-950 text-xs shadow-md select-none transition-transform hover:scale-105 active:scale-95"
+              title="View Profile"
             >
-              Profile
+              {(user.display_name || 'U')[0].toUpperCase()}
             </Link>
           </div>
         )}
