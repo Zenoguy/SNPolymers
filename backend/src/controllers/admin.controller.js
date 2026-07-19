@@ -31,9 +31,21 @@ async function addUser(req, res) {
     return res.status(400).json({ success: false, message: 'Mobile number is required.' });
   }
 
+  // Normalize phone number (strip whitespace/dashes, prepend +91 for 10-digit numbers)
+  let cleanPhone = String(mobileNumber).trim().replace(/\s+/g, '').replace(/[-()]/g, '');
+  if (/^\d{10}$/.test(cleanPhone)) {
+    cleanPhone = '+91' + cleanPhone;
+  } else if (/^0\d{10}$/.test(cleanPhone)) {
+    cleanPhone = '+91' + cleanPhone.substring(1);
+  } else if (/^91\d{10}$/.test(cleanPhone)) {
+    cleanPhone = '+' + cleanPhone;
+  } else if (!cleanPhone.startsWith('+')) {
+    cleanPhone = '+' + cleanPhone;
+  }
+
   // Format validation
   const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-  if (!phoneRegex.test(mobileNumber)) {
+  if (!phoneRegex.test(cleanPhone)) {
     return res.status(400).json({ success: false, message: 'Invalid mobile number format.' });
   }
 
@@ -50,7 +62,7 @@ async function addUser(req, res) {
       .from('authorised_users')
       .insert([
         {
-          mobile_number: mobileNumber,
+          mobile_number: cleanPhone,
           display_name: displayName || null,
           role: role || 'je',
           permissions: permissions || {},
@@ -225,6 +237,24 @@ async function removeUser(req, res) {
       .update({ is_active: false, logout_at: new Date().toISOString() })
       .eq('user_id', id)
       .eq('is_active', true);
+
+    // 1.5. Clean up associated mapping and balance tables to satisfy constraints
+    if (userRecord) {
+      await supabase
+        .from('zo_balances')
+        .delete()
+        .eq('zo_user_id', userRecord.mobile_number);
+
+      await supabase
+        .from('je_zo_mappings')
+        .delete()
+        .or(`je_user_id.eq.${userRecord.mobile_number},zo_user_id.eq.${userRecord.mobile_number}`);
+
+      await supabase
+        .from('work_order_mappings')
+        .delete()
+        .eq('je_user_id', userRecord.mobile_number);
+    }
 
     // 2. Perform delete
     const { error } = await supabase

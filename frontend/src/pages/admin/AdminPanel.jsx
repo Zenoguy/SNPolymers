@@ -66,9 +66,15 @@ const AdminPanel = () => {
     setSuccess('');
     setSubmitting(true);
 
-    let formattedNumber = newMobile.trim();
+    let formattedNumber = newMobile.trim().replace(/\s+/g, '').replace(/[-()]/g, '');
     if (/^\d{10}$/.test(formattedNumber)) {
       formattedNumber = `+91${formattedNumber}`;
+    } else if (/^0\d{10}$/.test(formattedNumber)) {
+      formattedNumber = `+91${formattedNumber.substring(1)}`;
+    } else if (/^91\d{10}$/.test(formattedNumber)) {
+      formattedNumber = `+${formattedNumber}`;
+    } else if (!formattedNumber.startsWith('+')) {
+      formattedNumber = `+${formattedNumber}`;
     }
 
     try {
@@ -228,14 +234,14 @@ const AdminPanel = () => {
         </div>
 
         {error && (
-          <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-6 flex items-center gap-2.5">
+          <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl text-xs text-red-700 dark:text-red-300 mb-6 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
             {error}
           </div>
         )}
 
         {success && (
-          <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl text-xs text-emerald-300 mb-6 flex items-center gap-2.5">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-300 mb-6 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             {success}
           </div>
@@ -398,6 +404,9 @@ const AdminPanel = () => {
                     required
                     disabled={submitting}
                   />
+                  <span className="text-[10px] text-slate-500 mt-1.5 block">
+                    Supports spacing. 10-digit numbers automatically convert to India standard format (<span className="text-slate-400 font-mono">+91</span>).
+                  </span>
                 </div>
 
                 <div>
@@ -598,13 +607,13 @@ const AdminPanel = () => {
 
                 {/* Inline error/success inside modal */}
                 {error && (
-                  <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs text-red-300 flex items-center gap-2">
+                  <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     {success}
                   </div>

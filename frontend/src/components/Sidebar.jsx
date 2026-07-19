@@ -8,65 +8,339 @@ export const MobileHeader = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const currentPath = location.pathname;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Grouped Menu Links matching desktop access permissions
+  const menuGroups = [];
+
+  if (user) {
+    // Group 1: Project Operations
+    const projItems = [];
+    projItems.push({
+      to: '/estimates',
+      label: 'Cost Estimates',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      )
+    });
+    projItems.push({
+      to: '/materials',
+      label: 'Material Master',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      )
+    });
+    if (['je', 'zo', 'ho', 'admin'].includes(user?.role)) {
+      projItems.push({
+        to: '/daily-progress',
+        label: 'Daily Progress',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+          </svg>
+        )
+      });
+    }
+    menuGroups.push({ title: 'Project Control', items: projItems });
+
+    // Group 2: Financial Allocation
+    const finItems = [];
+    if (['je', 'zo', 'ho', 'admin'].includes(user?.role)) {
+      finItems.push({
+        to: '/requisitions',
+        label: 'Requisitions',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+          </svg>
+        )
+      });
+    }
+    if (['zo', 'staff', 'ho', 'admin'].includes(user?.role)) {
+      finItems.push({
+        to: '/fund-requests',
+        label: 'Fund Requests',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        )
+      });
+    }
+    if (['zo', 'ho', 'admin'].includes(user?.role)) {
+      finItems.push({
+        to: '/ra-final-bills',
+        label: 'RA / Final Bills',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        )
+      });
+      finItems.push({
+        to: '/zonal-balances',
+        label: 'Zonal Balances',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        )
+      });
+      finItems.push({
+        to: '/excess-fund-returns',
+        label: 'Excess Returns',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 15v-6a4 4 0 00-8 0v6M5 18h14M8 15V9a4 4 0 118 0v6M12 18v-3" />
+          </svg>
+        )
+      });
+    }
+    if (finItems.length > 0) {
+      menuGroups.push({ title: 'Financial Twin', items: finItems });
+    }
+
+    // Group 3: Assignments & Mappings
+    const mapItems = [];
+    if (['zo', 'ho', 'admin'].includes(user?.role)) {
+      mapItems.push({
+        to: '/work-order-mappings',
+        label: 'Work Order Mappings',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4-4m-4 4l4 4" />
+          </svg>
+        )
+      });
+      mapItems.push({
+        to: '/user-mappings',
+        label: 'User Mappings',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        )
+      });
+    }
+    if (mapItems.length > 0) {
+      menuGroups.push({ title: 'Access & Mappings', items: mapItems });
+    }
+
+    // Group 4: Admin
+    if (user?.role === 'admin') {
+      menuGroups.push({
+        title: 'Administrator',
+        items: [
+          {
+            to: '/admin',
+            label: 'Access Whitelist',
+            icon: (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            )
+          },
+          {
+            to: '/admin/purchase-options',
+            label: 'Purchase Options',
+            icon: (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            )
+          },
+          {
+            to: '/admin/master-data',
+            label: 'Master Data',
+            icon: (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10l8 4V3L4 7zm0 0h16v10l-8-4V3M4 7h16" />
+              </svg>
+            )
+          }
+        ]
+      });
+    }
+
+    // Group 5: Digital Twins
+    menuGroups.push({
+      title: 'Digital Twins',
+      items: [
+        {
+          to: '/analytics',
+          label: 'Digital Twin Hub',
+          icon: (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          )
+        },
+        {
+          to: '/analytics/audit-compliance',
+          label: 'Audit & Compliance',
+          icon: (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          )
+        }
+      ]
+    });
+  }
 
   return (
-    <header className="md:hidden glass-nav sticky top-0 z-50 p-4 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <img src="/assets/logo.png" alt="SN Polymers Pvt LTD Logo" className="h-8 w-auto object-contain" />
-          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase">SN Polymers Pvt LTD</span>
-        </Link>
-      </div>
-      {user && (
-        <div className="flex items-center gap-3">
-          {user.role === 'admin' && currentPath !== '/admin' && (
-            <Link
-              to="/admin"
-              className="text-[10px] bg-slate-900 border border-white/10 text-slate-200 font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg"
+    <>
+      <header className="md:hidden glass-nav sticky top-0 z-50 p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {user && (
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 -ml-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-slate-100 transition mr-1"
+              aria-label="Open Navigation Drawer"
             >
-              Admin
-            </Link>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           )}
-          {currentPath !== '/profile' && (
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <img src="/assets/logo.png" alt="SN Polymers Pvt LTD Logo" className="h-8 w-auto object-contain" />
+            <span className="font-extrabold text-[11px] tracking-wider text-slate-100 uppercase">SN Polymers</span>
+          </Link>
+        </div>
+
+        {user && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-slate-100 transition"
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            >
+              {theme === 'light' ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              )}
+            </button>
             <Link
               to="/profile"
-              className="text-[10px] bg-slate-900 border border-white/10 text-slate-200 font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg"
+              className="text-[9px] bg-slate-900 border border-white/10 text-slate-200 font-extrabold uppercase tracking-widest px-2.5 py-1.5 rounded-lg"
             >
               Profile
             </Link>
-          )}
-          {currentPath !== '/dashboard' && (
-            <Link
-              to="/dashboard"
-              className="text-[10px] bg-slate-900 border border-white/10 text-slate-200 font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg"
-            >
-              Console
-            </Link>
-          )}
-          <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-slate-100 transition"
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >
-            {theme === 'light' ? (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-              </svg>
-            )}
-          </button>
-          <button
-            onClick={logout}
-            className="text-[10px] bg-red-950/20 border border-red-900/30 text-red-400 font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg"
-          >
-            Out
-          </button>
-        </div>
+          </div>
+        )}
+      </header>
+
+      {/* Slide-out Navigation Drawer */}
+      {isMenuOpen && user && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <aside className="fixed top-0 left-0 bottom-0 w-72 bg-[#030712]/98 border-r border-white/10 z-50 p-6 flex flex-col justify-between shadow-[5px_0_30px_rgba(0,0,0,0.85)] md:hidden animate-in slide-in-from-left duration-300">
+            <div>
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                  <img src="/assets/logo.png" alt="SN Polymers" className="h-6 w-auto" />
+                  <span className="font-black text-xs uppercase tracking-widest text-slate-100">Navigation</span>
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-1 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition"
+                  aria-label="Close menu"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Main Console Link */}
+              <Link
+                to="/dashboard"
+                onClick={() => setIsMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all mb-6 ${
+                  currentPath === '/dashboard' ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/10' : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                </svg>
+                Main Console
+              </Link>
+
+              {/* Grouped Links */}
+              <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-230px)] no-scrollbar pr-1">
+                {menuGroups.map((group, idx) => (
+                  <div key={idx} className="space-y-1.5">
+                    <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-3">{group.title}</h4>
+                    <div className="space-y-1">
+                      {group.items.map((item) => {
+                        const active = currentPath === item.to || (item.to !== '/dashboard' && currentPath.startsWith(item.to));
+                        return (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                              active
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                            }`}
+                          >
+                            <span className={active ? 'text-amber-400' : 'text-slate-500'}>
+                              {item.icon}
+                            </span>
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Profile & Sign out segment */}
+            <div className="pt-4 border-t border-white/5 mt-auto flex flex-col gap-3">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-extrabold text-sm uppercase">
+                  {user.display_name ? user.display_name.charAt(0) : 'U'}
+                </div>
+                <div className="truncate flex-grow">
+                  <p className="text-xs font-extrabold text-slate-200 truncate">{user.display_name || 'User Account'}</p>
+                  <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">{user.role}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => { setIsMenuOpen(false); logout(); }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-950/20 hover:bg-red-950/35 border border-red-900/30 hover:border-red-900/50 text-red-400 font-extrabold text-xs uppercase tracking-wider transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          </aside>
+        </>
       )}
-    </header>
+    </>
   );
 };
 
