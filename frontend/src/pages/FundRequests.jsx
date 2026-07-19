@@ -334,6 +334,7 @@ const FundRequests = () => {
             exportFundRequestsToExcel(filteredRequests, dateRange);
           }}
         />
+      )}
       {/* ── PREMIUM SUCCESS MODAL ── */}
       {success && (
         <Modal
