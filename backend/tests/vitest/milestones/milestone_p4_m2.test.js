@@ -85,30 +85,37 @@ describe('Milestone P4-M2 — Requisitions CRUD API', () => {
 
     if (estErr) throw new Error(`Failed to create test estimate: ${estErr.message}`);
     estimateId = estData.estimate_id;
+
+    // 2b. Add a 'Pipes' line item so the capacity-check RPC finds a non-zero budget.
+    //     The test creates requisitions totalling up to ₹500 so ₹10,000 is sufficient.
+    const { error: itemErr } = await supabase
+      .from('project_cost_estimate_items')
+      .insert([{
+        estimate_id: estimateId,
+        material_main_head: 'Pipes',
+        material_sub_head: 'PVC Pipes',
+        material_details: 'Test PVC pipe item',
+        unit: 'Nos',
+        qty: 10,
+        rate: 1000,
+        amount: 10000.00,
+        zo_office_approve: 'Approve'
+      }]);
+    if (itemErr) throw new Error(`Failed to create estimate item: ${itemErr.message}`);
   });
 
   afterAll(async () => {
     if (woMappingId) await supabase.from('work_order_mappings').delete().eq('id', woMappingId);
     if (jeZoMappingId) await supabase.from('je_zo_mappings').delete().eq('id', jeZoMappingId);
 
-    if (createdId) {
-      // Soft-cancel the requisition
-      await supabase
-        .from('requisitions')
-        .update({ 
-          requisition_status: 'Cancelled', 
-          cancelled_by: jeUser.mobile_number, 
-          cancelled_at: new Date().toISOString() 
-        })
-        .eq('requisition_id', createdId);
-    }
+    // Hard-delete all requisitions for this work order so the FK is released
+    // before we delete the estimate and project.
+    await supabase.from('requisitions').delete().eq('work_order_no', testWorkOrder);
 
     if (estimateId) {
-      // Restore estimate status to allow deleting project/estimate reference
       await supabase.from('project_cost_estimates').update({
         estimate_status: 'Draft'
       }).eq('estimate_id', estimateId);
-
       await supabase.from('project_cost_estimates').delete().eq('estimate_id', estimateId);
     }
 

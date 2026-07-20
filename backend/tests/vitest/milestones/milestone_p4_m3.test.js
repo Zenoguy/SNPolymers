@@ -91,11 +91,35 @@ describe('Milestone P4-M3 — Requisitions Workflow API', () => {
 
     if (estErr) throw new Error(`Failed to create test estimate: ${estErr.message}`);
     estimateId = estData.estimate_id;
+
+    // 2b. Add a 'Pipes' line item so the capacity-check RPC finds a non-zero budget.
+    //     Tests create Pipes requisitions totalling up to ₹16,000 so ₹50,000 covers all.
+    const { error: itemErr } = await supabase
+      .from('project_cost_estimate_items')
+      .insert([{
+        estimate_id: estimateId,
+        material_main_head: 'Pipes',
+        material_sub_head: 'PVC Pipes',
+        material_details: 'Test PVC pipe item',
+        unit: 'Nos',
+        qty: 50,
+        rate: 1000,
+        amount: 50000.00,
+        zo_office_approve: 'Approve'
+      }]);
+    if (itemErr) throw new Error(`Failed to create estimate item: ${itemErr.message}`);
   });
 
   afterAll(async () => {
     if (woMappingId) await supabase.from('work_order_mappings').delete().eq('id', woMappingId);
     if (jeZoMappingId) await supabase.from('je_zo_mappings').delete().eq('id', jeZoMappingId);
+
+    // Delete all requisitions for this work order (FK must be released before
+    // deleting the estimate and project).
+    await supabase.from('requisitions').delete().eq('work_order_no', testWorkOrder);
+
+    // Remove the seeded ZO balance.
+    await supabase.from('zo_balances').delete().eq('zo_user_id', zoUser.mobile_number);
 
     if (estimateId) {
       // Restore estimate status to allow deleting project/estimate reference

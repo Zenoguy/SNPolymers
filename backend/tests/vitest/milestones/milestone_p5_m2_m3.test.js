@@ -83,9 +83,23 @@ describe('Milestone P5-M2 & M3 — Daily Progress CRUD & Remarks API', () => {
     if (workOrderMappingId) {
       await supabase.from('work_order_mappings').delete().eq('id', workOrderMappingId);
     }
-    // Clean up projects_master (DB cascades or soft/hard deletion rules)
-    await supabase.from('projects_master').delete().eq('work_order_no', testWorkOrder);
-    await supabase.from('authorised_users').delete().in('mobile_number', [jeUser.mobile_number, jeUser2.mobile_number, zoUser.mobile_number]);
+
+    // Delete the test estimate (no requisitions created in this suite).
+    await supabase.from('project_cost_estimates').delete().eq('work_order_no', testWorkOrder);
+
+    // NOTE: The daily progress report created in Test 1 cannot be hard-deleted
+    // (DB trigger blocks it) and work_order_no is NOT NULL so we cannot null
+    // the FK to release the project. Mark the project Closed so no production
+    // code touches it. The report+project rows are left as TEST_WO_P5_* artefacts
+    // for the DBA nuke script.
+    await supabase.from('projects_master')
+      .update({ status: 'Closed' })
+      .eq('work_order_no', testWorkOrder);
+
+    // Clean up test-only authorised_users rows (seed users like +91800000000x
+    // are permanent fixtures; do NOT delete them here).
+    // The upsert in beforeAll only writes display_name/role — those rows are
+    // left intact as shared test fixtures.
   });
 
   describe('Progress Report Creation', () => {

@@ -30,6 +30,17 @@ describe('Milestone 7 — Cost Estimates HO Review API', () => {
     testAdminMobile = '+918276071523';
     testWorkOrder = 'WB_BAN_102'; // Running work order
 
+    // Preserve original admin display name
+    const { data: adminUserRec } = await supabase
+      .from('authorised_users')
+      .select('display_name')
+      .eq('mobile_number', testAdminMobile)
+      .maybeSingle();
+
+    if (adminUserRec) {
+      global.__originalAdminName = adminUserRec.display_name;
+    }
+
     // Setup test users and estimate
     await supabase.from('authorised_users').delete().in('mobile_number', [testZoMobile, testJeMobile, testOtherMobile, testHoMobile]);
 
@@ -130,6 +141,11 @@ describe('Milestone 7 — Cost Estimates HO Review API', () => {
       await supabase.from('estimate_revision_log').delete().eq('estimate_id', testEstimateId);
     }
     await supabase.from('authorised_users').delete().in('mobile_number', [testZoMobile, testJeMobile, testOtherMobile, testHoMobile]);
+    if (global.__originalAdminName !== undefined) {
+      await supabase.from('authorised_users')
+        .update({ display_name: global.__originalAdminName })
+        .eq('mobile_number', testAdminMobile);
+    }
   });
 
   describe('HO Start Review & Gating', () => {

@@ -90,21 +90,77 @@ describe('Milestone P3-M5 — Code Quality & Security Hardening', () => {
   });
 
   test('Test 6: Blocks deleting user from authorized_users if they have active estimates with 409', async () => {
-    const { data: seedUser } = await supabase
-      .from('authorised_users')
-      .select('id, display_name')
-      .eq('mobile_number', '+918276071523') // admin user who has created estimate(s)
-      .maybeSingle();
+    const crypto = require('crypto');
+    const suffix = crypto.randomUUID().substring(0, 8);
+    const tempMobile = `+919900${suffix}`;
+    const tempWorkOrder = `WO-P3M5-${suffix}`;
 
-    if (seedUser) {
+    // 1. Create temporary user
+    const { data: tempUser, error: userErr } = await supabase
+      .from('authorised_users')
+      .insert([{
+        mobile_number: tempMobile,
+        display_name: `Temp M5 ${suffix}`,
+        role: 'je',
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (userErr) throw userErr;
+
+    try {
+      // 2. Create a dummy project
+      const { error: projErr } = await supabase
+        .from('projects_master')
+        .insert([{
+          work_order_no: tempWorkOrder,
+          estimate_no: `EST-P3M5-${suffix}`,
+          site_details: `Site M5 ${suffix}`,
+          state: 'West Bengal',
+          district: 'Kolkata',
+          zone: 'Kolkata Zone',
+          department: 'Irrigation',
+          status: 'Running',
+          created_by: tempMobile,
+          edited_by: tempMobile,
+          work_order_value: 100000.00
+        }]);
+      if (projErr) throw projErr;
+
+      // 3. Create active estimate for user
+      const { data: estData, error: estErr } = await supabase
+        .from('project_cost_estimates')
+        .insert([{
+          work_order_no: tempWorkOrder,
+          estimate_no: `EST-P3M5-${suffix}`,
+          area_code: 'Kolkata Zone',
+          estimate_revision: 0,
+          zonal_office_no: 'ZO-01',
+          estimate_amount: 50000.00,
+          estimate_status: 'Final Approved',
+          created_by: tempMobile,
+          last_modified_by: tempMobile
+        }])
+        .select()
+        .single();
+      if (estErr) throw estErr;
+
       const reqRemove = {
-        params: { id: seedUser.id }
+        params: { id: tempUser.id }
       };
       const resRemove = mockRes();
       await removeUser(reqRemove, resRemove);
 
       expect(resRemove.statusCode).toBe(409);
       expect(resRemove.jsonData.success).toBe(false);
+
+      // Cleanup project and estimate
+      await supabase.from('project_cost_estimates').delete().eq('estimate_id', estData.estimate_id);
+      await supabase.from('projects_master').delete().eq('work_order_no', tempWorkOrder);
+    } finally {
+      // Cleanup user
+      await supabase.from('authorised_users').delete().eq('id', tempUser.id);
     }
   });
 });

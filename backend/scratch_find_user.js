@@ -8,11 +8,10 @@ async function findUser() {
   if (error) {
     console.error('Error fetching users:', error);
   } else {
-    const neymarUsers = users.filter(u => 
-      (u.display_name && u.display_name.toLowerCase().includes('neymar')) || 
-      (u.mobile_number && u.mobile_number.includes('629118153'))
+    const targetUsers = users.filter(u => 
+      u.mobile_number && u.mobile_number.includes('8276071523')
     );
-    console.log('Matches found in DB:', neymarUsers);
+    console.log('Matches found in DB:', targetUsers);
   }
   process.exit(0);
 }

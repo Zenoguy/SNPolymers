@@ -346,7 +346,7 @@ async function getProjectDigitalTwin(req, res) {
 
     // 2. Fetch linked entity IDs to resolve all direct/indirect audits for this project
     const [estimatesRes, requisitionsRes, progressRes, fundRequestsRes] = await Promise.all([
-      supabase.from('project_cost_estimates').select('estimate_id').eq('work_order_no', work_order_no),
+      supabase.from('project_cost_estimates').select('estimate_id').eq('work_order_no', work_order_no).order('estimate_revision', { ascending: false }),
       supabase.from('requisitions').select('requisition_id').eq('work_order_no', work_order_no),
       supabase.from('daily_progress_reports').select('report_id').eq('work_order_no', work_order_no),
       supabase.from('fund_requests').select('fund_request_id').eq('work_order_no', work_order_no)
@@ -372,7 +372,7 @@ async function getProjectDigitalTwin(req, res) {
       supabase.from('approval_sla_mv').select('*').eq('work_order_no', work_order_no).order('submitted_at', { ascending: false }),
       supabase.from('budget_leakage_mv').select('*').eq('work_order_no', work_order_no).maybeSingle(),
       supabase.from('audit_log').select('*').in('record_identifier', allowedIdentifiers).order('timestamp', { ascending: false }).limit(50),
-      supabase.from('projects_master').select('site_latitude, site_longitude').eq('work_order_no', work_order_no).maybeSingle()
+      supabase.from('projects_master').select('site_latitude, site_longitude, department').eq('work_order_no', work_order_no).maybeSingle()
     ]);
 
     if (overviewRes.error) throw overviewRes.error;
@@ -387,7 +387,8 @@ async function getProjectDigitalTwin(req, res) {
       ...overviewRes.data,
       estimate_id: matchedEstimate ? matchedEstimate.estimate_id : null,
       site_latitude: coordsRes.data?.site_latitude || null,
-      site_longitude: coordsRes.data?.site_longitude || null
+      site_longitude: coordsRes.data?.site_longitude || null,
+      department: coordsRes.data?.department || null
     } : null;
 
     return res.status(200).json({

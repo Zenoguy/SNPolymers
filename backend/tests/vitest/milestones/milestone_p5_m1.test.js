@@ -9,37 +9,59 @@ describe('Milestone P5-M1 — Daily Progress Reports Database Foundation', () =>
   let reportId = null;
   let mobile = null;
   let project = null;
+  let testWorkOrder = null;
 
   beforeAll(async () => {
     suffix = crypto.randomUUID().substring(0, 8);
+    testWorkOrder = `TEST_WO_P5M1_${suffix}`;
     const randDay = Math.floor(1 + Math.random() * 26);
     const randMonth = Math.floor(1 + Math.random() * 12);
     const pad = (num) => String(num).padStart(2, '0');
     testDate = `2026-${pad(randMonth)}-${pad(randDay)}`;
-    testDate2 = `2026-${pad(randMonth)}-${pad(randDay + 1)}`;
+    testDate2 = `2026-${pad(randMonth)}-${pad(Math.min(randDay + 1, 28))}`;
 
-    // Find a valid user and project (work order) to test with
+    // Use a real user for FK compliance
     const { data: users, error: userError } = await supabase.from('authorised_users').select('mobile_number').limit(1);
     if (userError || !users || !users.length) {
       throw new Error(`Failed to find a user: ${userError ? userError.message : 'Empty'}`);
     }
     mobile = users[0].mobile_number;
 
-    const { data: projects, error: projectError } = await supabase.from('projects_master').select('work_order_no, state, district, zone, department, site_details').limit(1);
-    if (projectError || !projects || !projects.length) {
-      throw new Error(`Failed to find a project: ${projectError ? projectError.message : 'Empty'}`);
-    }
-    project = projects[0];
+    // Create an isolated test project so we control all FK children
+    const { error: projErr } = await supabase.from('projects_master').insert({
+      work_order_no: testWorkOrder,
+      estimate_no: `EST_P5M1_${suffix}`,
+      site_details: `Test P5-M1 site ${suffix}`,
+      state: 'West Bengal',
+      district: 'Kolkata',
+      zone: 'Kolkata Zone',
+      department: 'Irrigation',
+      status: 'Running',
+      created_by: mobile,
+      edited_by: mobile,
+      work_order_value: 100000.00
+    });
+    if (projErr) throw new Error(`P5-M1 project insert failed: ${projErr.message}`);
 
-    // Clean up any old reports for this work order to avoid unique constraint issues initially
-    await supabase
-      .from('daily_progress_reports')
-      .delete()
-      .eq('work_order_no', project.work_order_no);
+    project = {
+      work_order_no: testWorkOrder,
+      state: 'West Bengal',
+      district: 'Kolkata',
+      zone: 'Kolkata Zone',
+      department: 'Irrigation',
+      site_details: `Test P5-M1 site ${suffix}`
+    };
   });
 
   afterAll(async () => {
-    // Hard deletes are blocked, so we leave it as test records
+    // NOTE: daily_progress_reports rows cannot be hard-deleted (DB trigger blocks
+    // it) and work_order_no is NOT NULL so we cannot null the FK either.
+    // The report row and its parent project are left as clearly-named test
+    // artefacts (TEST_WO_P5M1_*) that the DBA nuke script can clear.
+    // We still mark the project Closed so no production flow touches it.
+    await supabase.from('projects_master')
+      .update({ status: 'Closed' })
+      .eq('work_order_no', testWorkOrder);
   });
 
   describe('Daily Progress Report Operations', () => {
