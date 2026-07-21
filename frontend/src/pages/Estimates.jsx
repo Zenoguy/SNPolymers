@@ -179,7 +179,7 @@ const Estimates = () => {
         <div className="flex flex-col md:flex-row gap-6 flex-grow overflow-hidden min-h-0">
           
           {/* Left Column: MY Sheets Navigation */}
-          <div className="w-full md:w-56 flex flex-col gap-4 shrink-0 h-[450px]">
+          <div className="w-full md:w-56 flex flex-col gap-4 shrink-0 h-[calc(100vh-270px)]">
             <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col justify-between h-full">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-4">MY Sheets</span>
@@ -235,7 +235,7 @@ const Estimates = () => {
           </div>
 
           {/* Right Column: Active Project Cost Estimate Sheets Card Grid / List */}
-          <div className="flex-grow flex flex-col min-h-0 bg-white/[0.01] border border-white/5 rounded-3xl p-6 relative overflow-hidden h-[450px]">
+          <div className="flex-grow flex flex-col min-h-0 bg-white/[0.01] border border-white/5 rounded-3xl p-6 relative overflow-hidden h-[calc(100vh-270px)]">
             <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none">
               <svg className="w-32 h-32 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
