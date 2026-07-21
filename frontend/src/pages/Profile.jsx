@@ -431,13 +431,13 @@ const AdminControlRoom = ({ roleData, formatCurrency }) => {
                     <select
                       value={filterType}
                       onChange={(e) => setFilterType(e.target.value)}
-                      className="bg-neutral-950 border border-white/10 rounded-xl px-2 py-1 text-[10px] text-slate-200 focus:outline-none w-full"
+                      className="bg-slate-200 dark:bg-neutral-950 border border-slate-300 dark:border-white/10 rounded-xl px-2 py-1 text-[10px] text-slate-800 dark:text-slate-200 focus:outline-none w-full"
                     >
-                      <option value="value">Highest Value</option>
-                      <option value="progress">Most Estimates</option>
-                      <option value="physical_progress">Highest Completion</option>
-                      <option value="requisitions_spend">Highest Spend</option>
-                      <option value="progress_activity">Most Active Reports</option>
+                      <option value="value" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Value</option>
+                      <option value="progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Estimates</option>
+                      <option value="physical_progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Completion</option>
+                      <option value="requisitions_spend" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Spend</option>
+                      <option value="progress_activity" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Active Reports</option>
                     </select>
                   </div>
                 </div>
@@ -480,99 +480,84 @@ const AdminControlRoom = ({ roleData, formatCurrency }) => {
 
             {/* Active Capital Flow Dashboard */}
             <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
               <div>
-                <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300 mb-4 border-b border-white/5 pb-2">Active Capital Flow</h3>
-                
+                <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/5 pb-2">
+                  <h3 className="text-sm uppercase font-extrabold tracking-widest text-black dark:text-slate-100" style={{ color: 'var(--title-color, inherit)' }}>
+                    Cash Distribution Breakdown
+                  </h3>
+                </div>
+
                 {roleData.capitalFlow ? (
-                  <div className="space-y-4">
-                    {/* In-Flight (Pending Clearance) */}
-                    <div className="p-3 rounded-2xl bg-white/2 border border-white/5">
-                      <span className="text-[9px] uppercase font-bold tracking-widest text-slate-500">In-Flight Funds</span>
-                      <div className="text-lg font-black text-amber-500 mt-1">{formatCurrency(roleData.capitalFlow.inFlight?.total || 0)}</div>
-                      <div className="w-full h-1 rounded-full bg-white/5 overflow-hidden flex mt-2">
-                        <div 
-                          className="h-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" 
-                          style={{ width: `${roleData.capitalFlow.inFlight?.total > 0 ? (roleData.capitalFlow.inFlight.fundRequests / roleData.capitalFlow.inFlight.total) * 100 : 50}%` }}
-                        />
-                        <div 
-                          className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
-                          style={{ width: `${roleData.capitalFlow.inFlight?.total > 0 ? (roleData.capitalFlow.inFlight.requisitions / roleData.capitalFlow.inFlight.total) * 100 : 50}%` }}
-                        />
+                  <div className="space-y-3.5">
+                    {/* In-Flight (Awaiting Clearances) */}
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                        <div>
+                          <div className="text-[10px] uppercase font-bold tracking-widest text-slate-800 dark:text-slate-200">In-Flight / Pending Approvals</div>
+                          <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Fund requests & pending requisitions</div>
+                        </div>
+                      </div>
+                      <div className="text-sm font-extrabold text-amber-700 dark:text-amber-400 font-mono">
+                        {formatCurrency(roleData.capitalFlow.inFlight?.total || 0)}
                       </div>
                     </div>
 
-                    {/* Capital Moved */}
-                    <div className="p-3 rounded-2xl bg-white/2 border border-white/5">
-                      <span className="text-[9px] uppercase font-bold tracking-widest text-slate-500">Capital Moved (30d)</span>
-                      <div className="text-lg font-black text-emerald-400 mt-1">{formatCurrency(roleData.capitalFlow.recentMoved?.total || 0)}</div>
-                      <div className="w-full h-1 rounded-full bg-white/5 overflow-hidden flex mt-2">
-                        <div 
-                          className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
-                          style={{ width: `${roleData.capitalFlow.recentMoved?.total > 0 ? (roleData.capitalFlow.recentMoved.zonalAllocations / roleData.capitalFlow.recentMoved.total) * 100 : 50}%` }}
-                        />
-                        <div 
-                          className="h-full bg-sky-500 shadow-[0_0_10px_rgba(14,165,233,0.5)]" 
-                          style={{ width: `${roleData.capitalFlow.recentMoved?.total > 0 ? (roleData.capitalFlow.recentMoved.requisitionsDisbursed / roleData.capitalFlow.recentMoved.total) * 100 : 50}%` }}
-                        />
+                    {/* Capital Moved (30-Day Velocity) */}
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                        <div>
+                          <div className="text-[10px] uppercase font-bold tracking-widest text-slate-800 dark:text-slate-200">Capital Moved (30 Days)</div>
+                          <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Disbursed to ZO and Field accounts</div>
+                        </div>
+                      </div>
+                      <div className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400 font-mono">
+                        {formatCurrency(roleData.capitalFlow.recentMoved?.total || 0)}
                       </div>
                     </div>
 
-                    {/* Capital Flow SVG Graph */}
-                    <div className="p-3 rounded-2xl bg-black/40 border border-white/5 flex flex-col items-center">
-                      <div className="w-full flex items-center justify-between relative px-2 py-1">
-                        
-                        <div className="flex flex-col items-center z-10">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black text-[9px] shadow-[0_0_15px_rgba(245,158,11,0.2)] animate-pulse">
-                            HO
-                          </div>
-                          <span className="text-[8px] text-slate-400 font-extrabold uppercase mt-1">HO</span>
+                    {/* Hierarchy Flow Visual Bar */}
+                    <div className="p-4 rounded-2xl bg-white/40 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Capital Velocity Pipeline</div>
+                      
+                      <div className="space-y-2">
+                        {/* ZO Allocations Sub-bar */}
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">Zonal Office Disbursals</span>
+                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                            {formatCurrency(roleData.capitalFlow.recentMoved?.zonalAllocations || 0)}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
+                          <div 
+                            className="h-full bg-emerald-500 transition-all duration-500" 
+                            style={{ 
+                              width: `${roleData.capitalFlow.recentMoved?.total > 0 
+                                ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.zonalAllocations / roleData.capitalFlow.recentMoved.total) * 100)) 
+                                : 0}%` 
+                            }} 
+                          />
                         </div>
 
-                        <div className="absolute inset-x-0 top-4 h-8 pointer-events-none">
-                          <svg className="w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="xMidYMid meet">
-                            <defs>
-                              <linearGradient id="glowGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" />
-                                <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
-                                <stop offset="100%" stopColor="#6366f1" stopOpacity="0.2" />
-                              </linearGradient>
-                            </defs>
-                            <path d="M 30,15 L 90,15" stroke="rgba(255,255,255,0.06)" strokeWidth="3" fill="none" />
-                            <path d="M 90,15 L 170,15" stroke="rgba(255,255,255,0.06)" strokeWidth="3" fill="none" />
-                            <path 
-                              d="M 30,15 L 90,15" 
-                              stroke="url(#glowGrad1)" 
-                              strokeWidth="1.5" 
-                              fill="none" 
-                              strokeDasharray="6 8" 
-                              style={{ animation: 'dash 1.5s linear infinite' }}
-                            />
-                            <path 
-                              d="M 90,15 L 170,15" 
-                              stroke="url(#glowGrad1)" 
-                              strokeWidth="1.5" 
-                              fill="none" 
-                              strokeDasharray="6 8" 
-                              style={{ animation: 'dash 2s linear infinite' }}
-                            />
-                          </svg>
+                        {/* JE Requisitions Sub-bar */}
+                        <div className="flex justify-between items-center text-[10px] pt-1">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">Site Requisitions Paid</span>
+                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                            {formatCurrency(roleData.capitalFlow.recentMoved?.requisitionsDisbursed || 0)}
+                          </span>
                         </div>
-
-                        <div className="flex flex-col items-center z-10">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-emerald-300 flex items-center justify-center text-slate-950 font-black text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                            ZO
-                          </div>
-                          <span className="text-[8px] text-slate-400 font-extrabold uppercase mt-1">ZO</span>
+                        <div className="w-full h-1.5 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
+                          <div 
+                            className="h-full bg-sky-500 transition-all duration-500" 
+                            style={{ 
+                              width: `${roleData.capitalFlow.recentMoved?.total > 0 
+                                ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.requisitionsDisbursed / roleData.capitalFlow.recentMoved.total) * 100)) 
+                                : 0}%` 
+                            }} 
+                          />
                         </div>
-
-                        <div className="flex flex-col items-center z-10">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-300 flex items-center justify-center text-slate-950 font-black text-[9px] shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                            JE
-                          </div>
-                          <span className="text-[8px] text-slate-400 font-extrabold uppercase mt-1">JE</span>
-                        </div>
-
                       </div>
                     </div>
                   </div>

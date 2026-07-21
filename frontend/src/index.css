@@ -426,6 +426,10 @@ body.light {
 body.light .text-slate-100,
 body.light .text-slate-200,
 body.light .text-slate-300,
+body.light .text-slate-600,
+body.light .text-slate-700,
+body.light .text-slate-800,
+body.light .text-slate-900,
 body.light .text-white {
   color: #000000 !important;
   font-weight: 700 !important;
@@ -477,9 +481,12 @@ body.light .bg-slate-900\/40,
 body.light .bg-slate-900\/20,
 body.light .bg-slate-900\/10,
 body.light .bg-slate-900\/5,
-body.light .bg-slate-900 {
-  background-color: rgba(0, 0, 0, 0.03) !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
+body.light .bg-slate-900,
+body.light .bg-neutral-950,
+body.light .dark\:bg-neutral-950 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 body.light .bg-white\/2 {
