@@ -77,6 +77,60 @@ const InfoTooltip = ({ content, position = 'center' }) => {
   );
 };
 
+// ── Fullscreen chart zoom modal ──────────────────────────────────────────────
+const ChartModal = ({ onClose, children }) => {
+  React.useEffect(() => {
+    const esc = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', esc);
+    return () => document.removeEventListener('keydown', esc);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[500] flex items-center justify-center p-6"
+      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(16px)' }}
+      onClick={onClose}
+    >
+      {/* The chart-panel itself IS the modal card — no double wrapping */}
+      <div
+        className="relative w-full flex flex-col overflow-hidden"
+        style={{ maxWidth: '1400px', height: '88vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Floating close button over the chart */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 shadow-lg"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)' }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+          Close · ESC
+        </button>
+
+        {/* Chart fills entire modal space */}
+        <div className="flex-1 overflow-auto min-h-0 h-full">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Zoomable wrapper for any chart panel ─────────────────────────────────────
+const ZoomCard = ({ children, onZoom, className = '' }) => (
+  <div className={`relative group ${className}`}>
+    {children}
+    {/* Zoom trigger button - appears on hover */}
+    <button
+      onClick={onZoom}
+      className="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black uppercase tracking-widest transition-all duration-200 hover:bg-amber-500/20 hover:border-amber-500/40 cursor-zoom-in"
+    >
+      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+      Zoom
+    </button>
+  </div>
+);
+
 const BubbleRiskMatrix = ({ data }) => {
   const [tooltip, setTooltip] = useState(null);
   const navigate = useNavigate();
@@ -540,7 +594,7 @@ const SCurveProgress = ({ data }) => {
   );
 };
 
-const RevisionHeatmap = ({ data }) => {
+const RevisionHeatmap = ({ data, isModal = false }) => {
   const [tooltip, setTooltip] = useState(null);
   const c = useChartColors();
   const W = 600, PAD_LEFT = 120, PAD_RIGHT = 30, CELL_SIZE = 24, GAP = 4;
@@ -558,7 +612,7 @@ const RevisionHeatmap = ({ data }) => {
   };
 
   return (
-    <div className="chart-panel h-full">
+    <div className="chart-panel h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="chart-title">Estimate Revision Timeline Churn</h3>
@@ -566,8 +620,8 @@ const RevisionHeatmap = ({ data }) => {
         </div>
       </div>
 
-      <div className="relative overflow-x-auto no-scrollbar">
-        <svg width={W} height={H} className="mx-auto" style={{ minWidth: W }}>
+      <div className="relative overflow-y-auto no-scrollbar flex-1" style={isModal ? {} : { maxHeight: '340px' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
           {/* Render Months Header */}
           {months.map((m, idx) => {
             const x = PAD_LEFT + idx * (CELL_SIZE + GAP) + CELL_SIZE / 2;
@@ -819,9 +873,9 @@ const HoDashboard = () => {
   const queryClient = useQueryClient();
   const [alertMsg, setAlertMsg] = useState(null);
   const [alertType, setAlertType] = useState('success'); // 'success' or 'error'
-  const [exploreWo, setExploreWo] = useState('');
   const [activeView, setActiveView] = useState('all'); // 'all' | 'zo' | 'je' | 'wo'
   const [selectedZone, setSelectedZone] = useState(null); // Filter for telemetry table
+  const [zoomedChart, setZoomedChart] = useState(null); // null | 'bubble' | 'fundflow' | 'zonal' | 'runway' | 'scurve' | 'revision'
 
   // Fetch actionable insights (runways, stalled)
   const { data: insightsRes } = useQuery({
@@ -906,22 +960,9 @@ const HoDashboard = () => {
     }, 4000);
   };
 
-  const kpis = kpiRes?.kpis || null;
-  const healthDistribution = kpiRes?.healthDistribution || { Healthy: 0, Warning: 0, Critical: 0 };
-  const zones = zoneRes?.data || [];
-  const leakages = leakageRes?.data || [];
-
-  const [zonePage, setZonePage] = useState(1);
-  const ZONES_PER_PAGE = 5;
-  const totalZonePages = Math.ceil(zones.length / ZONES_PER_PAGE);
-  const paginatedZones = zones.slice((zonePage - 1) * ZONES_PER_PAGE, zonePage * ZONES_PER_PAGE);
-
   const handleRefresh = () => {
     refreshMutation.mutate();
   };
-
-  const isPageLoading = kpiLoading || zoneLoading || leakageLoading;
-  const isPageError = kpiErr || zoneErr || leakageErr;
 
   return (
     <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
@@ -932,7 +973,7 @@ const HoDashboard = () => {
       <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
         <TopNavbar />
 
-        <main className="flex-grow p-6 md:p-10 overflow-y-auto no-scrollbar max-w-7xl mx-auto w-full relative z-10">
+        <main className="flex-grow p-4 md:p-6 overflow-y-auto no-scrollbar w-full relative z-10">
           
           {/* Toast Notification */}
           {alertMsg && (
@@ -1015,66 +1056,169 @@ const HoDashboard = () => {
             </div>
           )}
 
-          {/* ── Row 1: Risk Matrix (wide) + Fund Flow (narrow) ─────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-            {/* Bubble Risk Matrix — takes 2/3 */}
-            <div className="lg:col-span-2">
-              <BubbleRiskMatrix data={chartRes?.bubbleMatrix || []} />
-            </div>
-            {/* Fund Flow Waterfall — takes 1/3 */}
-            <div className="lg:col-span-1">
-              <FundFlowWaterfall data={chartRes?.waterfallData || []} />
-            </div>
+          {/* ── Row 1: Bubble Risk Matrix (1/2) + Fund Flow Waterfall (1/2) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('bubble')}>
+              <div style={{ minHeight: '480px' }} className="h-full">
+                <BubbleRiskMatrix data={chartRes?.bubbleMatrix || []} />
+              </div>
+            </ZoomCard>
+            <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('fundflow')}>
+              <div style={{ minHeight: '480px' }} className="h-full">
+                <FundFlowWaterfall data={chartRes?.waterfallData || []} />
+              </div>
+            </ZoomCard>
           </div>
 
-          {/* ── Row 2: Zonal Heatmap — full width compact table ───────────────── */}
-          <div className="mb-4">
+          {/* ── Row 2: Zonal Performance Heatmap (full-width) ─────────────── */}
+          <ZoomCard className="mb-6" onZoom={() => setZoomedChart('zonal')}>
             <ZonalPerformanceHeatmap
               data={chartRes?.zonalHeatmap || []}
               onSelectZone={setSelectedZone}
               selectedZone={selectedZone}
             />
-          </div>
+          </ZoomCard>
 
-          {/* ── Row 3: Runway Lines (left) + S-Curve (right) ──────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <PredictiveRunwayLines
-              trendData={chartRes?.runwayTrend || []}
-              runwayData={insightsRes?.runwayData || []}
-            />
-            <SCurveProgress data={chartRes?.sCurveData || []} />
-          </div>
-
-          {/* ── Row 4: Revision Heatmap (left) + Quick Stats Strip (right) ────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <RevisionHeatmap data={chartRes?.revisionHeatmap || []} />
-
-            {/* Quick Stats: Summary telemetry counts */}
-            <div className="chart-panel flex flex-col justify-between gap-3">
-              <div>
-                <h3 className="chart-title">Portfolio Pulse</h3>
-                <p className="chart-subtitle">Live aggregate telemetry across all work orders</p>
+          {/* ── Row 3: Runway (1/3) + S-Curve (1/3) + Revision Heatmap (1/3) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('runway')}>
+              <div style={{ minHeight: '420px' }} className="h-full">
+                <PredictiveRunwayLines
+                  trendData={chartRes?.runwayTrend || []}
+                  runwayData={insightsRes?.runwayData || []}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-3 flex-1">
-                {[
-                  { label: 'Total WOs', value: projectsList.length, color: 'text-sky-400' },
-                  { label: 'Healthy', value: projectsList.filter(p => p.health_status === 'Healthy').length, color: 'text-emerald-400' },
-                  { label: 'Warning', value: projectsList.filter(p => p.health_status === 'Warning').length, color: 'text-amber-400' },
-                  { label: 'Critical', value: projectsList.filter(p => p.health_status === 'Critical').length, color: 'text-rose-400' },
-                  { label: 'Avg Progress', value: `${projectsList.length ? Math.round(projectsList.reduce((a, p) => a + Number(p.physical_progress || 0), 0) / projectsList.length) : 0}%`, color: 'text-indigo-400' },
-                  { label: 'Avg Health', value: `${projectsList.length ? Math.round(projectsList.reduce((a, p) => a + Number(p.health_score || 0), 0) / projectsList.length) : 0}`, color: 'text-violet-400' },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="rounded-2xl border chart-stat-cell flex flex-col justify-center items-center py-4 px-3 gap-1">
-                    <span className={`text-2xl font-black tabular-nums tracking-tight ${color}`}>{value}</span>
-                    <span className="chart-subtitle text-center leading-tight">{label}</span>
+            </ZoomCard>
+            <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('scurve')}>
+              <div style={{ minHeight: '420px' }} className="h-full">
+                <SCurveProgress data={chartRes?.sCurveData || []} />
+              </div>
+            </ZoomCard>
+            <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('revision')}>
+              <div style={{ minHeight: '420px' }} className="h-full">
+                <RevisionHeatmap data={chartRes?.revisionHeatmap || []} />
+              </div>
+            </ZoomCard>
+          </div>
+
+          {/* ── Row 4: Quick Executive Summary KPI Strip (6 premium tiles) ──── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            {[
+              {
+                label: 'Active Projects',
+                value: projectsList.length,
+                subtext: 'Total ongoing',
+                color: 'text-sky-400',
+                border: 'border-sky-500/20 hover:border-sky-500/40',
+                glow: 'shadow-sky-500/5',
+                bgIcon: 'bg-sky-500/10 text-sky-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                )
+              },
+              {
+                label: 'Healthy',
+                value: projectsList.filter(p => p.health_status === 'Healthy').length,
+                subtext: 'On track',
+                color: 'text-emerald-400',
+                border: 'border-emerald-500/20 hover:border-emerald-500/40',
+                glow: 'shadow-emerald-500/5',
+                bgIcon: 'bg-emerald-500/10 text-emerald-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )
+              },
+              {
+                label: 'Warning',
+                value: projectsList.filter(p => p.health_status === 'Warning').length,
+                subtext: 'Needs review',
+                color: 'text-amber-400',
+                border: 'border-amber-500/20 hover:border-amber-500/40',
+                glow: 'shadow-amber-500/5',
+                bgIcon: 'bg-amber-500/10 text-amber-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                )
+              },
+              {
+                label: 'Critical',
+                value: projectsList.filter(p => p.health_status === 'Critical').length,
+                subtext: 'Action required',
+                color: 'text-rose-400',
+                border: 'border-rose-500/20 hover:border-rose-500/40',
+                glow: 'shadow-rose-500/5',
+                bgIcon: 'bg-rose-500/10 text-rose-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                )
+              },
+              {
+                label: 'Avg Progress',
+                value: `${projectsList.length ? Math.round(projectsList.reduce((a, p) => a + Number(p.physical_progress || 0), 0) / projectsList.length) : 0}%`,
+                subtext: 'Portfolio progress',
+                color: 'text-indigo-400',
+                border: 'border-indigo-500/20 hover:border-indigo-500/40',
+                glow: 'shadow-indigo-500/5',
+                bgIcon: 'bg-indigo-500/10 text-indigo-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                )
+              },
+              {
+                label: 'Avg Health',
+                value: `${projectsList.length ? Math.round(projectsList.reduce((a, p) => a + Number(p.health_score || 0), 0) / projectsList.length) : 0}`,
+                subtext: 'Health score',
+                color: 'text-violet-400',
+                border: 'border-violet-500/20 hover:border-violet-500/40',
+                glow: 'shadow-violet-500/5',
+                bgIcon: 'bg-violet-500/10 text-violet-400',
+                icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                )
+              },
+            ].map(({ label, value, subtext, color, border, glow, bgIcon, icon }) => (
+              <div
+                key={label}
+                className={`relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${border} ${glow} bg-slate-900/40 flex flex-col justify-between group`}
+              >
+                {/* Background subtle grid pattern overlay */}
+                <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none" />
+
+                <div className="flex items-center justify-between mb-3 relative z-10">
+                  <div className={`p-2 rounded-xl ${bgIcon} transition-transform duration-300 group-hover:scale-110`}>
+                    {icon}
                   </div>
-                ))}
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-300 transition-colors">
+                    {subtext}
+                  </span>
+                </div>
+
+                <div className="relative z-10 mt-1">
+                  <div className={`text-3xl font-black tabular-nums tracking-tight ${color} group-hover:brightness-125 transition-all`}>
+                    {value}
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
+                    {label}
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* ── Row 5: Full-width Telemetry Table ─────────────────────────────── */}
-          <div className="mb-4">
+          {/* ── Row 5: Full-width Work Order Telemetry Table ──────────────── */}
+          <div className="mb-6">
             <WorkOrderTelemetryTable
               data={projectsList}
               selectedZone={selectedZone}
@@ -1082,344 +1226,36 @@ const HoDashboard = () => {
             />
           </div>
 
-
-          {isPageError ? (
-            <div className="glass-panel p-8 rounded-3xl border border-rose-500/10 bg-rose-950/5 flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 mb-4">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h2 className="text-base font-bold uppercase tracking-widest text-slate-200">Error Loading Analytics</h2>
-              <p className="text-xs text-slate-500 mt-2 max-w-sm">We had trouble communicating with the backend. Please check the DB connection or click refresh.</p>
-            </div>
-          ) : isPageLoading ? (
-            <div className="space-y-8">
-              {/* Skeleton Loaders */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map(idx => (
-                  <div key={idx} className="glass-panel p-6 rounded-3xl animate-pulse h-32 bg-white/[0.02]" />
-                ))}
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 glass-panel p-6 rounded-3xl animate-pulse h-96 bg-white/[0.02]" />
-                <div className="glass-panel p-6 rounded-3xl animate-pulse h-96 bg-white/[0.02]" />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              
-              {/* KPI Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Active Projects KPI */}
-                <div className="glass-panel p-6 rounded-3xl relative transition-all duration-300 hover:border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.02)] hover:z-50">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                    Project Portfolio
-                    <InfoTooltip content="Active projects relative to the total portfolio, categorized by health status." position="left" />
-                  </span>
-                  <div className="text-3xl font-black mt-2 tracking-tight text-amber-500">
-                    {kpis?.active_projects || 0} <span className="text-xs text-slate-500 font-bold">/ {kpis?.total_projects || 0} Active</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-semibold mt-1.5 flex gap-2">
-                    <span className="text-emerald-400">{healthDistribution.Healthy || 0} Healthy</span>
-                    <span className="text-slate-500">•</span>
-                    <span className="text-rose-400">{healthDistribution.Critical || 0} Critical</span>
-                  </div>
-                </div>
-
-                {/* Budget Utilization KPI */}
-                <div className="glass-panel p-6 rounded-3xl relative transition-all duration-300 hover:border-white/10 shadow-[0_0_15px_rgba(16,185,129,0.02)] hover:z-50">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                    Budget Utilization
-                    <InfoTooltip content="Percentage of total budget spent relative to total allocated budget." position="center" />
-                  </span>
-                  <div className="text-3xl font-black mt-2 tracking-tight text-emerald-500">
-                    {kpis?.budget_utilization_pct ? `${Number(kpis.budget_utilization_pct).toFixed(1)}%` : '0%'}
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-semibold mt-1.5 truncate">
-                    Spent {formatINR(kpis?.total_spent)} of {formatINR(kpis?.total_budget)}
-                  </div>
-                </div>
-
-                {/* Warnings / Risks KPI */}
-                <div className="glass-panel p-6 rounded-3xl relative transition-all duration-300 hover:border-white/10 shadow-[0_0_15px_rgba(244,63,94,0.02)] hover:z-50">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                    Critical Anomaly Risk
-                    <InfoTooltip content="Number of projects currently marked as Critical risk or carrying warnings." position="center" />
-                  </span>
-                  <div className="text-3xl font-black mt-2 tracking-tight text-rose-500 flex items-baseline gap-2">
-                    {kpis?.projects_at_risk || 0}
-                    <span className="text-xs text-slate-500 font-bold">at Risk</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-semibold mt-1.5 flex gap-2">
-                    <span className="text-amber-400">{kpis?.projects_at_warning || 0} warnings pending review</span>
-                  </div>
-                </div>
-
-                {/* Radial Gauge / Portfolio Health */}
-                <div className="glass-panel p-6 rounded-3xl relative transition-all duration-300 hover:border-white/10 flex items-center justify-between shadow-[0_0_15px_rgba(99,102,241,0.02)] hover:z-50">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                      Portfolio Health
-                      <InfoTooltip content="Weighted health average based on active projects' individual health score." position="right" />
-                    </span>
-                    <div className="text-3xl font-black mt-2 tracking-tight text-indigo-400">
-                      {kpis?.average_project_health ? `${Math.round(kpis.average_project_health)}%` : '0%'}
-                    </div>
-                    <span className="text-[9px] text-slate-500 uppercase tracking-widest font-black block mt-1">Average Score</span>
-                  </div>
-
-                  {/* SVG circular progress */}
-                  <div className="relative w-16 h-16">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-white/5"
-                        strokeWidth="3"
-                        stroke="currentColor"
-                        fill="none"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                      <path
-                        className="text-indigo-500 transition-all duration-1000 ease-out"
-                        strokeDasharray={`${kpis?.average_project_health || 0}, 100`}
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        stroke="currentColor"
-                        fill="none"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-300">
-                      {kpis?.average_project_health ? `${Math.round(kpis.average_project_health)}` : '0'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Middle Section Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Zonal Benchmarking (2/3 width) */}
-                {/* Column wrapper for Zonal Benchmarking & Twin Explorer (2/3 width) */}
-                <div className="lg:col-span-2 space-y-8">
-                  {/* Zonal Benchmarking */}
-                  <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between relative hover:z-50">
-                    <div>
-                      <div className="flex justify-between items-center mb-6">
-                        <div>
-                          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                            Zonal Benchmarking
-                            <InfoTooltip content="Aggregated performance, slack days, and health scores compared across all Zones." position="left" />
-                          </h2>
-                          <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Performance metrics aggregated by zone</p>
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Ranked by Health</span>
-                      </div>
-
-                      {zones.length === 0 ? (
-                        <div className="text-slate-500 text-xs py-16 text-center uppercase tracking-widest">No active zones logged</div>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left border-collapse">
-                            <thead>
-                              <tr className="border-b border-white/5 pb-3">
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3">Rank</th>
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3">Zone</th>
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3 text-center">Active Projects</th>
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3 text-center">Avg Slack Days</th>
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3 text-center">Health Score</th>
-                                <th className="text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3 text-right">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                              {paginatedZones.map((row, idx) => {
-                                const score = Number(row.average_health_score || 0);
-                                const rating = score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : 'Warning';
-                                const rank = (zonePage - 1) * ZONES_PER_PAGE + idx + 1;
-
-                                return (
-                                  <tr key={idx} className="hover:bg-white/5 transition-colors">
-                                    <td className="py-4 text-xs font-extrabold text-amber-500">#{rank}</td>
-                                    <td className="py-4 text-xs font-bold text-slate-200">{row.zone}</td>
-                                    <td className="py-4 text-xs font-bold text-slate-400 text-center">{row.running_projects || 0}</td>
-                                    <td className={`py-4 text-xs font-bold text-center ${row.average_timeline_slack_days > 15 ? 'text-rose-400' : 'text-slate-400'}`}>
-                                      {row.average_timeline_slack_days || 0}d
-                                    </td>
-                                    <td className="py-4 text-xs font-bold text-slate-200 text-center">{Math.round(score)}%</td>
-                                    <td className="py-4 text-right">
-                                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                                        rating === 'Excellent' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                        rating === 'Good' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' :
-                                        'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                      }`}>
-                                        {rating}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalZonePages > 1 && (
-                      <div className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-2xl p-4 mt-6">
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                          Page {zonePage} of {totalZonePages} <span className="text-slate-600">({zones.length} zones total)</span>
-                        </span>
-                        
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setZonePage(prev => Math.max(1, prev - 1))}
-                            disabled={zonePage === 1}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 ${
-                              zonePage === 1 
-                                ? 'border-transparent text-slate-600 cursor-not-allowed' 
-                                : 'border-white/10 hover:bg-white/5 text-slate-300'
-                            }`}
-                          >
-                            Prev
-                          </button>
-                          <button
-                            onClick={() => setZonePage(prev => Math.min(totalZonePages, prev + 1))}
-                            disabled={zonePage === totalZonePages}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 ${
-                              zonePage === totalZonePages 
-                                ? 'border-transparent text-slate-600 cursor-not-allowed' 
-                                : 'border-white/10 hover:bg-white/5 text-slate-300'
-                            }`}
-                          >
-                            Next
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Digital Twin Simulation Explorer */}
-                  <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between relative hover:z-50">
-                    <div>
-                      <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-1">
-                        Digital Twin Explorer
-                        <InfoTooltip content="Launch the interactive digital twin view of a project using its Work Order number." position="left" />
-                      </h2>
-                      <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider mb-6">
-                        Retrieve live digital twin performance scores
-                      </p>
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          if (exploreWo.trim()) {
-                            navigate(`/projects/${exploreWo.trim()}/digital-twin`);
-                          }
-                        }}
-                        className="flex gap-4 items-center"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Enter Work Order No. (e.g. WO-01)"
-                          value={exploreWo}
-                          onChange={(e) => setExploreWo(e.target.value)}
-                          className="bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 flex-grow"
-                        />
-                        <button
-                          type="submit"
-                          disabled={!exploreWo.trim()}
-                          className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                            exploreWo.trim()
-                              ? 'bg-white hover:bg-white/90 text-slate-950'
-                              : 'bg-white/5 border border-transparent text-slate-500 cursor-not-allowed'
-                          }`}
-                        >
-                          Launch Twin
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Budget Leakage Anomalies (1/3 width) */}
-                <div className="glass-panel p-6 rounded-3xl flex flex-col h-fit relative hover:z-50">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                      Budget Leakages
-                      <InfoTooltip content="Projects flagging significant cost overruns or high revision counts." position="right" />
-                    </h2>
-                    <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse">
-                      Anomalies
-                    </span>
-                  </div>
-
-                  {leakages.length === 0 ? (
-                    <div className="text-slate-500 text-xs py-16 text-center uppercase tracking-widest flex-grow flex items-center justify-center">
-                      No overruns detected
-                    </div>
-                  ) : (
-                    <div className="space-y-4 overflow-y-auto no-scrollbar max-h-[380px]">
-                      {leakages.map((item, idx) => {
-                        const score = Number(item.anomaly_score || 0);
-                        const severityColor = score >= 4 
-                          ? 'border-rose-500/20 bg-rose-950/10 text-rose-400 hover:border-rose-500/40' 
-                          : score >= 1
-                          ? 'border-amber-500/20 bg-amber-950/10 text-amber-400 hover:border-amber-500/40'
-                          : 'border-white/5 bg-slate-900/40 text-slate-400 hover:border-white/15';
-
-                        const overrunPct = Math.max(0, Number(item.budget_variance_pct || 0) - 100);
-
-                        return (
-                          <div
-                            key={idx}
-                            onClick={() => navigate(`/projects/${item.work_order_no}/digital-twin`)}
-                            className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer hover:scale-[1.02] flex flex-col gap-2 ${severityColor}`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="truncate pr-2">
-                                <span className="text-[10px] font-black uppercase tracking-wider block truncate text-slate-300">
-                                  {item.site_details || 'Site Project'}
-                                </span>
-                                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mt-0.5">
-                                  {item.work_order_no}
-                                </span>
-                              </div>
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-black/30 shrink-0">
-                                Score: {Math.round(score)}
-                              </span>
-                            </div>
-
-                            {/* Mini horizontal bar representing anomaly score */}
-                            <div className="space-y-1 mt-1">
-                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-1000 ${
-                                    score >= 6 ? 'bg-rose-500' : 'bg-amber-500'
-                                  }`}
-                                  style={{ width: `${(score / 8) * 100}%` }}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="flex justify-between items-center text-[10px] font-semibold pt-1.5 border-t border-white/5 mt-1">
-                              <div>
-                                <span className="text-slate-500">Overrun: </span>
-                                <span className="font-extrabold text-rose-400">+{Number(overrunPct).toFixed(1)}%</span>
-                              </div>
-                              <div className="text-slate-500">
-                                Revisions: <span className="text-slate-300 font-extrabold">{item.estimate_revisions_count || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-              </div>
-              
-            </div>
+          {/* ── Fullscreen Chart Zoom Modal ───────────────────────────────── */}
+          {zoomedChart === 'bubble' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <BubbleRiskMatrix data={chartRes?.bubbleMatrix || []} />
+            </ChartModal>
+          )}
+          {zoomedChart === 'fundflow' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <FundFlowWaterfall data={chartRes?.waterfallData || []} />
+            </ChartModal>
+          )}
+          {zoomedChart === 'zonal' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <ZonalPerformanceHeatmap data={chartRes?.zonalHeatmap || []} onSelectZone={setSelectedZone} selectedZone={selectedZone} />
+            </ChartModal>
+          )}
+          {zoomedChart === 'runway' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <PredictiveRunwayLines trendData={chartRes?.runwayTrend || []} runwayData={insightsRes?.runwayData || []} />
+            </ChartModal>
+          )}
+          {zoomedChart === 'scurve' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <SCurveProgress data={chartRes?.sCurveData || []} />
+            </ChartModal>
+          )}
+          {zoomedChart === 'revision' && (
+            <ChartModal onClose={() => setZoomedChart(null)}>
+              <RevisionHeatmap data={chartRes?.revisionHeatmap || []} isModal={true} />
+            </ChartModal>
           )}
 
         </main>
