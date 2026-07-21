@@ -452,22 +452,10 @@ body.light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
 body.light .bg-black {
   background-color: transparent !important;
 }
-body.light .bg-slate-950 {
-  background-color: transparent !important;
-}
 
-/* Override white primary buttons to dark slate for readability */
-body.light .bg-white {
+/* Keep primary action buttons readable */
+body.light button.bg-white {
   background-color: #0f172a !important;
-  color: #ffffff !important;
-}
-body.light .bg-white:hover {
-  background-color: #1e293b !important;
-}
-body.light .bg-white svg {
-  stroke: #ffffff !important;
-}
-body.light .bg-white span {
   color: #ffffff !important;
 }
 

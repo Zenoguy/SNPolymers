@@ -85,15 +85,7 @@ const ZoDashboard = () => {
   const isPageError = prodErr || actErr;
 
   return (
-    <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
-      <BackgroundShapes />
-      <Sidebar />
-      <MobileHeader />
-
-      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        <TopNavbar />
-
-        <main className="flex-grow p-6 md:p-10 overflow-y-auto no-scrollbar max-w-7xl mx-auto w-full relative z-10">
+    <>
           {/* Header Row */}
           <div className="mb-10 pb-6 border-b border-white/5">
             <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Zonal Office Panel</span>
@@ -341,9 +333,7 @@ const ZoDashboard = () => {
             </div>
           )}
 
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

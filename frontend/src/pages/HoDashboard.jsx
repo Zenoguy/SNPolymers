@@ -79,6 +79,8 @@ const InfoTooltip = ({ content, position = 'center' }) => {
 
 // ── Fullscreen chart zoom modal ──────────────────────────────────────────────
 const ChartModal = ({ onClose, children }) => {
+  const { isDark } = useTheme();
+
   React.useEffect(() => {
     const esc = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', esc);
@@ -88,7 +90,10 @@ const ChartModal = ({ onClose, children }) => {
   return (
     <div
       className="fixed inset-0 z-[500] flex items-center justify-center p-6"
-      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(16px)' }}
+      style={{
+        background: isDark ? 'rgba(0,0,0,0.88)' : 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(16px)'
+      }}
       onClick={onClose}
     >
       {/* The chart-panel itself IS the modal card — no double wrapping */}
@@ -97,14 +102,15 @@ const ChartModal = ({ onClose, children }) => {
         style={{ maxWidth: '1400px', height: '88vh' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Floating close button over the chart */}
+        {/* Floating red X close button over the chart */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 shadow-lg"
-          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)' }}
+          className="absolute top-3 right-3 z-50 p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-lg group"
+          title="Close (ESC)"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-          Close · ESC
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
         {/* Chart fills entire modal space */}
@@ -130,6 +136,140 @@ const ZoomCard = ({ children, onZoom, className = '' }) => (
     </button>
   </div>
 );
+
+// ── KPI Details Modal ───────────────────────────────────────────────────────
+const KpiDetailsModal = ({ title, colorClass, projects, onClose, navigate }) => {
+  const { isDark } = useTheme();
+
+  React.useEffect(() => {
+    const esc = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', esc);
+    return () => document.removeEventListener('keydown', esc);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[500] flex items-center justify-center p-4 md:p-8"
+      style={{ background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(16px)' }}
+      onClick={onClose}
+    >
+      <div
+        className={`relative w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border ${
+          isDark 
+            ? 'bg-slate-950 border-white/10 text-slate-100 shadow-black/80' 
+            : 'bg-white border-slate-200 text-slate-900 shadow-2xl shadow-slate-900/20'
+        }`}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className={`flex items-center justify-between px-6 py-5 border-b shrink-0 ${
+          isDark ? 'border-white/10 bg-slate-900' : 'border-slate-100 bg-white'
+        }`}>
+          <div className="flex items-center gap-3">
+            <h2 className={`text-lg font-black uppercase tracking-widest ${
+              colorClass || (isDark ? 'text-slate-100' : 'text-slate-900')
+            }`}>{title}</h2>
+            <span className={`px-3 py-1 rounded-full border text-[10px] font-extrabold ${
+              isDark ? 'bg-white/10 border-white/15 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-700'
+            }`}>
+              {projects.length} {projects.length === 1 ? 'Project' : 'Projects'}
+            </span>
+          </div>
+          {/* Red X close button with red glow on hover */}
+          <button
+            onClick={onClose}
+            className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(244,63,94,0.6)] cursor-pointer"
+            title="Close (ESC)"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Modal Body: Scrollable Table */}
+        <div className={`p-6 overflow-y-auto no-scrollbar flex-1 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+          {projects.length === 0 ? (
+            <div className={`text-center py-12 text-xs font-bold uppercase tracking-wider ${
+              isDark ? 'text-slate-500' : 'text-slate-400'
+            }`}>
+              No projects matching this filter
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className={`border-b text-[9px] font-black uppercase tracking-widest ${
+                    isDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500'
+                  }`}>
+                    <th className="py-3 px-3">WO No</th>
+                    <th className="py-3 px-3">Zone</th>
+                    <th className="py-3 px-3">Department</th>
+                    <th className="py-3 px-3 text-center">Value</th>
+                    <th className="py-3 px-3 text-center">Progress</th>
+                    <th className="py-3 px-3 text-center">Health</th>
+                    <th className="py-3 px-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
+                  {projects.map((p, idx) => {
+                    const scoreBadge =
+                      p.health_score >= 80
+                        ? isDark ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/30' : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30 font-extrabold'
+                        : p.health_score >= 60
+                        ? isDark ? 'bg-amber-950/80 text-amber-400 border-amber-500/30' : 'bg-amber-500/10 text-amber-800 border-amber-500/30 font-extrabold'
+                        : isDark ? 'bg-rose-950/80 text-rose-400 border-rose-500/30' : 'bg-rose-500/10 text-rose-700 border-rose-500/30 font-extrabold';
+
+                    const statusBadge =
+                      p.health_status === 'Critical'
+                        ? isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200 font-black'
+                        : p.health_status === 'Warning'
+                        ? isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200 font-black'
+                        : isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200 font-black';
+
+                    return (
+                      <tr key={idx} className={`transition-colors group ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50/80'}`}>
+                        <td
+                          onClick={() => {
+                            onClose();
+                            navigate(`/projects/${p.work_order_no}/digital-twin`);
+                          }}
+                          className={`py-3.5 px-3 font-extrabold hover:underline cursor-pointer font-mono ${
+                            isDark ? 'text-sky-400' : 'text-sky-600'
+                          }`}
+                        >
+                          {p.work_order_no}
+                        </td>
+                        <td className={`py-3.5 px-3 font-extrabold uppercase ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{p.zone || 'N/A'}</td>
+                        <td className={`py-3.5 px-3 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{p.department || 'N/A'}</td>
+                        <td className={`py-3.5 px-3 text-center font-mono ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          {formatINR(p.work_order_value)}
+                        </td>
+                        <td className={`py-3.5 px-3 text-center font-extrabold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                          {p.physical_progress || 0}%
+                        </td>
+                        <td className="py-3.5 px-3 text-center">
+                          <span className={`px-2.5 py-0.5 rounded-lg text-[10px] border ${scoreBadge}`}>
+                            {Math.round(p.health_score || 0)}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 text-right">
+                          <span className={`px-2.5 py-0.5 rounded-lg text-[8px] uppercase tracking-wider border ${statusBadge}`}>
+                            {p.health_status || 'Healthy'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const BubbleRiskMatrix = ({ data }) => {
   const [tooltip, setTooltip] = useState(null);
@@ -871,11 +1011,13 @@ const WorkOrderTelemetryTable = ({ data, selectedZone, onSelectZone }) => {
 const HoDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isDark } = useTheme();
   const [alertMsg, setAlertMsg] = useState(null);
   const [alertType, setAlertType] = useState('success'); // 'success' or 'error'
   const [activeView, setActiveView] = useState('all'); // 'all' | 'zo' | 'je' | 'wo'
   const [selectedZone, setSelectedZone] = useState(null); // Filter for telemetry table
   const [zoomedChart, setZoomedChart] = useState(null); // null | 'bubble' | 'fundflow' | 'zonal' | 'runway' | 'scurve' | 'revision'
+  const [kpiDetailModal, setKpiDetailModal] = useState(null); // null | { title, filterType, projects: [] }
 
   // Fetch actionable insights (runways, stalled)
   const { data: insightsRes } = useQuery({
@@ -965,16 +1107,7 @@ const HoDashboard = () => {
   };
 
   return (
-    <div className="h-screen bg-black text-slate-100 flex flex-col md:flex-row font-sans relative overflow-hidden">
-      <BackgroundShapes />
-      <Sidebar />
-      <MobileHeader />
-
-      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        <TopNavbar />
-
-        <main className="flex-grow p-4 md:p-6 overflow-y-auto no-scrollbar w-full relative z-10">
-          
+    <>
           {/* Toast Notification */}
           {alertMsg && (
             <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-3 border transition-all duration-300 ${
@@ -1112,6 +1245,7 @@ const HoDashboard = () => {
                 border: 'border-sky-500/20 hover:border-sky-500/40',
                 glow: 'shadow-sky-500/5',
                 bgIcon: 'bg-sky-500/10 text-sky-400',
+                filterFn: null, // All projects
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -1126,6 +1260,7 @@ const HoDashboard = () => {
                 border: 'border-emerald-500/20 hover:border-emerald-500/40',
                 glow: 'shadow-emerald-500/5',
                 bgIcon: 'bg-emerald-500/10 text-emerald-400',
+                filterFn: p => p.health_status === 'Healthy',
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1140,6 +1275,7 @@ const HoDashboard = () => {
                 border: 'border-amber-500/20 hover:border-amber-500/40',
                 glow: 'shadow-amber-500/5',
                 bgIcon: 'bg-amber-500/10 text-amber-400',
+                filterFn: p => p.health_status === 'Warning',
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1154,6 +1290,7 @@ const HoDashboard = () => {
                 border: 'border-rose-500/20 hover:border-rose-500/40',
                 glow: 'shadow-rose-500/5',
                 bgIcon: 'bg-rose-500/10 text-rose-400',
+                filterFn: p => p.health_status === 'Critical',
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1168,6 +1305,7 @@ const HoDashboard = () => {
                 border: 'border-indigo-500/20 hover:border-indigo-500/40',
                 glow: 'shadow-indigo-500/5',
                 bgIcon: 'bg-indigo-500/10 text-indigo-400',
+                filterFn: null, // Shows all projects sorted by progress
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -1182,25 +1320,42 @@ const HoDashboard = () => {
                 border: 'border-violet-500/20 hover:border-violet-500/40',
                 glow: 'shadow-violet-500/5',
                 bgIcon: 'bg-violet-500/10 text-violet-400',
+                filterFn: null, // Shows all projects sorted by health
                 icon: (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 )
               },
-            ].map(({ label, value, subtext, color, border, glow, bgIcon, icon }) => (
+            ].map(({ id, label, value, subtext, color, border, glow, bgIcon, icon, filterFn }) => (
               <div
                 key={label}
-                className={`relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${border} ${glow} bg-slate-900/40 flex flex-col justify-between group`}
+                onClick={() => {
+                  const filtered = filterFn ? projectsList.filter(filterFn) : projectsList;
+                  setKpiDetailModal({
+                    title: label,
+                    color,
+                    projects: filtered
+                  });
+                }}
+                className={`relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${border} ${glow} ${
+                  isDark ? 'bg-slate-900/40 text-slate-100' : 'bg-white/80 border-slate-200 shadow-sm text-slate-900'
+                } flex flex-col justify-between group cursor-pointer`}
               >
-                {/* Background subtle grid pattern overlay */}
-                <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none" />
+                {/* Background subtle grid pattern overlay - theme aware */}
+                <div className={`absolute inset-0 pointer-events-none ${
+                  isDark 
+                    ? 'opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]' 
+                    : 'opacity-10 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:8px_8px]'
+                }`} />
 
                 <div className="flex items-center justify-between mb-3 relative z-10">
                   <div className={`p-2 rounded-xl ${bgIcon} transition-transform duration-300 group-hover:scale-110`}>
                     {icon}
                   </div>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-300 transition-colors">
+                  <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${
+                    isDark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-700'
+                  }`}>
                     {subtext}
                   </span>
                 </div>
@@ -1209,8 +1364,11 @@ const HoDashboard = () => {
                   <div className={`text-3xl font-black tabular-nums tracking-tight ${color} group-hover:brightness-125 transition-all`}>
                     {value}
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
-                    {label}
+                  <div className={`text-[10px] font-black uppercase tracking-widest mt-1 flex items-center justify-between ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`}>
+                    <span>{label}</span>
+                    <span className="text-[8px] opacity-0 group-hover:opacity-100 transition-opacity font-bold">View →</span>
                   </div>
                 </div>
               </div>
@@ -1258,9 +1416,18 @@ const HoDashboard = () => {
             </ChartModal>
           )}
 
-        </main>
-      </div>
-    </div>
+          {/* ── KPI Details Modal ─────────────────────────────────────────── */}
+          {kpiDetailModal && (
+            <KpiDetailsModal
+              title={kpiDetailModal.title}
+              colorClass={kpiDetailModal.color}
+              projects={kpiDetailModal.projects}
+              onClose={() => setKpiDetailModal(null)}
+              navigate={navigate}
+            />
+          )}
+
+    </>
   );
 };
 

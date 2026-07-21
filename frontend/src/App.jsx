@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './components/AuthContext';
 import { ThemeProvider } from './components/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AppLayout from './components/AppLayout';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Views
@@ -63,61 +64,63 @@ function App() {
             <Route path="/docs" element={<Docs />} />
             <Route path="/docs/:pageId" element={<Docs />} />
 
-            {/* Protected Routes (All Phase 2 Roles) */}
+            {/* Protected Routes utilizing Persistent AppLayout */}
             <Route element={<ProtectedRoute allowedRoles={['staff', 'admin', 'je', 'zo', 'ho']} />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/fund-reports" element={<FundReports />} />
-              <Route path="/materials" element={<MaterialMaster />} />
-              <Route path="/estimates" element={<Estimates />} />
-              <Route path="/estimates/new" element={<EstimateForm />} />
-              <Route path="/estimates/:id" element={<EstimateView />} />
-              <Route path="/estimates/:id/edit" element={<EstimateForm />} />
-            </Route>
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/fund-reports" element={<FundReports />} />
+                <Route path="/materials" element={<MaterialMaster />} />
+                <Route path="/estimates" element={<Estimates />} />
+                <Route path="/estimates/new" element={<EstimateForm />} />
+                <Route path="/estimates/:id" element={<EstimateView />} />
+                <Route path="/estimates/:id/edit" element={<EstimateForm />} />
 
-            {/* Requisitions & Daily Work Progress Protected Routes (JE, ZO, HO, Admin) */}
-            <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
-              <Route path="/requisitions" element={<Requisitions />} />
-              <Route path="/daily-progress" element={<DailyProgress />} />
-            </Route>
+                {/* Requisitions & Daily Work Progress Protected Routes (JE, ZO, HO, Admin) */}
+                <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
+                  <Route path="/requisitions" element={<Requisitions />} />
+                  <Route path="/daily-progress" element={<DailyProgress />} />
+                </Route>
 
-            {/* Fund Requests Protected Routes (ZO, HO, Admin) */}
-            <Route element={<ProtectedRoute allowedRoles={['zo', 'staff', 'ho', 'admin']} />}>
-              <Route path="/fund-requests" element={<FundRequests />} />
-            </Route>
+                {/* Fund Requests Protected Routes (ZO, HO, Admin) */}
+                <Route element={<ProtectedRoute allowedRoles={['zo', 'staff', 'ho', 'admin']} />}>
+                  <Route path="/fund-requests" element={<FundRequests />} />
+                </Route>
 
-            {/* RA/Final Bills & User/Work Order Mappings Protected Routes (ZO, HO, Admin) */}
-            <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
-              <Route path="/ra-final-bills" element={<RAFinalBill />} />
-              <Route path="/user-mappings" element={<UserMappings />} />
-              <Route path="/work-order-mappings" element={<WorkOrderMappings />} />
-              <Route path="/zonal-balances" element={<ZonalBalances />} />
-              <Route path="/excess-fund-returns" element={<ExcessFundReturns />} />
-            </Route>
+                {/* RA/Final Bills & User/Work Order Mappings Protected Routes (ZO, HO, Admin) */}
+                <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
+                  <Route path="/ra-final-bills" element={<RAFinalBill />} />
+                  <Route path="/user-mappings" element={<UserMappings />} />
+                  <Route path="/work-order-mappings" element={<WorkOrderMappings />} />
+                  <Route path="/zonal-balances" element={<ZonalBalances />} />
+                  <Route path="/excess-fund-returns" element={<ExcessFundReturns />} />
+                </Route>
 
-            {/* Admin Protected Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/admin/sessions" element={<AuditLog />} />
-              <Route path="/admin/master-data" element={<MasterData />} />
-              <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
-            </Route>
+                {/* Admin Protected Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                  <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/admin/sessions" element={<AuditLog />} />
+                  <Route path="/admin/master-data" element={<MasterData />} />
+                  <Route path="/admin/purchase-options" element={<PurchaseOptions />} />
+                </Route>
 
-            {/* HO/Admin Analytics Protected Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['ho', 'admin']} />}>
-              <Route path="/analytics/ho" element={<HoDashboard />} />
-              <Route path="/analytics/audit" element={<AuditComplianceCenter />} />
-            </Route>
+                {/* HO/Admin Analytics Protected Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['ho', 'admin']} />}>
+                  <Route path="/analytics/ho" element={<HoDashboard />} />
+                  <Route path="/analytics/audit" element={<AuditComplianceCenter />} />
+                </Route>
 
-            {/* ZO/HO/Admin Analytics Protected Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
-              <Route path="/analytics/zo" element={<ZoDashboard />} />
-            </Route>
+                {/* ZO/HO/Admin Analytics Protected Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['zo', 'ho', 'admin']} />}>
+                  <Route path="/analytics/zo" element={<ZoDashboard />} />
+                </Route>
 
-            {/* JE/ZO/HO/Admin Digital Twin Route */}
-            <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
-              <Route path="/projects/:work_order_no/digital-twin" element={<ProjectDigitalTwin />} />
-              <Route path="/analytics/digital-twin" element={<DigitalTwinHub />} />
+                {/* JE/ZO/HO/Admin Digital Twin Route */}
+                <Route element={<ProtectedRoute allowedRoles={['je', 'zo', 'ho', 'admin']} />}>
+                  <Route path="/projects/:work_order_no/digital-twin" element={<ProjectDigitalTwin />} />
+                  <Route path="/analytics/digital-twin" element={<DigitalTwinHub />} />
+                </Route>
+              </Route>
             </Route>
 
             {/* Fallback Catch All */}

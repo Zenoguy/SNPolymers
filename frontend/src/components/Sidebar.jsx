@@ -353,8 +353,9 @@ const Sidebar = () => {
   const isAdmin = user?.role === 'admin';
 
   const [isCollapsed, setIsCollapsed] = useState(true);
-
   const [isHovered, setIsHovered] = useState(false);
+
+  // Maintain display state cleanly on mouse tracking alone
   const displayCollapsed = isCollapsed && !isHovered;
 
   const [pinnedProjects, setPinnedProjects] = useState([]);
@@ -398,19 +399,6 @@ const Sidebar = () => {
     window.addEventListener('sidebar-collapse', handleCollapseEvent);
     return () => {
       window.removeEventListener('sidebar-collapse', handleCollapseEvent);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsCollapsed(true);
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -630,14 +618,25 @@ const Sidebar = () => {
     <aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`hidden md:flex flex-col glass-nav border-r border-white/5 sticky top-0 h-screen z-20 shrink-0 overflow-y-auto transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'w-20 px-3 py-6' : 'w-72 p-6'}`}
+      className={`hidden md:flex flex-col glass-nav border-r border-white/5 sticky top-0 h-screen z-20 shrink-0 overflow-x-hidden overflow-y-auto transition-[width] duration-300 ease-in-out p-4 ${
+        displayCollapsed ? 'w-20' : 'w-72'
+      }`}
     >
-      <div className={`flex items-center ${displayCollapsed ? 'justify-center' : 'gap-3'} mb-10 overflow-hidden shrink-0`}>
-        <Link to="/dashboard" className="shrink-0 flex items-center justify-center">
-          <img src="/assets/logo.png" alt="SN Polymers Pvt LTD Logo" className={`w-auto object-contain transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'h-11' : 'h-12'}`} />
+      {/* Brand Header */}
+      <div className="flex items-center gap-3 mb-8 shrink-0 min-w-0 px-1">
+        <Link to="/dashboard" className="shrink-0 flex items-center justify-center w-10 h-10">
+          <img
+            src="/assets/logo.png"
+            alt="SN Polymers Pvt LTD Logo"
+            className="w-auto h-9 object-contain"
+          />
         </Link>
-        <div className={`flex flex-col transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left ${displayCollapsed ? 'max-w-0 opacity-0 scale-95 pointer-events-none' : 'max-w-[200px] opacity-100 scale-100 ml-1'}`}>
-          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase whitespace-nowrap">
+        <div
+          className={`flex flex-col transition-all duration-300 ease-in-out origin-left whitespace-nowrap overflow-hidden ${
+            displayCollapsed ? 'opacity-0 max-w-0 pointer-events-none' : 'opacity-100 max-w-[200px]'
+          }`}
+        >
+          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase">
             SN Polymers Pvt LTD
           </span>
           <span className="text-[10px] text-amber-500 font-extrabold tracking-widest uppercase mt-0.5">
@@ -646,20 +645,24 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <nav className="flex-grow space-y-2">
+      <nav className="flex-grow space-y-2 min-w-0">
         {/* Back to Console Button */}
         {currentPath !== '/dashboard' && (
           <Link
             to="/dashboard"
-            className={`flex items-center rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden mb-6 ${
-              displayCollapsed ? 'justify-center p-3 w-9 h-9 mx-auto bg-slate-500/10 border border-slate-500/25 text-slate-400' : 'gap-3 px-4 py-3 bg-slate-500/5 hover:bg-slate-500/10 border border-slate-500/25 text-slate-400'
-            }`}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 overflow-hidden mb-6 bg-slate-500/5 hover:bg-slate-500/10 border border-slate-500/25 text-slate-400"
             title="Back to Console"
           >
-            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100 ml-1'}`}>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </div>
+            <span
+              className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[200px]'
+              }`}
+            >
               Back to Console
             </span>
           </Link>
@@ -672,17 +675,21 @@ const Sidebar = () => {
             <Link
               key={to}
               to={to}
-              className={`flex items-center rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'
-                } ${isActive
+              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                isActive
                   ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.02)]'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent hover:border-white/5'
-                }`}
+              }`}
               title={displayCollapsed ? label : undefined}
             >
-              <span className={isActive ? 'text-amber-400 scale-105' : 'text-slate-400'}>
+              <div className={`w-5 h-5 flex items-center justify-center shrink-0 ${isActive ? 'text-amber-400' : 'text-slate-400'}`}>
                 {icon}
-              </span>
-              <span className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[240px] opacity-100 ml-3'}`}>
+              </div>
+              <span
+                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                  displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[240px]'
+                }`}
+              >
                 {label}
               </span>
             </Link>
@@ -690,11 +697,14 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Pinned/Recent Project Shortcuts */}
       {/* Pinned Project Shortcuts */}
       {pinnedProjects.length > 0 && (
-        <div className="border-t border-white/5 pt-4 mb-4 mt-auto shrink-0 flex flex-col gap-2">
-          <span className={`text-[9px] font-bold text-slate-500 uppercase tracking-widest transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'px-2 mb-1 opacity-100'}`}>
+        <div className="border-t border-white/5 pt-4 mb-4 mt-auto shrink-0 flex flex-col gap-2 min-w-0">
+          <span
+            className={`text-[9px] font-bold text-slate-500 uppercase tracking-widest transition-all duration-300 overflow-hidden ${
+              displayCollapsed ? 'opacity-0 max-w-0 h-0' : 'px-2 mb-1 opacity-100 max-w-[200px]'
+            }`}
+          >
             Pinned Twins
           </span>
           <div className="flex flex-col gap-1.5">
@@ -704,15 +714,19 @@ const Sidebar = () => {
                 <Link
                   key={workOrderNo}
                   to={`/projects/${workOrderNo}/digital-twin`}
-                  className={`flex items-center rounded-xl transition-all duration-300 ${
-                    displayCollapsed ? 'justify-center p-2.5 w-9 h-9 mx-auto bg-sky-500/5 hover:bg-sky-500/15 border border-sky-500/10 text-sky-400' : 'gap-3 px-4 py-2 bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/10 text-slate-300 hover:text-sky-400'
-                  }`}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/10 text-slate-300 hover:text-sky-400 transition-all duration-200"
                   title={workOrderNo}
                 >
-                  <svg className="w-3.5 h-3.5 shrink-0 text-sky-400 fill-current transform rotate-[30deg]" viewBox="0 0 24 24">
-                    <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
-                  </svg>
-                  <span className={`text-xs font-mono font-bold transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100'}`}>
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-sky-400 fill-current transform rotate-[30deg]" viewBox="0 0 24 24">
+                      <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                    </svg>
+                  </div>
+                  <span
+                    className={`text-xs font-mono font-bold transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                      displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[150px]'
+                    }`}
+                  >
                     {shortLabel}
                   </span>
                 </Link>
@@ -724,38 +738,50 @@ const Sidebar = () => {
 
       {/* Operator Profile and Logout */}
       {user && (
-        <div className="border-t border-white/5 pt-6 shrink-0">
+        <div className="border-t border-white/5 pt-4 shrink-0 min-w-0">
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
             title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-            className={`flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-slate-100 text-xs font-bold uppercase tracking-wider transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] mb-4 overflow-hidden shrink-0 ${displayCollapsed ? 'w-9 h-9 mx-auto p-0' : 'w-full px-4 py-2.5 gap-2'}`}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-slate-100 text-xs font-bold uppercase tracking-wider transition-all duration-200 mb-3 overflow-hidden shrink-0"
           >
-            {theme === 'light' ? (
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-              </svg>
-            )}
-            <span className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[120px] opacity-100'}`}>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              {theme === 'light' ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              )}
+            </div>
+            <span
+              className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[120px]'
+              }`}
+            >
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </span>
           </button>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {/* Operator profile card */}
             <Link
               to="/profile"
-              className={`flex items-center rounded-xl group cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${displayCollapsed ? 'justify-center w-9 h-9 mx-auto bg-gradient-to-tr from-amber-500 to-indigo-500' : 'gap-3 w-full mb-1'}`}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl group cursor-pointer transition-all duration-200 overflow-hidden"
               title={`${user.display_name || 'Operator'} (${user.role})`}
             >
-              <div className={`rounded-xl flex items-center justify-center font-extrabold text-slate-950 text-sm select-none shadow-md transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'w-full h-full bg-transparent' : 'w-9 h-9 bg-gradient-to-tr from-amber-500 to-indigo-500 shrink-0'}`}>
-                {(user.display_name || 'U')[0].toUpperCase()}
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-indigo-500 flex items-center justify-center font-extrabold text-slate-950 text-xs select-none shadow-md">
+                  {(user.display_name || 'U')[0].toUpperCase()}
+                </div>
               </div>
-              <div className={`flex flex-col truncate transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100'}`}>
+              <div
+                className={`flex flex-col truncate transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                  displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[150px]'
+                }`}
+              >
                 <span className="text-xs font-extrabold text-slate-200 truncate group-hover:text-amber-400 transition-colors">
                   {user.display_name || 'Operator'}
                 </span>
@@ -769,12 +795,18 @@ const Sidebar = () => {
             <button
               onClick={logout}
               title="Sign Out"
-              className={`flex items-center justify-center rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 ${displayCollapsed ? 'w-9 h-9 mx-auto p-0' : 'w-full px-4 py-2.5 gap-2'}`}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider transition-all duration-200 overflow-hidden shrink-0"
             >
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[100px] opacity-100'}`}>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <span
+                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                  displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[100px]'
+                }`}
+              >
                 Sign Out
               </span>
             </button>
@@ -783,12 +815,18 @@ const Sidebar = () => {
             <Link
               to="/privacy-policy"
               title="Privacy Policy"
-              className={`flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 ${displayCollapsed ? 'w-9 h-9 mx-auto p-0' : 'w-full px-4 py-2 gap-2 text-[10px] font-bold uppercase tracking-wider'}`}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-all duration-200 text-[10px] font-bold uppercase tracking-wider overflow-hidden shrink-0"
             >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden whitespace-nowrap ${displayCollapsed ? 'max-w-0 opacity-0' : 'max-w-[120px] opacity-100'}`}>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <span
+                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                  displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[120px]'
+                }`}
+              >
                 Privacy Policy
               </span>
             </Link>
