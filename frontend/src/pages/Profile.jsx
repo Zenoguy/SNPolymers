@@ -9,6 +9,8 @@ const Profile = () => {
   const [roleData, setRoleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [pageTransactions, setPageTransactions] = useState(1);
+  const txPageSize = 5;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -357,14 +359,20 @@ const Profile = () => {
 
               {/* HO / ADMIN CONTROL ROOM PANEL */}
               {(profile.role === 'ho' || profile.role === 'admin') && roleData && (
-                <AdminControlRoom roleData={roleData} formatCurrency={formatCurrency} />
+                <AdminControlRoom 
+                  roleData={roleData} 
+                  formatCurrency={formatCurrency} 
+                  pageTransactions={pageTransactions}
+                  setPageTransactions={setPageTransactions}
+                  txPageSize={txPageSize}
+                />
               )}
             </div>
           )}
     </>
   );
 };
-const AdminControlRoom = ({ roleData, formatCurrency }) => {
+const AdminControlRoom = ({ roleData, formatCurrency, pageTransactions, setPageTransactions, txPageSize }) => {
   const [filterType, setFilterType] = useState('value'); // 'value', 'progress', 'physical_progress', 'requisitions_spend', 'progress_activity'
 
   const getSortedProjects = () => {
@@ -408,182 +416,225 @@ const AdminControlRoom = ({ roleData, formatCurrency }) => {
           </div>
         </div>
       </div>
-
       {/* Control Room Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         
-        {/* Left Column: Ongoing Tasks, Flow Board & Transactions Feed */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* Side by side grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* Ongoing Task Control Panel */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        {/* Card 1: Ongoing Work Zones */}
+        <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-[520px]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4 shrink-0">
               <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4">
-                  <div>
-                    <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300">Ongoing Work Zones</h3>
-                    <p className="text-[10px] text-slate-500 font-medium">Top 5 priority work orders</p>
-                  </div>
-                  <div>
-                    <select
-                      value={filterType}
-                      onChange={(e) => setFilterType(e.target.value)}
-                      className="bg-slate-200 dark:bg-neutral-950 border border-slate-300 dark:border-white/10 rounded-xl px-2 py-1 text-[10px] text-slate-800 dark:text-slate-200 focus:outline-none w-full"
-                    >
-                      <option value="value" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Value</option>
-                      <option value="progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Estimates</option>
-                      <option value="physical_progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Completion</option>
-                      <option value="requisitions_spend" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Spend</option>
-                      <option value="progress_activity" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Active Reports</option>
-                    </select>
-                  </div>
-                </div>
-
-                {top5Projects.length > 0 ? (
-                  <div className="space-y-3.5">
-                    {top5Projects.map((p) => (
-                      <div key={p.work_order_no} className="p-3 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-all duration-300">
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="truncate">
-                            <span className="font-extrabold text-xs text-slate-200">{p.work_order_no}</span>
-                            <p className="text-[10px] text-slate-400 mt-1 truncate">{p.site_details}</p>
-                          </div>
-                          <div className="text-right shrink-0 font-medium">
-                            {filterType === 'value' && (
-                              <div className="text-xs font-bold text-amber-400">{formatCurrency(p.work_order_value)}</div>
-                            )}
-                            {filterType === 'progress' && (
-                              <div className="text-xs font-bold text-indigo-400">{p.estimate_sheets_count} Sheets</div>
-                            )}
-                            {filterType === 'physical_progress' && (
-                              <div className="text-xs font-bold text-emerald-400">{p.max_physical_progress}%</div>
-                            )}
-                            {filterType === 'requisitions_spend' && (
-                              <div className="text-xs font-bold text-rose-400">{formatCurrency(p.requisitions_total_amount)}</div>
-                            )}
-                            {filterType === 'progress_activity' && (
-                              <div className="text-xs font-bold text-sky-400">{p.progress_reports_count} Reports</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-xs text-slate-500 py-6 text-center">No project records found.</div>
-                )}
+                <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300">Ongoing Work Zones</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Top 5 priority work orders</p>
+              </div>
+              <div>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="bg-slate-200 dark:bg-neutral-950 border border-slate-300 dark:border-white/10 rounded-xl px-2 py-1 text-[10px] text-slate-800 dark:text-slate-200 focus:outline-none w-full"
+                >
+                  <option value="value" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Value</option>
+                  <option value="progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Estimates</option>
+                  <option value="physical_progress" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Completion</option>
+                  <option value="requisitions_spend" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Highest Spend</option>
+                  <option value="progress_activity" className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">Most Active Reports</option>
+                </select>
               </div>
             </div>
 
-            {/* Active Capital Flow Dashboard */}
-            <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div>
-                <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/5 pb-2">
-                  <h3 className="text-sm uppercase font-extrabold tracking-widest text-black dark:text-slate-100" style={{ color: 'var(--title-color, inherit)' }}>
-                    Cash Distribution Breakdown
-                  </h3>
-                </div>
-
-                {roleData.capitalFlow ? (
-                  <div className="space-y-3.5">
-                    {/* In-Flight (Awaiting Clearances) */}
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/20 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-                        <div>
-                          <div className="text-[10px] uppercase font-bold tracking-widest text-slate-800 dark:text-slate-200">In-Flight / Pending Approvals</div>
-                          <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Fund requests & pending requisitions</div>
-                        </div>
+            {top5Projects.length > 0 ? (
+              <div className="space-y-3.5 flex-1 overflow-y-auto no-scrollbar pr-1">
+                {top5Projects.map((p) => (
+                  <div key={p.work_order_no} className="p-3 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="truncate">
+                        <div className="font-bold text-xs text-slate-100 truncate">{p.work_order_no}</div>
+                        <div className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{p.site_details}</div>
                       </div>
-                      <div className="text-sm font-extrabold text-amber-700 dark:text-amber-400 font-mono">
-                        {formatCurrency(roleData.capitalFlow.inFlight?.total || 0)}
-                      </div>
-                    </div>
-
-                    {/* Capital Moved (30-Day Velocity) */}
-                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/20 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                        <div>
-                          <div className="text-[10px] uppercase font-bold tracking-widest text-slate-800 dark:text-slate-200">Capital Moved (30 Days)</div>
-                          <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Disbursed to ZO and Field accounts</div>
-                        </div>
-                      </div>
-                      <div className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400 font-mono">
-                        {formatCurrency(roleData.capitalFlow.recentMoved?.total || 0)}
-                      </div>
-                    </div>
-
-                    {/* Hierarchy Flow Visual Bar */}
-                    <div className="p-4 rounded-2xl bg-white/40 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Capital Velocity Pipeline</div>
-                      
-                      <div className="space-y-2">
-                        {/* ZO Allocations Sub-bar */}
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">Zonal Office Disbursals</span>
-                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                            {formatCurrency(roleData.capitalFlow.recentMoved?.zonalAllocations || 0)}
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
-                          <div 
-                            className="h-full bg-emerald-500 transition-all duration-500" 
-                            style={{ 
-                              width: `${roleData.capitalFlow.recentMoved?.total > 0 
-                                ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.zonalAllocations / roleData.capitalFlow.recentMoved.total) * 100)) 
-                                : 0}%` 
-                            }} 
-                          />
-                        </div>
-
-                        {/* JE Requisitions Sub-bar */}
-                        <div className="flex justify-between items-center text-[10px] pt-1">
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">Site Requisitions Paid</span>
-                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                            {formatCurrency(roleData.capitalFlow.recentMoved?.requisitionsDisbursed || 0)}
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
-                          <div 
-                            className="h-full bg-sky-500 transition-all duration-500" 
-                            style={{ 
-                              width: `${roleData.capitalFlow.recentMoved?.total > 0 
-                                ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.requisitionsDisbursed / roleData.capitalFlow.recentMoved.total) * 100)) 
-                                : 0}%` 
-                            }} 
-                          />
-                        </div>
+                      <div className="text-right shrink-0">
+                        {filterType === 'value' && <div className="text-xs font-bold text-amber-500">{formatCurrency(p.work_order_value || 0)}</div>}
+                        {filterType === 'progress' && <div className="text-xs font-bold text-sky-400">{p.estimate_sheets_count || 0} Estimates</div>}
+                        {filterType === 'physical_progress' && <div className="text-xs font-bold text-emerald-400">{p.max_physical_progress || 0}% Done</div>}
+                        {filterType === 'requisitions_spend' && <div className="text-xs font-bold text-indigo-400">{formatCurrency(p.requisitions_total_amount || 0)}</div>}
+                        {filterType === 'progress_activity' && <div className="text-xs font-bold text-sky-400">{p.progress_reports_count || 0} Reports</div>}
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-xs text-slate-500 py-4 text-center">No capital flow metrics available.</div>
-                )}
+                ))}
               </div>
-            </div>
-
+            ) : (
+              <div className="text-xs text-slate-500 py-6 text-center">No project records found.</div>
+            )}
           </div>
+        </div>
 
-          <style>{`
-            @keyframes dash {
-              to {
-                stroke-dashoffset: -20;
-              }
-            }
-          `}</style>
+        {/* Card 2: Cash Distribution Breakdown */}
+        <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-[520px]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex-1 flex flex-col">
+            <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/5 pb-2 shrink-0">
+              <h3 className="text-sm uppercase font-extrabold tracking-widest text-black dark:text-slate-100" style={{ color: 'var(--title-color, inherit)' }}>
+                Cash Distribution Breakdown
+              </h3>
+            </div>
 
-          {/* Unified Transactions Feed */}
-          <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-            <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300 mb-4 border-b border-white/5 pb-2">Latest System Transactions</h3>
-            {roleData.latestTransactions?.length > 0 ? (
-              <div className="space-y-3">
-                {roleData.latestTransactions.map((tx, idx) => (
+            {roleData.capitalFlow ? (
+              <div className="space-y-4 flex-1 flex flex-col justify-start">
+                {/* In-Flight (Awaiting Clearances) */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] shrink-0" />
+                    <div>
+                      <div className="text-xs uppercase font-bold tracking-wider text-slate-800 dark:text-slate-200">In-Flight / Pending Approvals</div>
+                      <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">Fund requests & pending requisitions</div>
+                    </div>
+                  </div>
+                  <div className="text-base font-extrabold text-amber-700 dark:text-amber-400 font-mono shrink-0">
+                    {formatCurrency(roleData.capitalFlow.inFlight?.total || 0)}
+                  </div>
+                </div>
+
+                {/* Capital Moved (30-Day Velocity) */}
+                <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] shrink-0" />
+                    <div>
+                      <div className="text-xs uppercase font-bold tracking-wider text-slate-800 dark:text-slate-200">Capital Moved (30 Days)</div>
+                      <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">Disbursed to ZO and Field accounts</div>
+                    </div>
+                  </div>
+                  <div className="text-base font-extrabold text-emerald-700 dark:text-emerald-400 font-mono shrink-0">
+                    {formatCurrency(roleData.capitalFlow.recentMoved?.total || 0)}
+                  </div>
+                </div>
+
+                {/* Hierarchy Flow Visual Bar */}
+                <div className="p-4 rounded-2xl bg-white/40 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3 mt-auto">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Capital Velocity Pipeline</div>
+                  
+                  <div className="space-y-3">
+                    {/* ZO Allocations Sub-bar */}
+                    <div>
+                      <div className="flex justify-between items-center text-[10px] mb-1">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Zonal Office Disbursals</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                          {formatCurrency(roleData.capitalFlow.recentMoved?.zonalAllocations || 0)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
+                        <div 
+                          className="h-full bg-emerald-500 transition-all duration-500 rounded-full" 
+                          style={{ 
+                            width: `${roleData.capitalFlow.recentMoved?.total > 0 
+                              ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.zonalAllocations / roleData.capitalFlow.recentMoved.total) * 100)) 
+                              : 0}%` 
+                          }} 
+                        />
+                      </div>
+                    </div>
+
+                    {/* JE Requisitions Sub-bar */}
+                    <div>
+                      <div className="flex justify-between items-center text-[10px] mb-1">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Site Requisitions Paid</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                          {formatCurrency(roleData.capitalFlow.recentMoved?.requisitionsDisbursed || 0)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-300 dark:bg-white/10 overflow-hidden">
+                        <div 
+                          className="h-full bg-sky-500 transition-all duration-500 rounded-full" 
+                          style={{ 
+                            width: `${roleData.capitalFlow.recentMoved?.total > 0 
+                              ? Math.min(100, Math.max(5, (roleData.capitalFlow.recentMoved.requisitionsDisbursed / roleData.capitalFlow.recentMoved.total) * 100)) 
+                              : 0}%` 
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 py-4 text-center">No capital flow metrics available.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Card 3: My Recent Actions */}
+        <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-[520px]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300 mb-4 border-b border-white/5 pb-2 shrink-0">My Recent Actions</h3>
+            {roleData.recentActions?.length > 0 ? (
+              <div className="space-y-3 flex-1 overflow-y-auto no-scrollbar pr-1">
+                {roleData.recentActions.map((log) => (
+                  <div key={log.id} className="p-3 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest">{log.action}</span>
+                      <span className="text-[9px] text-slate-500 font-semibold">
+                        {new Date(log.timestamp).toLocaleDateString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-slate-300 mt-1">{log.module_name}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5 truncate">ID: {log.record_identifier}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 py-4 text-center">No recent actions logged.</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Section: Unified Transactions Feed */}
+      <div className="mt-8">
+        <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
+            <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300">Latest System Transactions</h3>
+            {roleData.latestTransactions?.length > txPageSize && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Page {pageTransactions} of {Math.ceil(roleData.latestTransactions.length / txPageSize)}
+                </span>
+                <button
+                  onClick={() => setPageTransactions((p) => Math.max(1, p - 1))}
+                  disabled={pageTransactions === 1}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    pageTransactions === 1
+                      ? 'bg-white/5 text-slate-600 cursor-not-allowed'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() =>
+                    setPageTransactions((p) =>
+                      p * txPageSize < roleData.latestTransactions.length ? p + 1 : p
+                    )
+                  }
+                  disabled={pageTransactions * txPageSize >= roleData.latestTransactions.length}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    pageTransactions * txPageSize >= roleData.latestTransactions.length
+                      ? 'bg-white/5 text-slate-600 cursor-not-allowed'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+          {roleData.latestTransactions?.length > 0 ? (
+            <div className="space-y-3">
+              {roleData.latestTransactions
+                .slice((pageTransactions - 1) * txPageSize, pageTransactions * txPageSize)
+                .map((tx, idx) => (
                   <div key={idx} className="flex justify-between items-center p-3 rounded-2xl bg-white/2 border border-white/5 hover:bg-white/4 transition">
                     <div>
                       <div className="flex items-center gap-2">
@@ -614,42 +665,11 @@ const AdminControlRoom = ({ roleData, formatCurrency }) => {
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div className="text-xs text-slate-500 py-6 text-center">No transaction records found.</div>
-            )}
-          </div>
-
+            </div>
+          ) : (
+            <div className="text-xs text-slate-500 py-6 text-center">No transaction records found.</div>
+          )}
         </div>
-
-        {/* Right Column: Audit Trail */}
-        <div className="space-y-8">
-          
-          {/* Admin Recent Actions */}
-          <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-            <h3 className="text-sm uppercase font-bold tracking-widest text-slate-300 mb-4 border-b border-white/5 pb-2">My Recent Actions</h3>
-            {roleData.recentActions?.length > 0 ? (
-              <div className="space-y-3 max-h-80 overflow-y-auto no-scrollbar">
-                {roleData.recentActions.map((log) => (
-                  <div key={log.id} className="p-3 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest">{log.action}</span>
-                      <span className="text-[9px] text-slate-500 font-semibold">
-                        {new Date(log.timestamp).toLocaleDateString('en-IN')}
-                      </span>
-                    </div>
-                    <div className="text-xs font-bold text-slate-300 mt-1">{log.module_name}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5 truncate">ID: {log.record_identifier}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-xs text-slate-500 py-4 text-center">No recent actions logged.</div>
-            )}
-          </div>
-        </div>
-
       </div>
     </div>
   );
