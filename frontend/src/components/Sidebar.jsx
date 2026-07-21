@@ -350,18 +350,16 @@ const Sidebar = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const currentPath = location.pathname;
-
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-
-  // Maintain display state cleanly on mouse tracking alone
   const displayCollapsed = isCollapsed && !isHovered;
 
   const [pinnedProjects, setPinnedProjects] = useState([]);
+  const storageKey = user?.mobile_number ? `pinnedProjects_${user.mobile_number}` : 'pinnedProjects';
 
   const loadPinnedProjects = () => {
     try {
-      const stored = localStorage.getItem('pinnedProjects');
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         setPinnedProjects(JSON.parse(stored));
       } else {
@@ -369,30 +367,18 @@ const Sidebar = () => {
       }
     } catch (e) {
       console.error(e);
+      setPinnedProjects([]);
     }
   };
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('pinnedProjects');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const defaults = ['WO-OVR-8F0DDDAB', 'WO-OVR-A6313AA6', 'WO-OVR-FBE2B471'];
-        if (JSON.stringify(parsed) === JSON.stringify(defaults)) {
-          localStorage.removeItem('pinnedProjects');
-        }
-      }
-    } catch {
-      // ignore
-    }
-
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPinnedProjects();
     window.addEventListener('pinned-projects-updated', loadPinnedProjects);
     return () => {
       window.removeEventListener('pinned-projects-updated', loadPinnedProjects);
     };
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     const handleCollapseEvent = (e) => {
@@ -715,8 +701,8 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Pinned Project Shortcuts */}
-      {pinnedProjects.length > 0 && (
+      {/* Pinned Project Shortcuts (For ZO, HO, and Admin) */}
+      {pinnedProjects.length > 0 && ['zo', 'ho', 'admin'].includes(user?.role) && (
         <div className="border-t border-white/5 pt-4 mb-4 mt-auto shrink-0 flex flex-col gap-2 min-w-0">
           <span
             className={`text-[9px] font-bold text-slate-500 uppercase tracking-widest transition-all duration-300 overflow-hidden ${

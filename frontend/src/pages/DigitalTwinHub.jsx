@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../components/AuthContext';
 import Modal from '../components/ui/Modal';
 import { SkeletonCard } from '../components/ui';
 import { getProjectsHealth } from '../api/analyticsApi';
@@ -61,21 +62,23 @@ const DigitalTwinHub = () => {
   const [pinnedProjects, setPinnedProjects] = useState([]);
   const [showPinLimitModal, setShowPinLimitModal] = useState(false);
 
+  const { user } = useAuth();
+  const storageKey = user?.mobile_number ? `pinnedProjects_${user.mobile_number}` : 'pinnedProjects';
+
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('pinnedProjects');
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPinnedProjects(JSON.parse(stored));
       } else {
-        const defaults = ['WO-OVR-8F0DDDAB', 'WO-OVR-A6313AA6', 'WO-OVR-FBE2B471'];
-        localStorage.setItem('pinnedProjects', JSON.stringify(defaults));
-        setPinnedProjects(defaults);
+        setPinnedProjects([]);
       }
     } catch (e) {
       console.error(e);
+      setPinnedProjects([]);
     }
-  }, []);
+  }, [storageKey]);
 
   const togglePin = (e, workOrderNo) => {
     e.stopPropagation();
@@ -83,7 +86,11 @@ const DigitalTwinHub = () => {
     if (pinned.includes(workOrderNo)) {
       pinned = pinned.filter(wo => wo !== workOrderNo);
       setPinnedProjects(pinned);
-      localStorage.setItem('pinnedProjects', JSON.stringify(pinned));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(pinned));
+      } catch (err) {
+        console.error(err);
+      }
       window.dispatchEvent(new Event('pinned-projects-updated'));
     } else {
       if (pinned.length >= 3) {
@@ -91,7 +98,11 @@ const DigitalTwinHub = () => {
       } else {
         pinned.push(workOrderNo);
         setPinnedProjects(pinned);
-        localStorage.setItem('pinnedProjects', JSON.stringify(pinned));
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(pinned));
+        } catch (err) {
+          console.error(err);
+        }
         window.dispatchEvent(new Event('pinned-projects-updated'));
       }
     }
