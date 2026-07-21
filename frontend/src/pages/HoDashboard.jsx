@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/ThemeContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -168,7 +169,7 @@ class ChartModal extends React.Component {
           </div>
 
           {/* Dynamically Scaled Inner Content Area */}
-          <div className="flex-1 overflow-auto p-4 sm:p-6 min-h-0 h-full w-full">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0 h-full w-full flex flex-col justify-center">
             {children}
           </div>
         </div>
@@ -336,8 +337,8 @@ const BubbleRiskMatrix = ({ data }) => {
   const toY = (pct) => (H - PAD) - ((pct / 100) * (H - 2 * PAD));
 
   return (
-    <div className="chart-panel h-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="chart-panel h-full flex flex-col justify-between">
+      <div className="flex justify-between items-center mb-3 shrink-0">
         <div>
           <h3 className="chart-title">Bubble Risk Matrix</h3>
           <p className="chart-subtitle">Budget vs Physical Progress vs reporting frequency</p>
@@ -349,8 +350,8 @@ const BubbleRiskMatrix = ({ data }) => {
         </div>
       </div>
 
-      <div className="relative">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+      <div className="relative flex-1 flex items-center justify-center min-h-0">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full max-h-[60vh]" preserveAspectRatio="xMidYMid meet">
           {/* Grid lines */}
           <line x1={toX(50)} y1={PAD} x2={toX(50)} y2={H - PAD} stroke={c.gridLineDash} strokeDasharray="4 4" />
           <line x1={PAD} y1={toY(50)} x2={W - PAD} y2={toY(50)} stroke={c.gridLineDash} strokeDasharray="4 4" />
@@ -510,6 +511,9 @@ const FundFlowWaterfall = ({ data }) => {
 };
 
 const ZonalPerformanceHeatmap = ({ data, onSelectZone, selectedZone }) => {
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
+
   const getScoreBg = (score) => {
     if (score >= 80) return 'badge-emerald';
     if (score >= 60) return 'badge-amber';
@@ -528,72 +532,106 @@ const ZonalPerformanceHeatmap = ({ data, onSelectZone, selectedZone }) => {
     return 'badge-rose';
   };
 
+  const rows = data || [];
+  const totalPages = Math.ceil(rows.length / rowsPerPage) || 1;
+  const paginatedRows = rows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
   return (
-    <div className="chart-panel h-full">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h3 className="chart-title">Zonal Performance Heatmap</h3>
-          <p className="chart-subtitle">Cross-regional metric matrices. Click a row to filter work orders.</p>
+    <div className="chart-panel h-full flex flex-col justify-between">
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="chart-title">Zonal Performance Heatmap</h3>
+            <p className="chart-subtitle">Cross-regional metric matrices. Click a row to filter work orders.</p>
+          </div>
+          {selectedZone && (
+            <button
+              onClick={() => onSelectZone(null)}
+              className="chart-filter-btn"
+            >
+              Clear Filter
+            </button>
+          )}
         </div>
-        {selectedZone && (
-          <button
-            onClick={() => onSelectZone(null)}
-            className="chart-filter-btn"
-          >
-            Clear Filter
-          </button>
-        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="chart-table-header">
+                <th className="py-2 text-[9px] font-bold uppercase tracking-widest">Zone</th>
+                <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Health Index</th>
+                <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Budget Util %</th>
+                <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Projects</th>
+                <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">At-Risk</th>
+                <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Delayed</th>
+              </tr>
+            </thead>
+            <tbody className="chart-table-body">
+              {paginatedRows.map((row, idx) => {
+                const isSelected = selectedZone === row.zone;
+                return (
+                  <tr
+                    key={idx}
+                    onClick={() => onSelectZone(isSelected ? null : row.zone)}
+                    className={`cursor-pointer transition-colors chart-table-row ${isSelected ? 'chart-table-row-selected' : ''}`}
+                  >
+                    <td className="py-3 font-extrabold chart-text-primary">{row.zone}</td>
+                    <td className="py-3 text-center">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getScoreBg(row.health_score)}`}>
+                        {row.health_score.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getUtilBg(row.budget_util)}`}>
+                        {row.budget_util.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-3 text-center font-bold chart-text-secondary">{row.total_projects}</td>
+                    <td className="py-3 text-center">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getRiskBg(row.projects_at_risk)}`}>
+                        {row.projects_at_risk}
+                      </span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getRiskBg(row.delayed_projects)}`}>
+                        {row.delayed_projects}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="chart-table-header">
-              <th className="py-2 text-[9px] font-bold uppercase tracking-widest">Zone</th>
-              <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Health Index</th>
-              <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Budget Util %</th>
-              <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Projects</th>
-              <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">At-Risk</th>
-              <th className="py-2 text-center text-[9px] font-bold uppercase tracking-widest">Delayed</th>
-            </tr>
-          </thead>
-          <tbody className="chart-table-body">
-            {(data || []).map((row, idx) => {
-              const isSelected = selectedZone === row.zone;
-              return (
-                <tr
-                  key={idx}
-                  onClick={() => onSelectZone(isSelected ? null : row.zone)}
-                  className={`cursor-pointer transition-colors chart-table-row ${isSelected ? 'chart-table-row-selected' : ''}`}
-                >
-                  <td className="py-3.5 font-extrabold chart-text-primary">{row.zone}</td>
-                  <td className="py-3.5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getScoreBg(row.health_score)}`}>
-                      {row.health_score.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getUtilBg(row.budget_util)}`}>
-                      {row.budget_util.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-center font-bold chart-text-secondary">{row.total_projects}</td>
-                  <td className="py-3.5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getRiskBg(row.projects_at_risk)}`}>
-                      {row.projects_at_risk}
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${getRiskBg(row.delayed_projects)}`}>
-                      {row.delayed_projects}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {/* 5-Row Pagination Bar */}
+      {rows.length > 5 && (
+        <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/5 text-[10px] font-mono shrink-0">
+          <span className="text-slate-400 font-bold">
+            Showing {(page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, rows.length)} of {rows.length} zones
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed font-bold uppercase tracking-wider text-slate-300 transition cursor-pointer"
+            >
+              Prev
+            </button>
+            <span className="px-2 font-black text-amber-400">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed font-bold uppercase tracking-wider text-slate-300 transition cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -884,36 +922,45 @@ const RevisionHeatmap = ({ data, isModal = false }) => {
   );
 };
 
-// ── Department Wise Estimate Donut Chart ──────────────────────────────────────
-const DepartmentWiseEstimate = ({ data = [] }) => {
+// ── Department Wise Estimate Component ───────────────────────────────────────
+const DepartmentWiseEstimate = ({ data }) => {
   const { isDark } = useTheme();
+  const [hoveredDept, setHoveredDept] = useState(null);
+  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
 
-  const DEFAULT_COLORS = ['#2563EB', '#0D9488', '#7C3AED', '#F97316', '#64748B', '#E11D48', '#059669'];
+  const fallbackData = [
+    { department: 'PWD', amount: 70500000, percentage: 83.6, color: '#3B82F6' },
+    { department: 'Dept', amount: 8500000, percentage: 10.1, color: '#10B981' },
+    { department: 'Civil', amount: 1814000, percentage: 2.1, color: '#8B5CF6' },
+    { department: 'PWD Department', amount: 1800000, percentage: 2.1, color: '#F97316' },
+    { department: 'Irrigation', amount: 750000, percentage: 0.9, color: '#64748B' },
+    { department: 'WRDD', amount: 500000, percentage: 0.6, color: '#EF4444' },
+    { department: 'PHE', amount: 500000, percentage: 0.6, color: '#14B8A6' }
+  ];
+
+  const DEFAULT_COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F97316', '#64748B', '#EF4444', '#14B8A6', '#EC4899', '#F59E0B'];
 
   const items = React.useMemo(() => {
-    if (!data || data.length === 0) {
-      return [
-        { department: 'Civil', amount: 44800000, percentage: 38, color: '#2563EB' },
-        { department: 'Electrical', amount: 30700000, percentage: 26, color: '#0D9488' },
-        { department: 'Mechanical', amount: 21200000, percentage: 18, color: '#7C3AED' },
-        { department: 'Plumbing', amount: 11800000, percentage: 10, color: '#F97316' },
-        { department: 'Others', amount: 9500000, percentage: 8, color: '#64748B' }
-      ];
-    }
-    return data.map((item, idx) => ({
+    const raw = (data && data.length > 0) ? data : fallbackData;
+    return raw.map((item, idx) => ({
       ...item,
-      color: DEFAULT_COLORS[idx % DEFAULT_COLORS.length]
+      color: item.color || DEFAULT_COLORS[idx % DEFAULT_COLORS.length]
     }));
   }, [data]);
+
+  const totalAmount = React.useMemo(() => {
+    return items.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  }, [items]);
 
   const donutSlices = React.useMemo(() => {
     let cumulativeAngle = 0;
     const center = 100;
     const outerRadius = 85;
-    const innerRadius = 45;
+    const innerRadius = 55;
 
     return items.map((slice) => {
-      const angle = (slice.percentage / 100) * 360;
+      const pct = totalAmount > 0 ? ((Number(slice.amount) || 0) / totalAmount) * 100 : slice.percentage || 0;
+      const angle = (pct / 100) * 360;
       const startAngle = cumulativeAngle;
       const endAngle = cumulativeAngle + angle;
       cumulativeAngle += angle;
@@ -941,20 +988,13 @@ const DepartmentWiseEstimate = ({ data = [] }) => {
         'Z'
       ].join(' ');
 
-      const midRad = ((startAngle + endAngle) / 2 - 90) * (Math.PI / 180);
-      const labelRadius = (outerRadius + innerRadius) / 2;
-      const labelX = center + labelRadius * Math.cos(midRad);
-      const labelY = center + labelRadius * Math.sin(midRad);
-
       return {
         ...slice,
-        pathData,
-        labelX,
-        labelY,
-        angle
+        pct: pct.toFixed(1),
+        pathData
       };
     });
-  }, [items]);
+  }, [items, totalAmount]);
 
   const formatAmount = (amt) => {
     if (!amt || isNaN(amt)) return '₹ 0';
@@ -963,8 +1003,38 @@ const DepartmentWiseEstimate = ({ data = [] }) => {
     return `₹ ${Number(amt).toLocaleString('en-IN')}`;
   };
 
+  const handleMouseEnter = (e, item) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const popoverHeight = 100;
+    const popoverWidth = 240;
+
+    let yPos = rect.top - popoverHeight - 10;
+    if (yPos < 20) {
+      yPos = Math.min(window.innerHeight - popoverHeight - 20, rect.bottom + 10);
+    }
+    let xPos = Math.min(window.innerWidth - popoverWidth - 20, Math.max(20, rect.left - 20));
+
+    setPopoverPos({ x: xPos, y: yPos });
+    setHoveredDept(item);
+  };
+
+  const handleMouseMove = (e) => {
+    if (hoveredDept) {
+      const popoverHeight = 100;
+      const popoverWidth = 240;
+      
+      let yPos = e.clientY - popoverHeight - 15;
+      if (yPos < 20) {
+        yPos = Math.min(window.innerHeight - popoverHeight - 20, e.clientY + 20);
+      }
+      let xPos = Math.min(window.innerWidth - popoverWidth - 20, Math.max(20, e.clientX - 50));
+
+      setPopoverPos({ x: xPos, y: yPos });
+    }
+  };
+
   return (
-    <div className="chart-panel h-full flex flex-col justify-between p-4 sm:p-5">
+    <div className="chart-panel h-full flex flex-col justify-between p-4 sm:p-5 relative" onMouseMove={handleMouseMove}>
       <div className="flex justify-between items-center mb-3">
         <div>
           <h3 className="chart-title text-base sm:text-lg font-extrabold tracking-tight" style={{ color: isDark ? '#60A5FA' : '#1E3A8A' }}>
@@ -981,55 +1051,92 @@ const DepartmentWiseEstimate = ({ data = [] }) => {
         <div className="relative w-44 h-44 sm:w-48 sm:h-48 shrink-0 mx-auto">
           <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
             {donutSlices.map((slice, idx) => (
-              <g key={idx} className="transition-all duration-300 hover:opacity-90 cursor-pointer group">
+              <g
+                key={idx}
+                className="transition-all duration-300 hover:opacity-90 cursor-pointer group"
+                onMouseEnter={(e) => handleMouseEnter(e, slice)}
+                onMouseLeave={() => setHoveredDept(null)}
+              >
                 <path
                   d={slice.pathData}
                   fill={slice.color}
                   stroke={isDark ? '#0f172a' : '#ffffff'}
                   strokeWidth="2.5"
+                  style={{
+                    transform: hoveredDept?.department === slice.department ? 'scale(1.04)' : 'scale(1)',
+                    transformOrigin: '100px 100px'
+                  }}
                 />
-                {slice.percentage >= 6 && (
-                  <text
-                    x={slice.labelX}
-                    y={slice.labelY + 4}
-                    fill="#ffffff"
-                    fontSize="11"
-                    fontWeight="800"
-                    textAnchor="middle"
-                    className="pointer-events-none drop-shadow"
-                  >
-                    {Math.round(slice.percentage)}%
-                  </text>
-                )}
               </g>
             ))}
           </svg>
         </div>
 
-        {/* Legend List - full-width rows with clear separation between name and amount */}
-        <div className="flex flex-col gap-1.5 w-full">
+        {/* 2-Column Grid Legend Index (Clean & Compact) */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 w-full pt-2 border-t border-white/5">
           {items.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between gap-4 text-xs py-1 px-2 rounded-lg hover:bg-slate-500/10 transition-colors">
-              {/* Department Name */}
-              <div className="flex items-center gap-2 min-w-0 pr-2">
+            <div
+              key={idx}
+              className={`flex items-center justify-between gap-2 text-xs py-1.5 px-2.5 rounded-xl cursor-pointer transition-all ${
+                hoveredDept?.department === item.department
+                  ? 'bg-amber-500/15 border border-amber-500/30 scale-[1.02]'
+                  : 'hover:bg-slate-500/10 border border-transparent'
+              }`}
+              onMouseEnter={(e) => handleMouseEnter(e, item)}
+              onMouseLeave={() => setHoveredDept(null)}
+            >
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
-                <span className="chart-text-primary text-slate-800 dark:text-slate-200 font-bold text-xs">
+                <span className="chart-text-primary text-slate-800 dark:text-slate-200 font-bold text-xs truncate" title={item.department}>
                   {item.department}
                 </span>
               </div>
-              {/* Amount & Percentage */}
-              <div className="flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap text-right ml-auto">
-                <span className="font-extrabold text-slate-900 dark:text-slate-100 text-xs">
-                  {formatAmount(item.amount)}
-                </span>
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold">
-                  ({item.percentage}%)
-                </span>
-              </div>
+              <span className="text-slate-400 font-mono text-[10px] font-bold shrink-0">
+                {item.percentage}%
+              </span>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Dynamic Hover Popover rendered via React Portal to prevent going behind background panels */}
+      {hoveredDept && ReactDOM.createPortal(
+        <div
+          className="fixed z-[99999] rounded-2xl shadow-2xl p-3.5 min-w-[220px] pointer-events-none transition-all duration-150 backdrop-blur-md"
+          style={{
+            top: popoverPos.y,
+            left: popoverPos.x,
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+            border: `1.5px solid ${hoveredDept.color}`,
+            boxShadow: `0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 8px 16px -6px ${hoveredDept.color}60`
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1.5 border-b border-slate-200 dark:border-slate-700/60 pb-1.5">
+            <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: hoveredDept.color }} />
+            <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+              {hoveredDept.department}
+            </span>
+          </div>
+
+          <div className="flex items-baseline justify-between gap-3 mt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Estimated Amount:
+            </span>
+            <span className="font-black text-sm font-mono text-amber-400">
+              {formatAmount(hoveredDept.amount)}
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between gap-3 mt-0.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Share of Estimate:
+            </span>
+            <span className="font-bold text-xs font-mono text-slate-200">
+              {hoveredDept.percentage}%
+            </span>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
@@ -1041,7 +1148,8 @@ const MetricDonutCard = ({
   centerLabel,
   centerValue,
   buckets = [],
-  fallbackData
+  fallbackData,
+  isModal = false
 }) => {
   const { isDark } = useTheme();
   const [hoveredBucket, setHoveredBucket] = useState(null);
@@ -1105,19 +1213,35 @@ const MetricDonutCard = ({
 
   const handleMouseEnter = (e, bucket) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setPopoverPos({
-      x: Math.min(window.innerWidth - 320, rect.left + rect.width / 2),
-      y: rect.top
-    });
+    const popoverHeight = 280;
+    const popoverWidth = 320;
+    
+    // Always keep popover inside visible screen viewport
+    let yPos = rect.top - popoverHeight - 10;
+    if (yPos < 20) {
+      yPos = Math.min(window.innerHeight - popoverHeight - 20, rect.bottom + 10);
+    }
+
+    let xPos = Math.min(window.innerWidth - popoverWidth - 20, Math.max(20, rect.left - 50));
+
+    setPopoverPos({ x: xPos, y: yPos });
     setHoveredBucket(bucket);
   };
 
   const handleMouseMove = (e) => {
     if (hoveredBucket) {
-      setPopoverPos({
-        x: Math.min(window.innerWidth - 340, e.clientX + 15),
-        y: Math.min(window.innerHeight - 280, e.clientY + 15)
-      });
+      const popoverHeight = 280;
+      const popoverWidth = 320;
+      
+      // Hover popover appears above the cursor when in bottom half of screen
+      let yPos = e.clientY - popoverHeight - 15;
+      if (yPos < 20) {
+        yPos = Math.min(window.innerHeight - popoverHeight - 20, e.clientY + 20);
+      }
+
+      let xPos = Math.min(window.innerWidth - popoverWidth - 20, Math.max(20, e.clientX - 100));
+
+      setPopoverPos({ x: xPos, y: yPos });
     }
   };
 
@@ -1136,9 +1260,11 @@ const MetricDonutCard = ({
         </div>
       </div>
 
-      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 my-auto py-2">
-        {/* Donut Graphic with Center Text */}
-        <div className="relative w-44 h-44 sm:w-48 sm:h-48 shrink-0 flex items-center justify-center">
+      <div className="flex flex-col md:flex-row items-center justify-around gap-6 my-auto py-2 flex-1">
+        {/* Donut Graphic with Center Text - Proportioned dynamically */}
+        <div className={`relative shrink-0 flex items-center justify-center ${
+          isModal ? 'w-56 h-56 sm:w-72 sm:h-72' : 'w-40 h-40 sm:w-44 sm:h-44'
+        }`}>
           <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
             {slices.map((slice, idx) => (
               <path
@@ -1149,7 +1275,7 @@ const MetricDonutCard = ({
                 strokeWidth="3"
                 className="transition-all duration-300 hover:opacity-80 cursor-pointer"
                 style={{
-                  transform: hoveredBucket?.label === slice.label ? 'scale(1.04)' : 'scale(1)',
+                  transform: hoveredBucket?.label === slice.label ? 'scale(1.05)' : 'scale(1)',
                   transformOrigin: '100px 100px'
                 }}
                 onMouseEnter={(e) => handleMouseEnter(e, slice)}
@@ -1160,21 +1286,21 @@ const MetricDonutCard = ({
 
           {/* Center Label inside donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {centerLabel}
             </span>
-            <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
+            <span className={`${isModal ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'} font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5`}>
               {centerValue}
             </span>
           </div>
         </div>
 
         {/* Legend List */}
-        <div className="flex flex-col gap-2 w-full xl:w-auto min-w-0">
+        <div className={`flex flex-col gap-2 w-full md:w-auto ${isModal ? 'min-w-[240px]' : 'min-w-[180px]'}`}>
           {slices.map((item, idx) => (
             <div
               key={idx}
-              className={`flex items-center justify-between gap-3 text-xs font-semibold py-1 px-2 rounded-xl cursor-pointer transition-all ${
+              className={`flex items-center justify-between gap-3 text-xs font-semibold py-1.5 px-2.5 rounded-xl cursor-pointer transition-all ${
                 hoveredBucket?.label === item.label
                   ? 'bg-amber-500/15 border border-amber-500/30 scale-[1.02]'
                   : 'hover:bg-slate-500/10 border border-transparent'
@@ -1182,13 +1308,13 @@ const MetricDonutCard = ({
               onMouseEnter={(e) => handleMouseEnter(e, item)}
               onMouseLeave={() => setHoveredBucket(null)}
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
-                <span className="chart-text-primary text-slate-800 dark:text-slate-200 font-bold text-xs truncate max-w-[120px]" title={item.label}>
+                <span className="chart-text-primary text-slate-800 dark:text-slate-200 font-bold text-xs whitespace-nowrap">
                   {item.label}
                 </span>
               </div>
-              <div className="flex items-center gap-1 font-mono shrink-0 whitespace-nowrap">
+              <div className="flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap">
                 <span className="font-extrabold text-slate-900 dark:text-slate-100 text-xs">
                   {item.count}
                 </span>
@@ -1201,19 +1327,19 @@ const MetricDonutCard = ({
         </div>
       </div>
 
-      {/* Interactive Floating Hover Popover listing matching Work Orders */}
-      {hoveredBucket && (
+      {/* Interactive Floating Hover Popover listing matching Work Orders (Portal) */}
+      {hoveredBucket && ReactDOM.createPortal(
         <div
-          className="fixed z-[600] rounded-2xl shadow-2xl p-3.5 min-w-[280px] max-w-[340px] pointer-events-none transition-all duration-150 backdrop-blur-md"
+          className="fixed z-[99999] rounded-2xl shadow-2xl p-4 min-w-[300px] max-w-[360px] pointer-events-none transition-all duration-150 backdrop-blur-md"
           style={{
-            top: popoverPos.y - 10,
+            top: popoverPos.y,
             left: popoverPos.x,
-            backgroundColor: isDark ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
             border: `1.5px solid ${hoveredBucket.color}`,
-            boxShadow: `0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px ${hoveredBucket.color}40`
+            boxShadow: `0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 8px 16px -6px ${hoveredBucket.color}60`
           }}
         >
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700/60 pb-2 mb-2">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700/60 pb-2.5 mb-2.5">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: hoveredBucket.color }} />
               <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100 uppercase tracking-wider">
@@ -1226,11 +1352,11 @@ const MetricDonutCard = ({
           </div>
 
           {hoveredBucket.workOrders && hoveredBucket.workOrders.length > 0 ? (
-            <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 text-xs">
-              {hoveredBucket.workOrders.slice(0, 15).map((wo, i) => (
+            <div className="max-h-56 overflow-y-auto space-y-2 pr-1 text-xs">
+              {hoveredBucket.workOrders.slice(0, 20).map((wo, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50"
+                  className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50"
                 >
                   <div className="min-w-0 pr-2">
                     <p className="font-extrabold font-mono text-[11px] text-slate-900 dark:text-slate-100 truncate">
@@ -1245,9 +1371,9 @@ const MetricDonutCard = ({
                   </span>
                 </div>
               ))}
-              {hoveredBucket.workOrders.length > 15 && (
+              {hoveredBucket.workOrders.length > 20 && (
                 <p className="text-[10px] text-center font-bold text-slate-400 pt-1">
-                  + {hoveredBucket.workOrders.length - 15} more work orders
+                  + {hoveredBucket.workOrders.length - 20} more work orders
                 </p>
               )}
             </div>
@@ -1256,14 +1382,15 @@ const MetricDonutCard = ({
               No active work orders in this metric
             </p>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 };
 
 // ── Physical Work Progress Card Component ─────────────────────────────────────
-const PhysicalWorkProgress = ({ data }) => {
+const PhysicalWorkProgress = ({ data, isModal = false }) => {
   const fallbackData = [
     {
       label: '60% and above',
@@ -1314,6 +1441,7 @@ const PhysicalWorkProgress = ({ data }) => {
       centerValue={data?.avgProgress || '81%'}
       buckets={data?.buckets}
       fallbackData={fallbackData}
+      isModal={isModal}
     />
   );
 };
@@ -1671,7 +1799,7 @@ const WorkOrderTelemetryTable = ({ data, selectedZone, onSelectZone }) => {
   const [sortField, setSortField] = useState('health_score');
   const [sortAsc, setSortAsc] = useState(false);
   const [page, setPage] = useState(1);
-  const rowsPerPage = 20;
+  const rowsPerPage = 5;
 
   // Filter list
   const filtered = data.filter(p => {
@@ -2370,7 +2498,7 @@ const HoDashboard = () => {
           {/* ── Fullscreen Chart Zoom Modal (Dynamic Class Component) ───────── */}
           {zoomedChart === 'physical_progress' && (
             <ChartModal title="Physical Work Progress Telemetry" isDark={isDark} onClose={() => setZoomedChart(null)}>
-              <PhysicalWorkProgress data={chartRes?.physicalProgressMetrics} />
+              <PhysicalWorkProgress data={chartRes?.physicalProgressMetrics} isModal={true} />
             </ChartModal>
           )}
           {zoomedChart === 'je_visit' && (
