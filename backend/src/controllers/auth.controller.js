@@ -533,24 +533,58 @@ async function getProfileData(req, res) {
         recentTransactions: transactions || []
       };
     } else if (userRecord.role === 'ho' || userRecord.role === 'admin') {
-      // 1. Fetch system-wide summaries
-      const { count: usersCount } = await supabase
-        .from('authorised_users')
-        .select('id', { count: 'exact', head: true });
-      const { count: projectsCount } = await supabase
-        .from('projects_master')
-        .select('work_order_no', { count: 'exact', head: true });
-      const { count: activeMappingsCount } = await supabase
-        .from('je_zo_mappings')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_active', true);
-      const { data: zoBalances } = await supabase
-        .from('zo_balances')
-        .select('zo_user_id, available_balance');
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
+
+      // Execute all independent database queries in parallel
+      const [
+        usersCountRes,
+        projectsCountRes,
+        activeMappingsCountRes,
+        zoBalancesRes,
+        recentActionsRes,
+        projectsListRes,
+        allEstimatesRes,
+        allRequisitionsRes,
+        allProgressRes,
+        fundRequestsRes,
+        requisitionsRes,
+        pendingFRsRes,
+        pendingReqsRes,
+        recentApprovedFRsRes,
+        recentApprovedReqsRes
+      ] = await Promise.all([
+        supabase.from('authorised_users').select('id', { count: 'exact', head: true }),
+        supabase.from('projects_master').select('work_order_no', { count: 'exact', head: true }),
+        supabase.from('je_zo_mappings').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('zo_balances').select('zo_user_id, available_balance'),
+        supabase.from('audit_log').select('id, action, module_name, record_identifier, timestamp').eq('user_id', userRecord.mobile_number).order('timestamp', { ascending: false }).limit(10),
+        supabase.from('projects_master').select('work_order_no, estimate_no, site_details, state, district, zone, department, status, work_order_value'),
+        supabase.from('project_cost_estimates').select('work_order_no'),
+        supabase.from('requisitions').select('work_order_no, requisition_amount'),
+        supabase.from('daily_progress_reports').select('work_order_no, physical_work_progress'),
+        supabase.from('fund_requests').select('zo_fr_no, zo_fr_amount, request_status, created_at').order('created_at', { ascending: false }).limit(10),
+        supabase.from('requisitions').select('requisition_no, requisition_amount, requisition_status, created_at').order('created_at', { ascending: false }).limit(10),
+        supabase.from('fund_requests').select('zo_fr_amount').eq('request_status', 'Pending'),
+        supabase.from('requisitions').select('requisition_amount').eq('requisition_status', 'Pending'),
+        supabase.from('fund_requests').select('approve_ho_amount').eq('request_status', 'Approved').gte('created_at', thirtyDaysAgoIso),
+        supabase.from('requisitions').select('approved_amount').eq('requisition_status', 'Approved').gte('created_at', thirtyDaysAgoIso)
+      ]);
+
+      const usersCount = usersCountRes.count || 0;
+      const projectsCount = projectsCountRes.count || 0;
+      const activeMappingsCount = activeMappingsCountRes.count || 0;
+      const zoBalances = zoBalancesRes.data || [];
+      const recentActions = recentActionsRes.data || [];
+      const projectsList = projectsListRes.data || [];
+      const allEstimates = allEstimatesRes.data || [];
+      const allRequisitions = allRequisitionsRes.data || [];
+      const allProgress = allProgressRes.data || [];
 
       let balancesWithNames = [];
       let totalBalancesSum = 0;
-      if (zoBalances && zoBalances.length > 0) {
+      if (zoBalances.length > 0) {
         const zoIds = zoBalances.map(b => b.zo_user_id);
         const { data: names } = await supabase
           .from('authorised_users')
@@ -559,7 +593,7 @@ async function getProfileData(req, res) {
         
         balancesWithNames = zoBalances.map(b => {
           const u = names ? names.find(n => n.mobile_number === b.zo_user_id) : null;
-          const amt = parseFloat(b.available_balance);
+          const amt = parseFloat(b.available_balance || 0);
           totalBalancesSum += amt;
           return {
             zo_user_id: b.zo_user_id,
@@ -569,63 +603,30 @@ async function getProfileData(req, res) {
         });
       }
 
-      // 2. Fetch Admin's own recent actions
-      const { data: recentActions } = await supabase
-        .from('audit_log')
-        .select('id, action, module_name, record_identifier, timestamp')
-        .eq('user_id', userRecord.mobile_number)
-        .order('timestamp', { ascending: false })
-        .limit(10);
-
-      // 3. Fetch all projects with their details and calculate estimate sheets count
-      const { data: projectsList } = await supabase
-        .from('projects_master')
-        .select('work_order_no, estimate_no, site_details, state, district, zone, department, status, work_order_value');
-
-      const { data: allEstimates } = await supabase
-        .from('project_cost_estimates')
-        .select('work_order_no');
-
       const estimateCounts = {};
-      if (allEstimates) {
-        allEstimates.forEach(est => {
-          estimateCounts[est.work_order_no] = (estimateCounts[est.work_order_no] || 0) + 1;
-        });
-      }
-
-      // Fetch requisitions to sum up requisition amounts and counts per work order
-      const { data: allRequisitions } = await supabase
-        .from('requisitions')
-        .select('work_order_no, requisition_amount');
+      allEstimates.forEach(est => {
+        estimateCounts[est.work_order_no] = (estimateCounts[est.work_order_no] || 0) + 1;
+      });
 
       const reqSum = {};
       const reqCount = {};
-      if (allRequisitions) {
-        allRequisitions.forEach(r => {
-          const amt = parseFloat(r.requisition_amount || 0);
-          reqSum[r.work_order_no] = (reqSum[r.work_order_no] || 0) + amt;
-          reqCount[r.work_order_no] = (reqCount[r.work_order_no] || 0) + 1;
-        });
-      }
-
-      // Fetch daily progress reports to get counts and max physical progress per work order
-      const { data: allProgress } = await supabase
-        .from('daily_progress_reports')
-        .select('work_order_no, physical_work_progress');
+      allRequisitions.forEach(r => {
+        const amt = parseFloat(r.requisition_amount || 0);
+        reqSum[r.work_order_no] = (reqSum[r.work_order_no] || 0) + amt;
+        reqCount[r.work_order_no] = (reqCount[r.work_order_no] || 0) + 1;
+      });
 
       const progressCount = {};
       const maxProgress = {};
-      if (allProgress) {
-        allProgress.forEach(p => {
-          const val = parseFloat(p.physical_work_progress || 0);
-          progressCount[p.work_order_no] = (progressCount[p.work_order_no] || 0) + 1;
-          if (val > (maxProgress[p.work_order_no] || 0)) {
-            maxProgress[p.work_order_no] = val;
-          }
-        });
-      }
+      allProgress.forEach(p => {
+        const val = parseFloat(p.physical_work_progress || 0);
+        progressCount[p.work_order_no] = (progressCount[p.work_order_no] || 0) + 1;
+        if (val > (maxProgress[p.work_order_no] || 0)) {
+          maxProgress[p.work_order_no] = val;
+        }
+      });
 
-      const enrichedProjects = (projectsList || []).map(p => ({
+      const enrichedProjects = projectsList.map(p => ({
         work_order_no: p.work_order_no,
         estimate_no: p.estimate_no,
         site_details: p.site_details,
@@ -642,24 +643,10 @@ async function getProfileData(req, res) {
         max_physical_progress: maxProgress[p.work_order_no] || 0
       }));
 
-      // 4. Fetch latest transactions (Combined Fund Requests + Requisitions)
-      const [fundRequestsRes, requisitionsRes] = await Promise.all([
-        supabase
-          .from('fund_requests')
-          .select('zo_fr_no, zo_fr_amount, request_status, created_at')
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('requisitions')
-          .select('requisition_no, requisition_amount, requisition_status, created_at')
-          .order('created_at', { ascending: false })
-          .limit(10)
-      ]);
-
       const fundReqs = (fundRequestsRes.data || []).map(fr => ({
         type: 'Fund Request',
         identifier: fr.zo_fr_no,
-        amount: parseFloat(fr.zo_fr_amount),
+        amount: parseFloat(fr.zo_fr_amount || 0),
         status: fr.request_status,
         date: fr.created_at
       }));
@@ -667,7 +654,7 @@ async function getProfileData(req, res) {
       const reqs = (requisitionsRes.data || []).map(r => ({
         type: 'Requisition',
         identifier: r.requisition_no,
-        amount: parseFloat(r.requisition_amount),
+        amount: parseFloat(r.requisition_amount || 0),
         status: r.requisition_status,
         date: r.created_at
       }));
@@ -676,46 +663,16 @@ async function getProfileData(req, res) {
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 10);
 
-      // 5. Calculate Capital Flow Metrics
-      // A. Pending Clearance (In-Flight)
-      const { data: pendingFRs } = await supabase
-        .from('fund_requests')
-        .select('zo_fr_amount')
-        .eq('request_status', 'Pending');
-      
-      const { data: pendingReqs } = await supabase
-        .from('requisitions')
-        .select('requisition_amount')
-        .eq('requisition_status', 'Pending');
-
-      const pendingFRsSum = pendingFRs ? pendingFRs.reduce((sum, r) => sum + parseFloat(r.zo_fr_amount || 0), 0) : 0;
-      const pendingReqsSum = pendingReqs ? pendingReqs.reduce((sum, r) => sum + parseFloat(r.requisition_amount || 0), 0) : 0;
-
-      // B. Recent Movement (Last 30 Days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
-
-      const { data: recentApprovedFRs } = await supabase
-        .from('fund_requests')
-        .select('approve_ho_amount')
-        .eq('request_status', 'Approved')
-        .gte('created_at', thirtyDaysAgoIso);
-
-      const { data: recentApprovedReqs } = await supabase
-        .from('requisitions')
-        .select('approved_amount')
-        .eq('requisition_status', 'Approved')
-        .gte('created_at', thirtyDaysAgoIso);
-
-      const approvedFRsSum = recentApprovedFRs ? recentApprovedFRs.reduce((sum, r) => sum + parseFloat(r.approve_ho_amount || 0), 0) : 0;
-      const approvedReqsSum = recentApprovedReqs ? recentApprovedReqs.reduce((sum, r) => sum + parseFloat(r.approved_amount || 0), 0) : 0;
+      const pendingFRsSum = (pendingFRsRes.data || []).reduce((sum, r) => sum + parseFloat(r.zo_fr_amount || 0), 0);
+      const pendingReqsSum = (pendingReqsRes.data || []).reduce((sum, r) => sum + parseFloat(r.requisition_amount || 0), 0);
+      const approvedFRsSum = (recentApprovedFRsRes.data || []).reduce((sum, r) => sum + parseFloat(r.approve_ho_amount || 0), 0);
+      const approvedReqsSum = (recentApprovedReqsRes.data || []).reduce((sum, r) => sum + parseFloat(r.approved_amount || 0), 0);
 
       roleData = {
         stats: {
-          totalUsers: usersCount || 0,
-          totalProjects: projectsCount || 0,
-          activeMappings: activeMappingsCount || 0,
+          totalUsers: usersCount,
+          totalProjects: projectsCount,
+          activeMappings: activeMappingsCount,
           totalZonalBalances: totalBalancesSum
         },
         capitalFlow: {
@@ -731,7 +688,7 @@ async function getProfileData(req, res) {
           }
         },
         balances: balancesWithNames,
-        recentActions: recentActions || [],
+        recentActions: recentActions,
         enrichedProjects,
         latestTransactions: combinedTransactions
       };

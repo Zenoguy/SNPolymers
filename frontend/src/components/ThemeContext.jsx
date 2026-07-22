@@ -11,11 +11,11 @@ export const DARK_BACKGROUNDS = [
 ];
 
 export const LIGHT_BACKGROUNDS = [
-  { id: 'radial-soft', name: 'Subtle Indigo Gradient (Default Light)', style: 'radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%)' },
+  { id: 'radial-soft', name: 'Oceanic Wave Flow (Default Light)', style: 'radial-gradient(ellipse 90% 60% at 10% -10%, rgba(14, 165, 233, 0.14), transparent 60%), radial-gradient(circle at 90% 20%, rgba(6, 182, 212, 0.10), transparent 50%), radial-gradient(circle at 50% 90%, rgba(99, 102, 241, 0.05), transparent 60%)' },
   { id: 'rotating-svg-light', name: 'Rotating SVG Vector & CAD Blueprint', url: '/light-blueprint.svg', style: "url('/light-blueprint.svg')" },
   { id: 'image-light', name: 'Light Tech Arc Overlay (Image)', url: '/lightmode_background.png', style: "url('/lightmode_background.png')" },
   { id: 'clean-slate', name: 'Minimal Soft Slate', style: 'none', bgColor: '#f8fafc' },
-  { id: 'warm-sunlight', name: 'Warm Amber Gradient', style: 'radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.05) 0px, transparent 50%)' },
+  { id: 'warm-sunlight', name: 'Glistening Sunlight Ray', style: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(251, 191, 36, 0.28), rgba(255, 255, 255, 0)), radial-gradient(circle at 85% 10%, rgba(245, 158, 11, 0.18), transparent 45%), radial-gradient(circle at 15% 30%, rgba(253, 230, 138, 0.22), transparent 50%)' },
 ];
 
 export const ThemeProvider = ({ children }) => {
