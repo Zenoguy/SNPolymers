@@ -634,6 +634,15 @@ body.light .bg-black {
 body.light button.bg-white {
   background-color: #0f172a !important;
   color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+body.light input::placeholder {
+  color: rgba(15, 23, 42, 0.45) !important;
+}
+
+body.light input.text-slate-100 {
+  color: #0f172a !important;
 }
 
 body.light .bg-white\/5 {
@@ -650,18 +659,38 @@ body.light .bg-white\/\[0\.025\] {
   background-color: rgba(0, 0, 0, 0.015) !important;
 }
 
+body.light .bg-slate-900\/90,
+body.light .bg-slate-900\/80,
+body.light .bg-slate-900\/60,
 body.light .bg-slate-900\/40,
 body.light .bg-slate-900\/20,
 body.light .bg-slate-900\/10,
 body.light .bg-slate-900\/5,
 body.light .bg-slate-900,
+body.light .bg-slate-950,
+body.light .bg-slate-950\/80,
+body.light .bg-slate-950\/90,
 body.light .bg-neutral-950,
-body.light .dark\:bg-neutral-950 {
+body.light .dark\:bg-neutral-950,
+body.light .bg-\[\#0d131f\],
+body.light .bg-\[\#0d131f\]\/90 {
   background-color: rgba(255, 255, 255, 0.45) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   color: #0f172a !important;
-  border-color: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 body.light .bg-white\/2 {
