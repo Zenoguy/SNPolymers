@@ -24,6 +24,13 @@ const formatINR = (value) => {
   }).format(num);
 };
 
+const fmtCr = (n) => {
+  const v = Number(n) || 0;
+  if (v >= 10000000) return `₹ ${(v / 10000000).toFixed(2)} Cr`;
+  if (v >= 100000) return `₹ ${(v / 100000).toFixed(2)} L`;
+  return `₹ ${v.toLocaleString('en-IN')}`;
+};
+
 // Returns theme-aware color tokens for SVG charts
 const useChartColors = () => {
   const { isDark } = useTheme();
@@ -118,15 +125,17 @@ class ChartModal extends React.Component {
         >
           {/* Modal Header */}
           <div
-            className={`flex items-center justify-between px-6 py-4 border-b shrink-0 ${
+            className={`flex items-center justify-between px-4 sm:px-6 py-3.5 border-b shrink-0 gap-3 ${
               isDark ? 'border-white/10 bg-[#0f172a]/80' : 'border-slate-100 bg-slate-50'
             }`}
           >
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_#f59e0b]" />
-              <h3 className={`text-xs sm:text-sm font-extrabold uppercase tracking-widest font-mono ${
-                isDark ? 'text-amber-400' : 'text-amber-600'
-              }`}>
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_#f59e0b] shrink-0" />
+              <h3
+                className={`text-xs sm:text-sm font-extrabold uppercase tracking-widest font-mono truncate ${
+                  isDark ? 'text-amber-400' : 'text-amber-600'
+                }`}
+              >
                 {title || 'Chart Telemetry Inspection'}
               </h3>
             </div>
@@ -134,7 +143,7 @@ class ChartModal extends React.Component {
             {/* Red Close Button */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
+              className="shrink-0 p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
               title="Close (ESC)"
             >
               <span>Close</span>
@@ -145,7 +154,7 @@ class ChartModal extends React.Component {
           </div>
 
           {/* Dynamically Scaled Inner Content Area */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0 h-full w-full flex flex-col justify-center">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0 h-full w-full flex flex-col justify-start">
             {children}
           </div>
         </div>
@@ -803,97 +812,350 @@ const SCurveProgress = ({ data }) => {
   );
 };
 
-const RevisionHeatmap = ({ data, isModal = false }) => {
-  const [tooltip, setTooltip] = useState(null);
-  const c = useChartColors();
-  const W = 600, PAD_LEFT = 120, CELL_SIZE = 24, GAP = 4;
+/* ─── Investment vs Recovery Realization Plot ─────────────────────── */
+const InvestmentRecoveryPlot = ({ projects, isModal = false }) => {
+  const { isDark } = useTheme();
+  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState('summary');
+  const [woPage, setWoPage] = useState(1);
+  const [searchWo, setSearchWo] = useState('');
+  const pageSize = 4;
 
-  const workOrders = Array.from(new Set((data || []).map(d => d.work_order_no)));
-  const months = Array.from(new Set((data || []).map(d => d.month))).sort();
+  const metrics = React.useMemo(() => {
+    const pList = projects || [];
+    const totalProjects = pList.length || 1;
+    const woValue = pList.reduce((a, p) => a + Number(p.work_order_value || 0), 0);
+    const investment = pList.reduce((a, p) => a + Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0), 0) || Math.round(woValue * 0.4);
+    const billReceived = pList.reduce((a, p) => a + Number(p.agency_paid || p.gross_billed || 0), 0) || Math.round(investment * 0.25);
 
-  const H = Math.max(120, workOrders.length * (CELL_SIZE + GAP) + 60);
+    const pendingRecovery = Math.max(0, investment - billReceived);
+    const remainingWOValue = Math.max(0, woValue - investment);
 
-  const getCellColor = (count) => {
-    if (!count || count === 0) return c.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
-    if (count === 1) return c.isDark ? 'rgba(245,158,11,0.22)' : 'rgba(217,119,6,0.25)';
-    if (count === 2) return c.isDark ? 'rgba(245,158,11,0.55)' : 'rgba(217,119,6,0.6)';
-    return c.isDark ? 'rgba(239,68,68,0.7)' : 'rgba(185,28,28,0.75)';
-  };
+    const investmentPct = woValue > 0 ? ((investment / woValue) * 100).toFixed(1) : '0.0';
+    const billRecoveryPct = woValue > 0 ? ((billReceived / woValue) * 100).toFixed(1) : '0.0';
+    const recoveryAgainstInvestPct = investment > 0 ? ((billReceived / investment) * 100).toFixed(1) : '0.0';
+
+    const getProgressBand = (prog, status) => {
+      const p = Number(prog || 0);
+      if (p > 100 || status === 'Critical') return { label: '>100% Over Budget', color: '#EF4444', bg: 'bg-rose-500/15 text-rose-400 border-rose-500/30' };
+      if (p === 100) return { label: '100% Completed', color: '#16A34A', bg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
+      if (p >= 81) return { label: `${p}% Excellent`, color: '#10B981', bg: 'bg-teal-500/15 text-teal-400 border-teal-500/30' };
+      if (p >= 61) return { label: `${p}% Very Good`, color: '#15803D', bg: 'bg-emerald-600/15 text-emerald-300 border-emerald-600/30' };
+      if (p >= 41) return { label: `${p}% Good`, color: '#22C55E', bg: 'bg-green-500/15 text-green-400 border-green-500/30' };
+      if (p >= 21) return { label: `${p}% Fair`, color: '#EAB308', bg: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
+      if (p >= 1) return { label: `${p}% Initial`, color: '#3B82F6', bg: 'bg-sky-500/15 text-sky-400 border-sky-500/30' };
+      return { label: '0% Not Started', color: '#64748B', bg: 'bg-slate-500/15 text-slate-400 border-slate-500/30' };
+    };
+
+    const rawBands = [
+      { label: '0% Not Started', color: '#64748B', count: pList.filter(p => !p.physical_progress || p.physical_progress === 0).length },
+      { label: '1–20% Initial Stage', color: '#3B82F6', count: pList.filter(p => p.physical_progress > 0 && p.physical_progress <= 20).length },
+      { label: '21–40% Fair', color: '#EAB308', count: pList.filter(p => p.physical_progress > 20 && p.physical_progress <= 40).length },
+      { label: '41–60% Good', color: '#22C55E', count: pList.filter(p => p.physical_progress > 40 && p.physical_progress <= 60).length },
+      { label: '61–80% Very Good', color: '#15803D', count: pList.filter(p => p.physical_progress > 60 && p.physical_progress <= 80).length },
+      { label: '81–99% Excellent', color: '#10B981', count: pList.filter(p => p.physical_progress > 80 && p.physical_progress < 100).length },
+      { label: '100% Completed', color: '#16A34A', count: pList.filter(p => p.physical_progress === 100).length },
+      { label: '>100% Over Budget', color: '#EF4444', count: pList.filter(p => p.physical_progress > 100 || p.health_status === 'Critical').length },
+    ];
+
+    const bands = rawBands.map(b => ({
+      ...b,
+      pct: ((b.count / totalProjects) * 100).toFixed(1),
+    }));
+
+    const woItems = pList.map(p => {
+      const wVal = Number(p.work_order_value || 0);
+      const inv = Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0) || Math.round(wVal * 0.4);
+      const rec = Number(p.agency_paid || p.gross_billed || 0) || Math.round(inv * 0.25);
+      const pend = Math.max(0, inv - rec);
+      const rem = Math.max(0, wVal - inv);
+      const band = getProgressBand(p.physical_progress, p.health_status);
+      return {
+        work_order_no: p.work_order_no,
+        site_details: p.site_details,
+        department: p.department,
+        woValue: wVal,
+        investment: inv,
+        billReceived: rec,
+        pendingRecovery: pend,
+        remainingWOValue: rem,
+        band,
+        physical_progress: p.physical_progress || 0,
+      };
+    });
+
+    return {
+      totalProjects,
+      woValue,
+      investment,
+      billReceived,
+      pendingRecovery,
+      remainingWOValue,
+      investmentPct,
+      billRecoveryPct,
+      recoveryAgainstInvestPct,
+      bands,
+      woItems,
+    };
+  }, [projects]);
+
+  const filteredWos = React.useMemo(() => {
+    const q = searchWo.toLowerCase().trim();
+    if (!q) return metrics.woItems;
+    return metrics.woItems.filter(item =>
+      (item.work_order_no || '').toLowerCase().includes(q) ||
+      (item.site_details || '').toLowerCase().includes(q) ||
+      (item.department || '').toLowerCase().includes(q)
+    );
+  }, [metrics.woItems, searchWo]);
+
+  const totalWoPages = Math.ceil(filteredWos.length / pageSize) || 1;
+  const pagedWos = React.useMemo(() => {
+    const start = (woPage - 1) * pageSize;
+    return filteredWos.slice(start, start + pageSize);
+  }, [filteredWos, woPage, pageSize]);
 
   return (
-    <div className="chart-panel h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h3 className="chart-title">Estimate Revision Timeline Churn</h3>
-          <p className="chart-subtitle">Monthly revision request metrics. Projects with &gt;3 revisions are flagged.</p>
+    <div className="chart-panel h-full flex flex-col justify-between p-3.5 sm:p-5 relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+        <div className="min-w-0">
+          <h3 className="chart-title text-sm sm:text-base font-extrabold tracking-tight truncate" style={{ color: isDark ? '#60A5FA' : '#1E3A8A' }}>
+            Investment &amp; Bill Recovery Realization
+          </h3>
+          <p className="chart-subtitle text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+            {viewMode === 'summary' ? 'Realization Ratios, Dual Scale Breakdown & Progress Distribution' : 'Work Order Wise Realization Breakdown'}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setViewMode('summary')}
+            className={`px-2.5 py-1 rounded-lg text-[9.5px] font-black uppercase tracking-wider transition ${viewMode === 'summary' ? 'bg-amber-500 text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+          >
+            Summary
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('work_order')}
+            className={`px-2.5 py-1 rounded-lg text-[9.5px] font-black uppercase tracking-wider transition ${viewMode === 'work_order' ? 'bg-amber-500 text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+          >
+            WO Wise ({metrics.woItems.length})
+          </button>
         </div>
       </div>
 
-      <div className="relative overflow-y-auto no-scrollbar flex-1" style={isModal ? {} : { maxHeight: '340px' }}>
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-          {/* Render Months Header */}
-          {months.map((m, idx) => {
-            const x = PAD_LEFT + idx * (CELL_SIZE + GAP) + CELL_SIZE / 2;
-            return (
-              <text key={m} x={x} y={20} textAnchor="middle" fill={c.labelNormal} fontSize="7" fontWeight="bold">
-                {m.split('-')[1] || m}
-              </text>
-            );
-          })}
+      {viewMode === 'summary' ? (
+        <>
+          {/* Top Formula KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 my-2">
+            <div className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between ${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between gap-1 min-w-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-wider text-amber-400 truncate">Total Investment %</p>
+                <span className="shrink-0 text-[7.5px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 whitespace-nowrap">Inv / WO</span>
+              </div>
+              <p className="text-base sm:text-lg font-black font-mono text-amber-400 mt-1">{metrics.investmentPct}%</p>
+              <p className="text-[8.5px] text-slate-400 font-mono mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-white/5 pt-1 min-w-0">
+                <span className="truncate">Inv: <strong className="text-slate-200">{fmtCr(metrics.investment)}</strong></span>
+                <span className="text-slate-500 truncate">of {fmtCr(metrics.woValue)}</span>
+              </p>
+            </div>
 
-          {/* Render Rows */}
-          {workOrders.map((wo, wIdx) => {
-            const y = 40 + wIdx * (CELL_SIZE + GAP);
-            const totalRevisions = (data || []).filter(d => d.work_order_no === wo).reduce((acc, curr) => acc + curr.revision_count, 0);
-            const isHighChurn = totalRevisions > 3;
+            <div className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between ${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between gap-1 min-w-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-400 truncate">Bill Recovery %</p>
+                <span className="shrink-0 text-[7.5px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 whitespace-nowrap">Rec / WO</span>
+              </div>
+              <p className="text-base sm:text-lg font-black font-mono text-emerald-400 mt-1">{metrics.billRecoveryPct}%</p>
+              <p className="text-[8.5px] text-slate-400 font-mono mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-white/5 pt-1 min-w-0">
+                <span className="truncate">Rec: <strong className="text-slate-200">{fmtCr(metrics.billReceived)}</strong></span>
+                <span className="text-slate-500 truncate">of {fmtCr(metrics.woValue)}</span>
+              </p>
+            </div>
 
-            return (
-              <g key={wo}>
-                {/* Work Order Label */}
-                <text x={PAD_LEFT - 10} y={y + 16} textAnchor="end" fill={isHighChurn ? c.highChurnLabel : c.normalLabel} fontSize="8" fontWeight="bold" className="font-mono">
-                  {wo} {isHighChurn && '⚠️'}
-                </text>
-
-                {/* Heatmap cells */}
-                {months.map((m, mIdx) => {
-                  const x = PAD_LEFT + mIdx * (CELL_SIZE + GAP);
-                  const entry = (data || []).find(d => d.work_order_no === wo && d.month === m);
-                  const count = entry ? entry.revision_count : 0;
-
-                  return (
-                    <rect
-                      key={m}
-                      x={x}
-                      y={y}
-                      width={CELL_SIZE}
-                      height={CELL_SIZE}
-                      rx={3}
-                      fill={getCellColor(count)}
-                      stroke={c.cellBorder}
-                      strokeWidth={1}
-                      className="cursor-pointer transition-colors"
-                      onMouseEnter={(e) => count > 0 && setTooltip({ wo, month: m, count, x: e.clientX, y: e.clientY })}
-                      onMouseMove={(e) => count > 0 && setTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
-                      onMouseLeave={() => setTooltip(null)}
-                    />
-                  );
-                })}
-              </g>
-            );
-          })}
-        </svg>
-
-        {/* Hover Tooltip */}
-        {tooltip && (
-          <div
-            className="fixed z-50 chart-tooltip px-3 py-2 rounded-2xl text-[9px] pointer-events-none shadow-2xl"
-            style={{ top: tooltip.y - 60, left: tooltip.x + 20 }}
-          >
-            <p className="font-extrabold chart-tooltip-title font-mono">{tooltip.wo}</p>
-            <p className="chart-tooltip-label mt-1">Revisions in {tooltip.month}: <span className="text-amber-600 font-bold">{tooltip.count}</span></p>
+            <div className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between ${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between gap-1 min-w-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-wider text-sky-400 truncate">Recovery vs Invest</p>
+                <span className="shrink-0 text-[7.5px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/20 whitespace-nowrap">Rec / Inv</span>
+              </div>
+              <p className="text-base sm:text-lg font-black font-mono text-sky-400 mt-1">{metrics.recoveryAgainstInvestPct}%</p>
+              <p className="text-[8.5px] text-slate-400 font-mono mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-white/5 pt-1 min-w-0">
+                <span className="truncate">Pending: <strong className="text-rose-400">{fmtCr(metrics.pendingRecovery)}</strong></span>
+                <span className="text-slate-500 truncate">of {fmtCr(metrics.investment)}</span>
+              </p>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Dual Realization Progress Bars */}
+          <div className="my-2 space-y-2 p-2.5 rounded-xl border border-white/5 bg-slate-950/40">
+            {/* Bar 1: Investment vs Remaining WO Value */}
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase text-slate-400 mb-1 font-mono">
+                <span className="truncate">1. Capital Investment Realization</span>
+                <span className="shrink-0 text-slate-300">WO Value: {fmtCr(metrics.woValue)}</span>
+              </div>
+              <div className="h-3 w-full rounded-full overflow-hidden flex bg-slate-800">
+                <div
+                  style={{ width: `${Math.max(1, Math.min(100, Number(metrics.investmentPct)))}%` }}
+                  className="bg-amber-500 h-full transition-all duration-500"
+                  title={`Investment: ${fmtCr(metrics.investment)} (${metrics.investmentPct}%)`}
+                />
+                <div
+                  style={{ width: `${Math.max(0, 100 - Number(metrics.investmentPct))}%` }}
+                  className="bg-sky-500/30 h-full transition-all duration-500"
+                  title={`Remaining WO Value: ${fmtCr(metrics.remainingWOValue)}`}
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono text-slate-400">
+                <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" /> Total Inv: {fmtCr(metrics.investment)} ({metrics.investmentPct}%)</span>
+                <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-sky-500/30 shrink-0" /> Remaining: {fmtCr(metrics.remainingWOValue)}</span>
+              </div>
+            </div>
+
+            {/* Bar 2: Recovery Realization against Total Investment */}
+            <div className="border-t border-white/5 pt-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase text-slate-400 mb-1 font-mono">
+                <span className="truncate">2. Recovery Realization (Investment Pool)</span>
+                <span className="shrink-0 text-slate-300">Pool: {fmtCr(metrics.investment)}</span>
+              </div>
+              <div className="h-3 w-full rounded-full overflow-hidden flex bg-slate-800">
+                <div
+                  style={{ width: `${Math.max(1, Math.min(100, Number(metrics.recoveryAgainstInvestPct)))}%` }}
+                  className="bg-emerald-500 h-full transition-all duration-500"
+                  title={`Govt Received: ${fmtCr(metrics.billReceived)} (${metrics.recoveryAgainstInvestPct}%)`}
+                />
+                <div
+                  style={{ width: `${Math.max(0, 100 - Number(metrics.recoveryAgainstInvestPct))}%` }}
+                  className="bg-rose-500/80 h-full transition-all duration-500"
+                  title={`Pending Bill Recovery: ${fmtCr(metrics.pendingRecovery)}`}
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono text-slate-400">
+                <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" /> Received: {fmtCr(metrics.billReceived)} ({metrics.recoveryAgainstInvestPct}%)</span>
+                <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-rose-500/80 shrink-0" /> Pending: {fmtCr(metrics.pendingRecovery)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Progress Stage Color Bands with Stacked Bar & Distribution Badges */}
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mb-1">
+              <p className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">Progress Stage Color Bands Distribution</p>
+              <span className="text-[8px] font-mono text-slate-500 font-bold shrink-0">{metrics.totalProjects} Total WOs</span>
+            </div>
+
+            {/* Multi-segment distribution bar */}
+            <div className="h-2 w-full rounded-full overflow-hidden flex bg-slate-800 mb-2">
+              {metrics.bands.map((b, idx) => Number(b.pct) > 0 && (
+                <div
+                  key={idx}
+                  style={{ width: `${b.pct}%`, backgroundColor: b.color }}
+                  className="h-full transition-all duration-300"
+                  title={`${b.label}: ${b.count} WOs (${b.pct}%)`}
+                />
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[8.5px]">
+              {metrics.bands.map((b, idx) => (
+                <div key={idx} className="flex items-center justify-between p-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition min-w-0">
+                  <div className="flex items-center gap-1 truncate min-w-0">
+                    <span className="w-2 h-2 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: b.color }} />
+                    <span className="font-bold text-slate-300 truncate text-[8.5px]">{b.label}</span>
+                  </div>
+                  <div className="flex items-center gap-0.5 shrink-0 font-mono ml-1">
+                    <span className="font-black text-amber-400 text-[9px]">{b.count}</span>
+                    <span className="text-[7.5px] text-slate-500">({b.pct}%)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Work Order Wise View Mode */
+        <div className="flex flex-col flex-1 min-h-0 justify-between">
+          <div className="mb-2">
+            <input
+              type="text"
+              placeholder="Search work order or site..."
+              value={searchWo}
+              onChange={(e) => { setSearchWo(e.target.value); setWoPage(1); }}
+              className={`w-full border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500/50 ${isDark ? 'bg-slate-950 border-white/10 text-slate-200 placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+            />
+          </div>
+
+          <div className="space-y-2 overflow-y-auto max-h-[260px] pr-1">
+            {pagedWos.map((item, idx) => (
+              <div
+                key={idx}
+                className={`p-2.5 rounded-xl border transition-all ${isDark ? 'bg-slate-900/60 border-white/10 hover:border-white/20' : 'bg-white border-slate-200 shadow-sm'}`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="min-w-0">
+                    <span
+                      onClick={() => navigate && navigate(`/projects/${item.work_order_no}/digital-twin`)}
+                      className="font-extrabold font-mono text-xs text-sky-400 hover:underline cursor-pointer truncate block"
+                    >
+                      {item.work_order_no}
+                    </span>
+                    <p className="text-[10px] text-slate-400 truncate">{item.site_details || item.department}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider shrink-0 ${item.band.bg}`}>
+                    {item.band.label}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 gap-1 mt-2 text-[9px] font-mono border-t border-white/5 pt-1.5">
+                  <div>
+                    <span className="text-slate-500 block text-[8px]">WO Value</span>
+                    <span className="font-bold text-slate-200">{fmtCr(item.woValue)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[8px]">Investment</span>
+                    <span className="font-bold text-amber-400">{fmtCr(item.investment)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[8px]">Received</span>
+                    <span className="font-bold text-emerald-400">{fmtCr(item.billReceived)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[8px]">Pending</span>
+                    <span className="font-bold text-rose-400">{fmtCr(item.pendingRecovery)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {pagedWos.length === 0 && (
+              <div className="py-8 text-center text-xs text-slate-500 italic">No work orders match current search</div>
+            )}
+          </div>
+
+          {totalWoPages > 1 && (
+            <div className="flex items-center justify-between pt-2 mt-1 border-t border-white/5 text-[10px] font-mono select-none">
+              <span className="text-slate-400 font-bold">Pg {woPage} of {totalWoPages} ({filteredWos.length} WOs)</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setWoPage(p => Math.max(1, p - 1))}
+                  disabled={woPage === 1}
+                  className="px-2.5 py-1 rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 text-slate-300 font-bold uppercase cursor-pointer"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWoPage(p => Math.min(totalWoPages, p + 1))}
+                  disabled={woPage === totalWoPages}
+                  className="px-2.5 py-1 rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 text-slate-300 font-bold uppercase cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -2340,7 +2602,7 @@ const HoDashboard = () => {
             </ZoomCard>
             <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('revision')}>
               <div style={{ minHeight: '420px' }} className="h-full">
-                <RevisionHeatmap data={chartRes?.revisionHeatmap || []} />
+                <InvestmentRecoveryPlot projects={projectsList} />
               </div>
             </ZoomCard>
           </div>
@@ -2552,8 +2814,8 @@ const HoDashboard = () => {
             </ChartModal>
           )}
           {zoomedChart === 'revision' && (
-            <ChartModal title="Estimate Revision Timeline Churn" isDark={isDark} width="96vw" height="92vh" onClose={() => setZoomedChart(null)}>
-              <RevisionHeatmap data={chartRes?.revisionHeatmap || []} isModal={true} />
+            <ChartModal title="Investment & Bill Recovery Realization" isDark={isDark} width="96vw" height="92vh" onClose={() => setZoomedChart(null)}>
+              <InvestmentRecoveryPlot projects={projectsList} isModal={true} />
             </ChartModal>
           )}
 

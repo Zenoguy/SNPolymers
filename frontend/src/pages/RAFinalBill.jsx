@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -41,6 +42,7 @@ const formatDateTime = (dateStr) => {
 const RAFinalBill = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   
   // Tab control states: 'dashboard' or 'directory'
   const [currentTab, setCurrentTab] = useState('dashboard');
@@ -126,6 +128,25 @@ const RAFinalBill = () => {
     },
     staleTime: 120 * 1000
   });
+
+  // Auto filter by URL work_order_no query param
+  useEffect(() => {
+    const paramWO = searchParams.get('work_order_no') || searchParams.get('wo');
+    if (paramWO) {
+      setFilterWO(paramWO);
+      setDirSearchWO(paramWO);
+      if (projectsData && projectsData.length > 0) {
+        const match = projectsData.find(p => p.work_order_no === paramWO);
+        if (match) {
+          setActiveWO(match);
+        } else {
+          setActiveWO({ work_order_no: paramWO });
+        }
+      } else {
+        setActiveWO({ work_order_no: paramWO });
+      }
+    }
+  }, [searchParams, projectsData]);
 
   // Fetch paginated bills list using React Query
   const { data: billsData, isLoading: loadingBills, error: billsError } = useQuery({

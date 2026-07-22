@@ -84,8 +84,6 @@ const ProjectDigitalTwin = () => {
               </h1>
               <p className="text-xs text-slate-400 mt-1.5 font-mono">Work Order: {work_order_no}</p>
             </div>
-
-
           </div>
 
           {isLoading ? (
@@ -117,7 +115,7 @@ const ProjectDigitalTwin = () => {
                 {/* 1. Overview & Media Tab */}
                 {activeTab === 'overview' && (
                   <div className="space-y-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Overview & Media</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Overview &amp; Media</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-xs">
                       {/* Left: Metadata */}
                       <div className="space-y-4">
@@ -195,7 +193,21 @@ const ProjectDigitalTwin = () => {
                 {/* 2. Financials & Materials Tab */}
                 {activeTab === 'financials' && (
                   <div className="space-y-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-2">Financials & Materials Variance</h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-3">
+                      <div>
+                        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Financials &amp; Materials Variance</h2>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">Work Order: {work_order_no}</p>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/ra-final-bills?work_order_no=${encodeURIComponent(work_order_no)}`)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-black uppercase tracking-wider transition cursor-pointer self-start sm:self-auto shadow-sm"
+                      >
+                        <span>📑 Go to RA Bills Section ({work_order_no})</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </button>
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="glass-panel p-4 rounded-2xl bg-white/[0.01]">
