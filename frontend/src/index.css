@@ -49,6 +49,21 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
+  /* Force dark mode panel utility classes to preserve 70% glass translucency & backdrop blur */
+  body:not(.light) .bg-black,
+  body:not(.light) .bg-\[\#0d131f\]\/90,
+  body:not(.light) .bg-\[\#0d131f\],
+  body:not(.light) .bg-slate-950\/80,
+  body:not(.light) .bg-slate-950\/90,
+  body:not(.light) .bg-slate-950,
+  body:not(.light) .bg-slate-900\/90,
+  body:not(.light) .bg-slate-900\/80,
+  body:not(.light) .bg-slate-900\/60 {
+    background-color: rgba(15, 23, 42, 0.30) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  }
+
   /* Universal Translucent Nested Cards inside Glass Panels */
   .glass-panel .bg-white\/2,
   .glass-panel .bg-white\/5 {

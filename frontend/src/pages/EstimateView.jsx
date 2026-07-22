@@ -515,7 +515,7 @@ const EstimateView = () => {
         </div>
 
         {/* PRINTABLE AREA CONTAINER */}
-        <div id="printable-estimate-area" className="space-y-8 bg-black p-4 rounded-3xl">
+        <div id="printable-estimate-area" className="space-y-8 glass-panel p-4 sm:p-6 rounded-3xl">
 
         {/* 1. HEADER INFORMATION */}
         <div className="glass-panel p-6 rounded-3xl mb-8 border border-white/5 space-y-6">
