@@ -825,8 +825,8 @@ const InvestmentRecoveryPlot = ({ projects, isModal = false }) => {
     const pList = projects || [];
     const totalProjects = pList.length || 1;
     const woValue = pList.reduce((a, p) => a + Number(p.work_order_value || 0), 0);
-    const investment = pList.reduce((a, p) => a + Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0), 0) || Math.round(woValue * 0.4);
-    const billReceived = pList.reduce((a, p) => a + Number(p.agency_paid || p.gross_billed || 0), 0) || Math.round(investment * 0.25);
+    const investment = pList.reduce((a, p) => a + Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0), 0);
+    const billReceived = pList.reduce((a, p) => a + Number(p.agency_paid || p.gross_billed || 0), 0);
 
     const pendingRecovery = Math.max(0, investment - billReceived);
     const remainingWOValue = Math.max(0, woValue - investment);
@@ -865,8 +865,8 @@ const InvestmentRecoveryPlot = ({ projects, isModal = false }) => {
 
     const woItems = pList.map(p => {
       const wVal = Number(p.work_order_value || 0);
-      const inv = Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0) || Math.round(wVal * 0.4);
-      const rec = Number(p.agency_paid || p.gross_billed || 0) || Math.round(inv * 0.25);
+      const inv = Number(p.approved_requisitions_amount || p.requisition_amount || p.approved_amount || 0);
+      const rec = Number(p.agency_paid || p.gross_billed || 0);
       const pend = Math.max(0, inv - rec);
       const rem = Math.max(0, wVal - inv);
       const band = getProgressBand(p.physical_progress, p.health_status);
