@@ -208,8 +208,8 @@ class ChartModal extends React.Component {
     const { onClose, children, isDark = true, title, width = '80vw', height = '80vh', maxWidth = '80vw', maxHeight = '80vh' } = this.props;
     return (
       <div
-        className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-6 transition-all duration-300"
-        style={{ background: isDark ? 'rgba(5,8,16,0.88)' : 'rgba(0,0,0,0.65)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-8 pl-16 sm:pl-20 transition-all duration-300"
+        style={{ background: isDark ? 'rgba(5,8,16,0.92)' : 'rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
         onClick={onClose}
       >
         <div
@@ -219,11 +219,11 @@ class ChartModal extends React.Component {
         >
           {/* Modal Header */}
           <div
-            className={`flex items-center justify-between px-4 sm:px-6 py-3.5 border-b shrink-0 gap-3 ${
-              isDark ? 'border-white/10 bg-[#0f172a]/80' : 'border-slate-100 bg-slate-50'
+            className={`flex items-center justify-between px-6 py-4 border-b shrink-0 gap-4 ${
+              isDark ? 'border-white/10 bg-[#0f172a]' : 'border-slate-100 bg-slate-50'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="flex items-center gap-3 min-w-0 flex-1 pl-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_#f59e0b] shrink-0" />
               <h3
                 className={`text-xs sm:text-sm font-extrabold uppercase tracking-widest font-mono truncate ${
@@ -237,7 +237,7 @@ class ChartModal extends React.Component {
             {/* Red Close Button */}
             <button
               onClick={onClose}
-              className="shrink-0 p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
+              className="shrink-0 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
               title="Close (ESC)"
             >
               <span>Close</span>
@@ -821,7 +821,7 @@ const BubbleRiskMatrix = ({ projects }) => {
 /* ─── S-Curve Progress ────────────────────────────────────────────── */
 const SCurveProgress = ({ projects }) => {
   const c = useChartColors();
-  const W = 600, H = 300, PAD = 50;
+  const W = 600, H = 330, PAD_TOP = 40, PAD_BOT = 60, PAD_SIDE = 50;
   const months = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
   const planned = [10, 25, 42, 58, 74, 88];
   const actual = useMemo(() => {
@@ -829,32 +829,33 @@ const SCurveProgress = ({ projects }) => {
     const avg = Math.round(projects.reduce((a, p) => a + Number(p.physical_progress || 0), 0) / projects.length);
     return [Math.round(avg * 0.08), Math.round(avg * 0.21), Math.round(avg * 0.38), Math.round(avg * 0.55), Math.round(avg * 0.72), avg];
   }, [projects]);
-  const toX = (i) => PAD + (i / (months.length - 1)) * (W - 2 * PAD);
-  const toY = (v) => (H - PAD) - (v / 100) * (H - 2 * PAD);
+
+  const toX = (i) => PAD_SIDE + (i / (months.length - 1)) * (W - 2 * PAD_SIDE);
+  const toY = (v) => (H - PAD_BOT) - (v / 100) * (H - PAD_TOP - PAD_BOT);
   const pts = (arr) => arr.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
 
   return (
-    <div className="chart-panel h-full">
-      <div className="flex justify-between items-center mb-6">
+    <div className="chart-panel h-full flex flex-col justify-between">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="chart-title">S-Curve Performance Progress</h3>
           <p className="chart-subtitle">Planned linear trajectory vs actual DPR submissions</p>
         </div>
       </div>
-      <div className="relative">
+      <div className="relative flex-1 flex flex-col justify-center">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
           {[0, 25, 50, 75, 100].map((v, i) => {
-            const y = (H - PAD) - (v / 100) * (H - 2 * PAD);
-            return <g key={i}><line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke={c.gridLine} /><text x={PAD - 8} y={y + 3} textAnchor="end" fill={c.labelMuted} fontSize="7">{v}%</text></g>;
+            const y = toY(v);
+            return <g key={i}><line x1={PAD_SIDE} y1={y} x2={W - PAD_SIDE} y2={y} stroke={c.gridLine} /><text x={PAD_SIDE - 8} y={y + 3} textAnchor="end" fill={c.labelMuted} fontSize="8">{v}%</text></g>;
           })}
-          <text x={PAD} y={H - PAD + 14} fill={c.labelMuted} fontSize="7">START DATE</text>
-          <text x={W - PAD} y={H - PAD + 14} textAnchor="end" fill={c.labelMuted} fontSize="7">COMPLETION</text>
-          {months.map((m, i) => <text key={m} x={toX(i)} y={H - PAD + 26} textAnchor="middle" fill={c.labelMuted} fontSize="7">{m}</text>)}
-          <polyline fill="none" stroke={c.isDark ? '#f59e0b' : '#d97706'} strokeWidth="1.5" strokeDasharray="5 4" points={pts(planned)} />
-          <polyline fill="none" stroke={c.isDark ? '#10b981' : '#059669'} strokeWidth="2.5" points={pts(actual)} />
-          {actual.map((v, i) => <circle key={i} cx={toX(i)} cy={toY(v)} r="3.5" fill={c.isDark ? '#10b981' : '#059669'} />)}
+          <text x={PAD_SIDE} y={H - PAD_BOT + 16} fill={c.labelMuted} fontSize="8">START DATE</text>
+          <text x={W - PAD_SIDE} y={H - PAD_BOT + 16} textAnchor="end" fill={c.labelMuted} fontSize="8">COMPLETION</text>
+          {months.map((m, i) => <text key={m} x={toX(i)} y={H - PAD_BOT + 32} textAnchor="middle" fill={c.labelMuted} fontSize="9" fontWeight="bold">{m}</text>)}
+          <polyline fill="none" stroke={c.isDark ? '#f59e0b' : '#d97706'} strokeWidth="2" strokeDasharray="5 4" points={pts(planned)} />
+          <polyline fill="none" stroke={c.isDark ? '#10b981' : '#059669'} strokeWidth="3" points={pts(actual)} />
+          {actual.map((v, i) => <circle key={i} cx={toX(i)} cy={toY(v)} r="4" fill={c.isDark ? '#10b981' : '#059669'} />)}
         </svg>
-        <div className="flex gap-6 mt-4 text-[9px] font-bold uppercase tracking-widest chart-label justify-center">
+        <div className="flex gap-6 mt-3 text-[9px] font-bold uppercase tracking-widest chart-label justify-center">
           <div className="flex items-center gap-1.5"><span className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: c.isDark ? '#f59e0b' : '#d97706' }} /><span>Planned Target</span></div>
           <div className="flex items-center gap-1.5"><span className="w-3 h-1 rounded-sm" style={{ backgroundColor: c.isDark ? '#10b981' : '#059669' }} /><span>Actual Progress</span></div>
         </div>
@@ -1503,6 +1504,250 @@ const WorkOrderTelemetryTable = ({ data, availableZos, selectedZo, onSelectZo, g
   );
 };
 
+/* ─── Zonal Control & Credit Overview Component (homedashboard.html ZO view) ─── */
+const ZoHomedashboardOverview = ({ selectedZoName, projects, balancesRes, isDark }) => {
+  const navigate = useNavigate();
+
+  // Find active ZO balance
+  const activeBal = useMemo(() => {
+    const list = balancesRes?.balances || (balancesRes?.balance ? [balancesRes.balance] : []);
+    if (!list.length) return { available_balance: 1860000, assigned_credit_limit: 2000000 };
+    if (!selectedZoName) return list[0] || { available_balance: 1860000, assigned_credit_limit: 2000000 };
+    const match = list.find(b => {
+      const name = (b.zo_name || b.zo_user_id || '').toLowerCase();
+      return name.includes(selectedZoName.toLowerCase());
+    });
+    return match || list[0];
+  }, [balancesRes, selectedZoName]);
+
+  const availBal = activeBal.available_balance ?? 1860000;
+  const limitBal = activeBal.assigned_credit_limit ?? activeBal.allocated_amount ?? 2000000;
+
+  // Calculate JE productivity list from projects
+  const jeStats = useMemo(() => {
+    const map = new Map();
+    (projects || []).forEach(p => {
+      const jeName = p.je_name || p.assigned_je || 'Unassigned JE';
+      if (!map.has(jeName)) {
+        map.set(jeName, { name: jeName, count: 0, totalProgress: 0 });
+      }
+      const item = map.get(jeName);
+      item.count += 1;
+      item.totalProgress += Number(p.physical_progress || 0);
+    });
+
+    return Array.from(map.values()).map(je => {
+      const avg = je.count > 0 ? Math.round(je.totalProgress / je.count) : 0;
+      let status = 'Active';
+      let streak = Math.max(1, Math.min(15, Math.round(je.count * 3)));
+      if (avg >= 70) status = 'Excellent';
+      else if (avg < 40) status = 'Warning';
+      return { ...je, avg, status, streak };
+    }).sort((a, b) => b.count - a.count);
+  }, [projects]);
+
+  return (
+    <div className={`p-6 rounded-3xl border mb-8 transition-all ${isDark ? 'bg-[#0f141f]/80 border-white/10 text-slate-100 shadow-2xl' : 'bg-white border-slate-200 text-slate-900 shadow-xl'}`}>
+      
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-white/10 mb-6">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 font-mono">
+            {selectedZoName || 'Zonal Office Session'}
+          </span>
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-0.5">
+            Zonal Credit Limit Ledger
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Available credit, assigned projects, and junior engineer productivity for your zone.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => navigate('/fund-requests')}
+            className="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 text-amber-400 font-extrabold text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+          >
+            <span>💸 Fund Request</span>
+            <span className="text-amber-300">→</span>
+          </button>
+          <button
+            onClick={() => navigate('/zonal-balances')}
+            className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 font-extrabold text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5"
+          >
+            <span>📊 Zonal Ledger</span>
+            <span className="text-slate-400">→</span>
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Row (Available Credit Balance, Total Limit, Mapped Projects) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className={`p-4 rounded-2xl border ${isDark ? 'bg-emerald-950/20 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'}`}>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Available Credit Balance</span>
+          <div className="text-2xl font-black text-emerald-400 mt-1">{fmtCr(availBal)}</div>
+          <span className="text-[10px] text-emerald-500/80 font-mono mt-1 block">Ready for requisition payout</span>
+        </div>
+        <div className={`p-4 rounded-2xl border ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Total Assigned Limit</span>
+          <div className="text-2xl font-black text-slate-100 mt-1">{fmtCr(limitBal)}</div>
+          <span className="text-[10px] text-slate-400 font-mono mt-1 block">Sanctioned Zonal Credit Cap</span>
+        </div>
+        <div className={`p-4 rounded-2xl border ${isDark ? 'bg-amber-950/20 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Mapped Active Projects</span>
+          <div className="text-2xl font-black text-amber-400 mt-1">{projects.length} WO Sites</div>
+          <span className="text-[10px] text-amber-500/80 font-mono mt-1 block">Active sites under monitoring</span>
+        </div>
+      </div>
+
+      {/* Grid Content: JE Productivity & Workload (Left) + Zonal Controls & Fund Feed (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Column: JE Productivity & Workload Distribution */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className={`p-4 sm:p-5 rounded-2xl border ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-slate-200">
+                Junior Engineer Productivity <span className="text-slate-500 font-normal">· {jeStats.length} JEs</span>
+              </span>
+              <button onClick={() => navigate('/analytics/leaderboard')} className="text-[10px] font-bold uppercase tracking-wider text-amber-400 hover:underline">
+                Full Leaderboard →
+              </button>
+            </div>
+            
+            {jeStats.length === 0 ? (
+              <div className="py-6 text-center text-xs text-slate-500 italic">No JEs currently mapped to this zone</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[9px] font-black uppercase text-slate-400">
+                      <th className="pb-2">JE Name</th>
+                      <th className="pb-2 text-center">Assigned Sites</th>
+                      <th className="pb-2 text-center">Daily Streak</th>
+                      <th className="pb-2 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {jeStats.slice(0, 5).map((je, idx) => (
+                      <tr key={idx} className="hover:bg-white/5 transition">
+                        <td className="py-2.5 font-bold text-slate-200">{je.name}</td>
+                        <td className="py-2.5 text-center font-mono text-slate-300">{je.count}</td>
+                        <td className="py-2.5 text-center font-mono text-amber-400">🔥 {je.streak} days</td>
+                        <td className="py-2.5 text-right">
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                            je.status === 'Excellent' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            je.status === 'Active' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}>
+                            {je.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Workload Distribution Progress Bars */}
+          <div className={`p-4 sm:p-5 rounded-2xl border ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-200 block mb-4">
+              Zonal Workload Distribution
+            </span>
+            <div className="space-y-3">
+              {jeStats.slice(0, 4).map((je, idx) => {
+                const pct = Math.min(100, Math.round((je.count / (projects.length || 1)) * 100));
+                return (
+                  <div key={idx}>
+                    <div className="flex justify-between text-xs font-bold mb-1">
+                      <span className="text-slate-300">{je.name}</span>
+                      <span className="text-slate-500 font-mono">{je.count} mapped work orders ({pct}%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/5 border border-white/5 overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Zonal Controls & Ledger */}
+        <div className="lg:col-span-5 space-y-6">
+          
+          {/* Quick Zonal Controls Panel */}
+          <div className={`p-4 sm:p-5 rounded-2xl border ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-200 block mb-4">
+              Zonal Quick Controls
+            </span>
+            <div className="space-y-2.5">
+              <button
+                onClick={() => navigate('/fund-requests')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-amber-500/40 hover:bg-amber-500/10 text-left transition group cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-amber-400">Initiate Zonal Fund Request</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Current balance: {fmtCr(availBal)}</div>
+                </div>
+                <span className="text-amber-400 font-bold text-sm">→</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/zonal-balances')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-sky-500/40 hover:bg-sky-500/10 text-left transition group cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-sky-400">Inspect Zonal Ledger</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Full transaction history &amp; credit cap</div>
+                </div>
+                <span className="text-sky-400 font-bold text-sm">→</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/daily-progress')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-emerald-500/40 hover:bg-emerald-500/10 text-left transition group cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Audit Site Progress Logs</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">DPR visits &amp; site photos feedback</div>
+                </div>
+                <span className="text-emerald-400 font-bold text-sm">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Recent Zonal Activity Timeline */}
+          <div className={`p-4 sm:p-5 rounded-2xl border ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-200 block mb-3">
+              Zonal Site Timeline
+            </span>
+            <div className="space-y-3 text-xs">
+              <div className="flex gap-3 items-start">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                <div>
+                  <div className="text-slate-200 font-bold">DPR Progress Update Submitted</div>
+                  <div className="text-[10px] text-slate-500 font-mono">Mapped JE logged site progress (WO Active)</div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start">
+                <span className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                <div>
+                  <div className="text-slate-200 font-bold">Zonal Requisition Processed</div>
+                  <div className="text-[10px] text-slate-500 font-mono">Disbursement recorded in credit balance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Main ZoDashboard ────────────────────────────────────────────── */
 const ZoDashboard = () => {
   const navigate = useNavigate();
@@ -1510,21 +1755,16 @@ const ZoDashboard = () => {
   const { isDark } = useTheme();
   const { user } = useAuth();
 
+  const isZoRole = user?.role === 'zo';
+  const myZoId = user?.assigned_zone || user?.zo_name || user?.zone_name || user?.name || user?.mobile_number || user?.username || user?.user_id || user?.id;
+
   const [alertMsg, setAlertMsg] = useState(null);
   const [alertType, setAlertType] = useState('success');
+  const [activeTab, setActiveTab] = useState('overview');
   const [activeView, setActiveView] = useState('all');
   const [selectedZo, setSelectedZo] = useState(null);
   const [zoomedChart, setZoomedChart] = useState(null);
   const [kpiDetailModal, setKpiDetailModal] = useState(null);
-
-  /* ── Auto-set ZO if logged in user is a ZO ── */
-  useEffect(() => {
-    if ((user?.role === 'zo' || user?.mobile_number) && !selectedZo) {
-      if (user?.role === 'zo') {
-        setSelectedZo(user.mobile_number || user.username || user.name);
-      }
-    }
-  }, [user]);
 
   /* ── Data Queries ── */
   const { data: insightsRes } = useQuery({
@@ -1587,6 +1827,26 @@ const ZoDashboard = () => {
       .map(([id, name]) => ({ id, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [eligibleZosRes, balancesRes, projectsList]);
+
+  /* ── Auto-lock ZO for ZO role ── */
+  useEffect(() => {
+    if (isZoRole) {
+      if (availableZos.length > 0) {
+        const match = availableZos.find(z => 
+          z.id.toLowerCase() === (myZoId || '').toLowerCase() || 
+          z.name.toLowerCase() === (myZoId || '').toLowerCase() ||
+          (user?.assigned_zone && z.name.toLowerCase().includes(user.assigned_zone.toLowerCase()))
+        );
+        if (match) {
+          if (selectedZo !== match.id) setSelectedZo(match.id);
+        } else if (myZoId && selectedZo !== myZoId) {
+          setSelectedZo(myZoId);
+        }
+      } else if (myZoId && selectedZo !== myZoId) {
+        setSelectedZo(myZoId);
+      }
+    }
+  }, [isZoRole, myZoId, availableZos, selectedZo, user?.assigned_zone]);
 
   const zoNameMap = useMemo(() => {
     const m = {};
@@ -1702,7 +1962,9 @@ const ZoDashboard = () => {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                 Active Filter — ZO Name: {selectedZoName} ({filteredProjects.length} Projects)
-                <button onClick={() => setSelectedZo(null)} className="ml-1.5 hover:text-white text-amber-300 font-black cursor-pointer" title="Clear ZO Name Filter">&times;</button>
+                {!isZoRole && (
+                  <button onClick={() => setSelectedZo(null)} className="ml-1.5 hover:text-white text-amber-300 font-black cursor-pointer" title="Clear ZO Name Filter">&times;</button>
+                )}
               </span>
             ) : (
               <p className="text-xs text-slate-400 leading-relaxed">Consolidated Zonal Office (ZO) KPIs, JE leaderboard, risk matrix, and cost realization analytics.</p>
@@ -1712,12 +1974,22 @@ const ZoDashboard = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Custom Paginated ZO Name Filter Component */}
-          <PaginatedZoSelector
-            availableZos={availableZos}
-            selectedZo={selectedZo}
-            onSelectZo={setSelectedZo}
-            getZoDisplayName={getZoDisplayName}
-          />
+          {isZoRole ? (
+            <div className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 rounded-2xl px-4 py-2.5 text-xs font-black uppercase tracking-wider text-amber-400 shadow-sm backdrop-blur-md">
+              <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Zone (Locked):</span>
+              <span className="text-slate-100 font-extrabold max-w-[200px] truncate">{selectedZoName || myZoId || 'Assigned Zone'}</span>
+            </div>
+          ) : (
+            <PaginatedZoSelector
+              availableZos={availableZos}
+              selectedZo={selectedZo}
+              onSelectZo={setSelectedZo}
+              getZoDisplayName={getZoDisplayName}
+            />
+          )}
 
           {/* Refresh Views Button */}
           <button
@@ -1732,8 +2004,6 @@ const ZoDashboard = () => {
           </button>
         </div>
       </div>
-
-
 
       {/* Risk Ticker */}
       {(filteredStalledProjects.length > 0 || filteredLowRunwayZones.length > 0) && (
@@ -1883,7 +2153,7 @@ const ZoDashboard = () => {
       <SectionLabel>Work Order Telemetry {selectedZoName ? `— ${selectedZoName}` : ''}</SectionLabel>
       <div className="mb-6">
         <WorkOrderTelemetryTable
-          data={projectsList}
+          data={filteredProjects}
           availableZos={availableZos}
           selectedZo={selectedZo}
           onSelectZo={setSelectedZo}

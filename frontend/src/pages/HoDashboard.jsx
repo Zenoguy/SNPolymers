@@ -100,9 +100,9 @@ class ChartModal extends React.Component {
 
     return (
       <div
-        className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-6 transition-all duration-300"
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-8 pl-16 sm:pl-20 transition-all duration-300"
         style={{
-          background: isDark ? 'rgba(5, 8, 16, 0.88)' : 'rgba(0, 0, 0, 0.65)',
+          background: isDark ? 'rgba(5, 8, 16, 0.92)' : 'rgba(0, 0, 0, 0.7)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)'
         }}
@@ -125,11 +125,11 @@ class ChartModal extends React.Component {
         >
           {/* Modal Header */}
           <div
-            className={`flex items-center justify-between px-4 sm:px-6 py-3.5 border-b shrink-0 gap-3 ${
-              isDark ? 'border-white/10 bg-[#0f172a]/80' : 'border-slate-100 bg-slate-50'
+            className={`flex items-center justify-between px-6 py-4 border-b shrink-0 gap-4 ${
+              isDark ? 'border-white/10 bg-[#0f172a]' : 'border-slate-100 bg-slate-50'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="flex items-center gap-3 min-w-0 flex-1 pl-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_#f59e0b] shrink-0" />
               <h3
                 className={`text-xs sm:text-sm font-extrabold uppercase tracking-widest font-mono truncate ${
@@ -143,7 +143,7 @@ class ChartModal extends React.Component {
             {/* Red Close Button */}
             <button
               onClick={onClose}
-              className="shrink-0 p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
+              className="shrink-0 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
               title="Close (ESC)"
             >
               <span>Close</span>
