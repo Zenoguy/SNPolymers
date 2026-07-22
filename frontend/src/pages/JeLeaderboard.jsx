@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import { useAuth } from '../components/AuthContext';
@@ -11,6 +11,11 @@ const JeLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Pagination & Search States
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -31,6 +36,26 @@ const JeLeaderboard = () => {
 
     fetchLeaderboard();
   }, [timeframe]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, timeframe, pageSize]);
+
+  const filteredLeaderboard = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return leaderboard;
+    return leaderboard.filter(
+      je =>
+        (je.display_name && je.display_name.toLowerCase().includes(q)) ||
+        (je.mobile_number && je.mobile_number.toLowerCase().includes(q))
+    );
+  }, [leaderboard, search]);
+
+  const totalPages = Math.ceil(filteredLeaderboard.length / pageSize) || 1;
+  const paginatedLeaderboard = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLeaderboard.slice(start, start + pageSize);
+  }, [filteredLeaderboard, currentPage, pageSize]);
 
   const topThree = leaderboard.slice(0, 3);
 
@@ -168,10 +193,33 @@ const JeLeaderboard = () => {
 
           {/* Complete Rankings Table */}
           <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+            <div className="p-4 sm:p-6 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/[0.01]">
               <span className="text-xs font-extrabold uppercase tracking-widest text-slate-300">
-                Full Field Rankings ({leaderboard.length} Engineers)
+                Full Field Rankings ({filteredLeaderboard.length} Engineers)
               </span>
+
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="Search engineer..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="px-3.5 py-1.5 rounded-xl text-xs bg-slate-950/80 border border-white/10 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 w-full sm:w-48 font-medium"
+                />
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">Show:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-950/80 border border-white/10 text-slate-300 focus:outline-none focus:border-amber-500/50 font-bold cursor-pointer"
+                  >
+                    <option value={5}>5 / pg</option>
+                    <option value={10}>10 / pg</option>
+                    <option value={20}>20 / pg</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -188,39 +236,91 @@ const JeLeaderboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {leaderboard.map((je) => (
-                    <tr
-                      key={je.mobile_number}
-                      className={`hover:bg-white/[0.02] transition ${user?.mobile_number === je.mobile_number ? 'bg-amber-500/10 border-l-4 border-l-amber-500' : ''
-                        }`}
-                    >
-                      <td className="p-4 text-center font-mono font-bold text-slate-400">
-                        #{je.rank}
-                      </td>
-                      <td className="p-4">
-                        <div className="font-bold text-slate-200">{je.display_name}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">{je.mobile_number}</div>
-                      </td>
-                      <td className="p-4 text-center font-mono font-bold text-orange-400">
-                        {je.daily_streak} Days 🔥
-                      </td>
-                      <td className="p-4 text-center font-mono font-bold text-slate-300">
-                        {je.total_reports}
-                      </td>
-                      <td className="p-4 text-center font-mono font-bold text-emerald-400">
-                        {je.approved_reports}
-                      </td>
-                      <td className="p-4 text-center font-mono font-bold text-sky-400">
-                        {je.avg_progress}%
-                      </td>
-                      <td className="p-4 text-right pr-6 font-mono font-extrabold text-amber-400 text-sm">
-                        {je.score}
+                  {paginatedLeaderboard.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-500 italic">
+                        No engineers matching search query
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    paginatedLeaderboard.map((je) => (
+                      <tr
+                        key={je.mobile_number}
+                        className={`hover:bg-white/[0.02] transition ${user?.mobile_number === je.mobile_number ? 'bg-amber-500/10 border-l-4 border-l-amber-500' : ''}`}
+                      >
+                        <td className="p-4 text-center font-mono font-bold text-slate-400">
+                          #{je.rank}
+                        </td>
+                        <td className="p-4">
+                          <div className="font-bold text-slate-200">{je.display_name}</div>
+                          <div className="text-[10px] text-slate-500 font-mono">{je.mobile_number}</div>
+                        </td>
+                        <td className="p-4 text-center font-mono font-bold text-orange-400">
+                          {je.daily_streak} Days 🔥
+                        </td>
+                        <td className="p-4 text-center font-mono font-bold text-slate-300">
+                          {je.total_reports}
+                        </td>
+                        <td className="p-4 text-center font-mono font-bold text-emerald-400">
+                          {je.approved_reports}
+                        </td>
+                        <td className="p-4 text-center font-mono font-bold text-sky-400">
+                          {je.avg_progress}%
+                        </td>
+                        <td className="p-4 text-right pr-6 font-mono font-extrabold text-amber-400 text-sm">
+                          {je.score}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls Footer */}
+            {totalPages > 1 && (
+              <div className="p-4 border-t border-white/5 bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs select-none">
+                <span className="text-slate-400 font-bold">
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredLeaderboard.length)} of {filteredLeaderboard.length} Engineers (Page {currentPage} of {totalPages})
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 font-extrabold uppercase text-[10px] tracking-wider transition cursor-pointer"
+                  >
+                    ‹ Prev
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                      <button
+                        key={pg}
+                        onClick={() => setCurrentPage(pg)}
+                        className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
+                          currentPage === pg
+                            ? 'bg-amber-500 text-slate-950 shadow-md'
+                            : 'hover:bg-white/10 text-slate-400'
+                        }`}
+                      >
+                        {pg}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 font-extrabold uppercase text-[10px] tracking-wider transition cursor-pointer"
+                  >
+                    Next ›
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
