@@ -1803,10 +1803,11 @@ const ExecutiveKpiStrip = ({ data }) => {
   const { isDark } = useTheme();
 
   const formatCr = (amt) => {
-    if (!amt || isNaN(amt)) return '₹ 0';
-    if (amt >= 10000000) return `₹ ${(amt / 10000000).toFixed(2)} Cr`;
-    if (amt >= 100000) return `₹ ${(amt / 100000).toFixed(2)} L`;
-    return `₹ ${Number(amt).toLocaleString('en-IN')}`;
+    if (!amt || isNaN(amt)) return '₹0';
+    const val = Number(amt);
+    if (Math.abs(val) >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+    if (Math.abs(val) >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
+    return `₹${val.toLocaleString('en-IN')}`;
   };
 
   const woVal = data?.dueBill?.woValue ?? data?.totalWOValue ?? 0;
@@ -1821,7 +1822,7 @@ const ExecutiveKpiStrip = ({ data }) => {
       topGlow: 'linear-gradient(90deg, #3b82f6 0%, rgba(59,130,246,0) 80%)',
       value: data?.totalWorkOrders?.total ?? 0,
       isCurrency: false,
-      subtext: `Running: ${data?.totalWorkOrders?.running ?? 0} | Completed: ${data?.totalWorkOrders?.completed ?? 0}\nPending: ${data?.totalWorkOrders?.pending ?? 0}`,
+      subtext: `Run: ${data?.totalWorkOrders?.running ?? 0} | Done: ${data?.totalWorkOrders?.completed ?? 0}`,
     },
     {
       id: 'wo_value',
@@ -1834,7 +1835,7 @@ const ExecutiveKpiStrip = ({ data }) => {
     },
     {
       id: 'estimate',
-      title: 'TOTAL ESTIMATE AMOUNT',
+      title: 'TOTAL ESTIMATE',
       titleColor: '#c084fc',
       topGlow: 'linear-gradient(90deg, #a855f7 0%, rgba(168,85,247,0) 80%)',
       value: formatCr(data?.totalEstimateAmount?.amount ?? 0),
@@ -1843,7 +1844,7 @@ const ExecutiveKpiStrip = ({ data }) => {
     },
     {
       id: 'requisition',
-      title: 'TOTAL REQUISITION (ZO → HO)',
+      title: 'TOTAL REQUISITION',
       titleColor: '#fb923c',
       topGlow: 'linear-gradient(90deg, #f97316 0%, rgba(249,115,22,0) 80%)',
       value: formatCr(data?.totalRequisition?.amount ?? 0),
@@ -1852,16 +1853,16 @@ const ExecutiveKpiStrip = ({ data }) => {
     },
     {
       id: 'approved',
-      title: 'TOTAL APPROVED (HO → ZO)',
+      title: 'TOTAL APPROVED',
       titleColor: '#fbbf24',
       topGlow: 'linear-gradient(90deg, #f59e0b 0%, rgba(245,158,11,0) 80%)',
       value: formatCr(data?.totalApproved?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.totalApproved?.pctOfRequisition ?? 0}% of Requisition`,
+      subtext: `${data?.totalApproved?.pctOfRequisition ?? 0}% of Req`,
     },
     {
       id: 'zo_balance',
-      title: 'ZO AVAILABLE BALANCE',
+      title: 'ZO BALANCE',
       titleColor: '#38bdf8',
       topGlow: 'linear-gradient(90deg, #0284c7 0%, rgba(2,132,199,0) 80%)',
       value: formatCr(data?.zoAvailableBalance ?? 0),
@@ -1870,7 +1871,7 @@ const ExecutiveKpiStrip = ({ data }) => {
     },
     {
       id: 'refund',
-      title: 'TOTAL REFUND AMOUNT',
+      title: 'TOTAL REFUND',
       titleColor: '#2dd4bf',
       topGlow: 'linear-gradient(90deg, #14b8a6 0%, rgba(20,184,166,0) 80%)',
       value: formatCr(data?.totalRefundAmount ?? 0),
@@ -1902,21 +1903,21 @@ const ExecutiveKpiStrip = ({ data }) => {
       topGlow: 'linear-gradient(90deg, #db2777 0%, rgba(219,39,119,0) 80%)',
       value: formatCr(dueBillAmt),
       isCurrency: true,
-      subtext: `${data?.dueBill?.pctOfWOValue ?? (woVal > 0 ? ((dueBillAmt / woVal) * 100).toFixed(1) : 0)}% of WO Value`,
+      subtext: `${data?.dueBill?.pctOfWOValue ?? (woVal > 0 ? ((dueBillAmt / woVal) * 100).toFixed(1) : 0)}% of WO`,
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-10 gap-3 mb-6">
       {kpis.map((kpi) => (
         <div
           key={kpi.id}
-          className={`relative p-3.5 rounded-2xl border flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 overflow-hidden ${
+          className={`relative p-3 sm:p-3.5 rounded-2xl border flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 overflow-hidden ${
             isDark 
               ? 'bg-[#101520]/90 border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] hover:border-white/20' 
               : 'bg-white border-slate-200 shadow-sm hover:shadow-md'
           }`}
-          style={{ minHeight: '135px' }}
+          style={{ minHeight: '125px' }}
         >
           {/* Colored Top Glow Accent Line */}
           <div
@@ -1924,17 +1925,18 @@ const ExecutiveKpiStrip = ({ data }) => {
             style={{ background: kpi.topGlow }}
           />
 
-          {/* Title - allow line wrap so text isn't cut off */}
+          {/* Title */}
           <p
-            className="text-[9.5px] font-black tracking-wider uppercase leading-snug"
+            className="text-[9px] sm:text-[9.5px] font-black tracking-wider uppercase leading-snug line-clamp-2"
             style={{ color: kpi.titleColor }}
+            title={kpi.title}
           >
             {kpi.title}
           </p>
 
           {/* Main Value */}
           <div className="my-auto py-1">
-            <span className={`text-base xl:text-lg font-bold font-mono tracking-tight ${
+            <span className={`text-sm sm:text-base lg:text-lg font-bold font-mono tracking-tight whitespace-nowrap ${
               isDark ? 'text-slate-100' : 'text-slate-900'
             }`}>
               {kpi.value}
@@ -1943,9 +1945,9 @@ const ExecutiveKpiStrip = ({ data }) => {
 
           {/* Subtext */}
           {kpi.subtext ? (
-            <p className={`text-[9.5px] font-medium leading-tight whitespace-pre-line ${
+            <p className={`text-[8.5px] sm:text-[9px] font-medium leading-tight truncate ${
               isDark ? 'text-slate-400/80' : 'text-slate-600'
-            }`}>
+            }`} title={kpi.subtext}>
               {kpi.subtext}
             </p>
           ) : (
