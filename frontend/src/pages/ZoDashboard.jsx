@@ -645,15 +645,19 @@ const DepartmentWiseEstimate = ({ projects }) => {
 const KeyFinancialIndicators = ({ projects }) => {
   const { isDark } = useTheme();
 
-  const totalVal = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.work_order_value || 0), 0), [projects]);
+  const emd = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.earnest_money_deposit || 0), 0), [projects]);
+  const sd = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.security_deposit_amount || 0), 0), [projects]);
+  const itTds = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.it_tds || 0), 0), [projects]);
+  const sgst = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.sgst || 0), 0), [projects]);
+  const cgst = useMemo(() => (projects || []).reduce((a, p) => a + Number(p.cgst || 0), 0), [projects]);
 
   const items = useMemo(() => [
-    { label: 'EMD Amount',        value: Math.round(totalVal * 0.083), color: '#10b981', bgColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
-    { label: 'Security Deposit',  value: Math.round(totalVal * 0.109), color: '#0ea5e9', bgColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
-    { label: 'IT TDS',            value: Math.round(totalVal * 0.218), color: '#f59e0b', bgColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
-    { label: 'SGST',              value: Math.round(totalVal * 0.095), color: '#f43f5e', bgColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
-    { label: 'CGST',              value: Math.round(totalVal * 0.095), color: '#a78bfa', bgColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg> },
-  ], [totalVal]);
+    { label: 'EMD Amount',        value: emd, color: '#10b981', bgColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
+    { label: 'Security Deposit',  value: sd, color: '#0ea5e9', bgColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
+    { label: 'IT TDS',            value: itTds, color: '#f59e0b', bgColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
+    { label: 'SGST',              value: sgst, color: '#f43f5e', bgColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
+    { label: 'CGST',              value: cgst, color: '#a78bfa', bgColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg> },
+  ], [emd, sd, itTds, sgst, cgst]);
 
   const maxAmount = Math.max(1, ...items.map(i => i.value));
   return (
@@ -1325,13 +1329,13 @@ const ExecutiveKpiStrip = ({ projects }) => {
   const completed = projects.filter(p => ['Completed', 'Closed'].includes(p.status)).length;
   const pending = projects.filter(p => p.status === 'Pending').length;
   const totalWOVal = projects.reduce((a, p) => a + Number(p.work_order_value || 0), 0);
-  const totalEst = projects.reduce((a, p) => a + Number(p.estimate_amount || 0), 0) || Math.round(totalWOVal * 0.91);
-  const totalReq = projects.reduce((a, p) => a + Number(p.requisition_amount || 0), 0) || Math.round(totalEst * 0.869);
-  const approvedReq = projects.reduce((a, p) => a + Number(p.approved_requisitions_amount || p.approved_amount || 0), 0) || Math.round(totalReq * 0.949);
-  const zoBalance = projects.reduce((a, p) => a + Number(p.balance || 0), 0) || Math.round(approvedReq * 0.1);
-  const refund = Math.round(totalWOVal * 0.01);
-  const grossBill = projects.reduce((a, p) => a + Number(p.gross_billed || 0), 0) || Math.round(totalEst * 0.733);
-  const agencyPay = projects.reduce((a, p) => a + Number(p.agency_paid || 0), 0) || Math.round(grossBill * 0.948);
+  const totalEst = projects.reduce((a, p) => a + Number(p.estimate_amount || 0), 0);
+  const totalReq = projects.reduce((a, p) => a + Number(p.requisition_amount || 0), 0);
+  const approvedReq = projects.reduce((a, p) => a + Number(p.approved_requisitions_amount || p.approved_amount || 0), 0);
+  const zoBalance = projects.reduce((a, p) => a + Number(p.balance || 0), 0);
+  const refund = projects.reduce((a, p) => a + Number(p.refund_amount || 0), 0);
+  const grossBill = projects.reduce((a, p) => a + Number(p.gross_billed || 0), 0);
+  const agencyPay = projects.reduce((a, p) => a + Number(p.agency_paid || 0), 0);
   const dueBill = Math.max(0, totalWOVal - grossBill);
 
   const kpis = [

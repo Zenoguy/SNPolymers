@@ -1404,11 +1404,11 @@ const MetricDonutCard = ({
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
 
   const activeBuckets = React.useMemo(() => {
-    if (buckets && buckets.length > 0 && buckets.some(b => b.count > 0)) {
+    if (buckets && buckets.length > 0) {
       return buckets;
     }
-    return fallbackData || [];
-  }, [buckets, fallbackData]);
+    return [];
+  }, [buckets]);
 
   const totalCount = React.useMemo(() => {
     return activeBuckets.reduce((acc, curr) => acc + (curr.count || 0), 0);
@@ -1640,56 +1640,12 @@ const MetricDonutCard = ({
 
 // ── Physical Work Progress Card Component ─────────────────────────────────────
 const PhysicalWorkProgress = ({ data, isModal = false }) => {
-  const fallbackData = [
-    {
-      label: '60% and above',
-      color: '#16A34A',
-      count: 65,
-      percentage: 51,
-      workOrders: [
-        { work_order_no: 'WB_APD_101', site_details: 'Main Road Work-1', value: '85%' },
-        { work_order_no: 'WB_BAN_102', site_details: 'Main Road Work-2', value: '78%' },
-        { work_order_no: 'WB_BIR_103', site_details: 'Main Road Work-3', value: '64%' }
-      ]
-    },
-    {
-      label: '40% - 59%',
-      color: '#EAB308',
-      count: 35,
-      percentage: 27,
-      workOrders: [
-        { work_order_no: 'SK_GAN_201', site_details: 'Main Road Work-5', value: '55%' },
-        { work_order_no: 'OD_ANG_301', site_details: 'Pipe Line Work-2', value: '48%' }
-      ]
-    },
-    {
-      label: 'Below 40%',
-      color: '#DC2626',
-      count: 16,
-      percentage: 12,
-      workOrders: [
-        { work_order_no: 'JH_CHA_402', site_details: 'River Embankment-1', value: '32%' },
-        { work_order_no: 'BH_ARA_501', site_details: 'River Embankment-3', value: '18%' }
-      ]
-    },
-    {
-      label: 'Not Started',
-      color: '#64748B',
-      count: 12,
-      percentage: 9,
-      workOrders: [
-        { work_order_no: 'JH_DEO_403', site_details: 'River Embankment-2', value: '0%' }
-      ]
-    }
-  ];
-
   return (
     <MetricDonutCard
       title="Physical Work Progress"
       centerLabel="Avg. Progress"
-      centerValue={data?.avgProgress || '81%'}
-      buckets={data?.buckets}
-      fallbackData={fallbackData}
+      centerValue={data?.avgProgress !== undefined ? `${data.avgProgress}%` : '0%'}
+      buckets={data?.buckets || []}
       isModal={isModal}
     />
   );
@@ -1697,55 +1653,12 @@ const PhysicalWorkProgress = ({ data, isModal = false }) => {
 
 // ── JE Visit Frequency Card Component ─────────────────────────────────────────
 const JeVisitFrequency = ({ data }) => {
-  const fallbackData = [
-    {
-      label: '≤ 7 Days',
-      color: '#0D9488',
-      count: 46,
-      percentage: 36,
-      workOrders: [
-        { work_order_no: 'WB_APD_101', site_details: 'Main Road Work-1', value: '2d ago' },
-        { work_order_no: 'SK_GAN_201', site_details: 'Main Road Work-5', value: '5d ago' }
-      ]
-    },
-    {
-      label: '8 – 15 Days',
-      color: '#0284C7',
-      count: 52,
-      percentage: 41,
-      workOrders: [
-        { work_order_no: 'WB_BAN_102', site_details: 'Main Road Work-2', value: '10d ago' },
-        { work_order_no: 'OD_ANG_301', site_details: 'Pipe Line Work-2', value: '14d ago' }
-      ]
-    },
-    {
-      label: '> 15 Days',
-      color: '#EF4444',
-      count: 20,
-      percentage: 16,
-      workOrders: [
-        { work_order_no: 'JH_CHA_402', site_details: 'River Embankment-1', value: '22d ago' },
-        { work_order_no: 'BH_ARA_501', site_details: 'River Embankment-3', value: '28d ago' }
-      ]
-    },
-    {
-      label: 'No Visit',
-      color: '#64748B',
-      count: 10,
-      percentage: 7,
-      workOrders: [
-        { work_order_no: 'JH_DEO_403', site_details: 'River Embankment-2', value: 'No Visit' }
-      ]
-    }
-  ];
-
   return (
     <MetricDonutCard
       title="JE Visit Frequency"
       centerLabel="Avg. Visit"
-      centerValue={data?.avgVisit || '14 Days'}
-      buckets={data?.buckets}
-      fallbackData={fallbackData}
+      centerValue={data?.avgVisit !== undefined ? `${data.avgVisit} Days` : '0 Days'}
+      buckets={data?.buckets || []}
     />
   );
 };
@@ -1769,7 +1682,7 @@ const KeyFinancialIndicators = ({ data }) => {
   const items = [
     {
       label: 'EMD Amount',
-      value: data?.emdAmount ?? 3200000,
+      value: data?.emdAmount ?? 0,
       bgColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1779,7 +1692,7 @@ const KeyFinancialIndicators = ({ data }) => {
     },
     {
       label: 'Security Deposit',
-      value: data?.securityDeposit ?? 4200000,
+      value: data?.securityDeposit ?? 0,
       bgColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1789,7 +1702,7 @@ const KeyFinancialIndicators = ({ data }) => {
     },
     {
       label: 'IT TDS',
-      value: data?.itTds ?? 8400000,
+      value: data?.itTds ?? 0,
       bgColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1799,7 +1712,7 @@ const KeyFinancialIndicators = ({ data }) => {
     },
     {
       label: 'SGST',
-      value: data?.sgst ?? 3680000,
+      value: data?.sgst ?? 0,
       bgColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1809,7 +1722,7 @@ const KeyFinancialIndicators = ({ data }) => {
     },
     {
       label: 'CGST',
-      value: data?.cgst ?? 3680000,
+      value: data?.cgst ?? 0,
       bgColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1896,9 +1809,9 @@ const ExecutiveKpiStrip = ({ data }) => {
     return `₹ ${Number(amt).toLocaleString('en-IN')}`;
   };
 
-  const woVal = data?.dueBill?.woValue ?? data?.totalWOValue ?? 125000000;
-  const grossBillAmt = data?.dueBill?.grossBillAmount ?? data?.grossBillAmount?.amount ?? 86500000;
-  const dueBillAmt = data?.dueBill?.amount ?? (woVal - grossBillAmt);
+  const woVal = data?.dueBill?.woValue ?? data?.totalWOValue ?? 0;
+  const grossBillAmt = data?.dueBill?.grossBillAmount ?? data?.grossBillAmount?.amount ?? 0;
+  const dueBillAmt = data?.dueBill?.amount ?? Math.max(0, woVal - grossBillAmt);
 
   const kpis = [
     {
@@ -1906,16 +1819,16 @@ const ExecutiveKpiStrip = ({ data }) => {
       title: 'TOTAL WORK ORDERS',
       titleColor: '#60a5fa',
       topGlow: 'linear-gradient(90deg, #3b82f6 0%, rgba(59,130,246,0) 80%)',
-      value: data?.totalWorkOrders?.total ?? 128,
+      value: data?.totalWorkOrders?.total ?? 0,
       isCurrency: false,
-      subtext: `Running: ${data?.totalWorkOrders?.running ?? 84} | Completed: ${data?.totalWorkOrders?.completed ?? 32}\nPending: ${data?.totalWorkOrders?.pending ?? 12}`,
+      subtext: `Running: ${data?.totalWorkOrders?.running ?? 0} | Completed: ${data?.totalWorkOrders?.completed ?? 0}\nPending: ${data?.totalWorkOrders?.pending ?? 0}`,
     },
     {
       id: 'wo_value',
       title: 'TOTAL WO VALUE',
       titleColor: '#34d399',
       topGlow: 'linear-gradient(90deg, #10b981 0%, rgba(16,185,129,0) 80%)',
-      value: formatCr(data?.totalWOValue ?? 125000000),
+      value: formatCr(data?.totalWOValue ?? 0),
       isCurrency: true,
       subtext: null,
     },
@@ -1924,34 +1837,34 @@ const ExecutiveKpiStrip = ({ data }) => {
       title: 'TOTAL ESTIMATE AMOUNT',
       titleColor: '#c084fc',
       topGlow: 'linear-gradient(90deg, #a855f7 0%, rgba(168,85,247,0) 80%)',
-      value: formatCr(data?.totalEstimateAmount?.amount ?? 118000000),
+      value: formatCr(data?.totalEstimateAmount?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.totalEstimateAmount?.pctOfWOValue ?? 94.4}% of WO Value`,
+      subtext: `${data?.totalEstimateAmount?.pctOfWOValue ?? 0}% of WO Value`,
     },
     {
       id: 'requisition',
       title: 'TOTAL REQUISITION (ZO → HO)',
       titleColor: '#fb923c',
       topGlow: 'linear-gradient(90deg, #f97316 0%, rgba(249,115,22,0) 80%)',
-      value: formatCr(data?.totalRequisition?.amount ?? 102500000),
+      value: formatCr(data?.totalRequisition?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.totalRequisition?.pctOfEstimate ?? 86.9}% of Estimate`,
+      subtext: `${data?.totalRequisition?.pctOfEstimate ?? 0}% of Estimate`,
     },
     {
       id: 'approved',
       title: 'TOTAL APPROVED (HO → ZO)',
       titleColor: '#fbbf24',
       topGlow: 'linear-gradient(90deg, #f59e0b 0%, rgba(245,158,11,0) 80%)',
-      value: formatCr(data?.totalApproved?.amount ?? 99000000),
+      value: formatCr(data?.totalApproved?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.totalApproved?.pctOfRequisition ?? 96.6}% of Requisition`,
+      subtext: `${data?.totalApproved?.pctOfRequisition ?? 0}% of Requisition`,
     },
     {
       id: 'zo_balance',
       title: 'ZO AVAILABLE BALANCE',
       titleColor: '#38bdf8',
       topGlow: 'linear-gradient(90deg, #0284c7 0%, rgba(2,132,199,0) 80%)',
-      value: formatCr(data?.zoAvailableBalance ?? 11200000),
+      value: formatCr(data?.zoAvailableBalance ?? 0),
       isCurrency: true,
       subtext: null,
     },
@@ -1960,7 +1873,7 @@ const ExecutiveKpiStrip = ({ data }) => {
       title: 'TOTAL REFUND AMOUNT',
       titleColor: '#2dd4bf',
       topGlow: 'linear-gradient(90deg, #14b8a6 0%, rgba(20,184,166,0) 80%)',
-      value: formatCr(data?.totalRefundAmount ?? 1800000),
+      value: formatCr(data?.totalRefundAmount ?? 0),
       isCurrency: true,
       subtext: null,
     },
@@ -1969,18 +1882,18 @@ const ExecutiveKpiStrip = ({ data }) => {
       title: 'GROSS BILL AMOUNT',
       titleColor: '#f87171',
       topGlow: 'linear-gradient(90deg, #ef4444 0%, rgba(239,68,68,0) 80%)',
-      value: formatCr(data?.grossBillAmount?.amount ?? 86500000),
+      value: formatCr(data?.grossBillAmount?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.grossBillAmount?.pctOfEstimate ?? 73.3}% of Estimate`,
+      subtext: `${data?.grossBillAmount?.pctOfEstimate ?? 0}% of Estimate`,
     },
     {
       id: 'agency_payment',
       title: 'AGENCY PAYMENT',
       titleColor: '#818cf8',
       topGlow: 'linear-gradient(90deg, #6366f1 0%, rgba(99,102,241,0) 80%)',
-      value: formatCr(data?.agencyPayment?.amount ?? 82000000),
+      value: formatCr(data?.agencyPayment?.amount ?? 0),
       isCurrency: true,
-      subtext: `${data?.agencyPayment?.pctOfGrossBill ?? 94.8}% of Gross Bill`,
+      subtext: `${data?.agencyPayment?.pctOfGrossBill ?? 0}% of Gross Bill`,
     },
     {
       id: 'due_bill',
@@ -1989,7 +1902,7 @@ const ExecutiveKpiStrip = ({ data }) => {
       topGlow: 'linear-gradient(90deg, #db2777 0%, rgba(219,39,119,0) 80%)',
       value: formatCr(dueBillAmt),
       isCurrency: true,
-      subtext: `${data?.dueBill?.pctOfWOValue ?? (woVal > 0 ? ((dueBillAmt / woVal) * 100).toFixed(1) : 75.6)}% of WO Value`,
+      subtext: `${data?.dueBill?.pctOfWOValue ?? (woVal > 0 ? ((dueBillAmt / woVal) * 100).toFixed(1) : 0)}% of WO Value`,
     }
   ];
 

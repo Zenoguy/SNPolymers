@@ -92,17 +92,16 @@ describe('HO Executive Analytics — Actionable Insights & Chart Data', () => {
     });
   });
 
-  test('M2.3: RBAC — ZO and JE roles receive HTTP 403 on actionable-insights', async () => {
-    const roles = [
-      { role: 'zo', mobile_number: zoMobile },
-      { role: 'je', mobile_number: jeMobile }
-    ];
-    for (const user of roles) {
-      const req = { user, query: {} };
-      const res = mockRes();
-      await getHoActionableInsights(req, res);
-      expect(res.statusCode).toBe(403);
-    }
+  test('M2.3: RBAC — JE role receives HTTP 403 on actionable-insights while ZO and HO are permitted', async () => {
+    const reqJe = { user: { role: 'je', mobile_number: jeMobile }, query: {} };
+    const resJe = mockRes();
+    await getHoActionableInsights(reqJe, resJe);
+    expect(resJe.statusCode).toBe(403);
+
+    const reqZo = { user: { role: 'zo', mobile_number: zoMobile }, query: {} };
+    const resZo = mockRes();
+    await getHoActionableInsights(reqZo, resZo);
+    expect(resZo.statusCode).toBe(200);
   });
 
   // ── M3 Tests ──────────────────────────────────────────────────────────────
@@ -149,17 +148,16 @@ describe('HO Executive Analytics — Actionable Insights & Chart Data', () => {
     });
   });
 
-  test('M3.4: RBAC — ZO and JE roles receive HTTP 403 on chart-data', async () => {
-    const roles = [
-      { role: 'zo', mobile_number: zoMobile },
-      { role: 'je', mobile_number: jeMobile }
-    ];
-    for (const user of roles) {
-      const req = { user, query: {} };
-      const res = mockRes();
-      await getHoChartData(req, res);
-      expect(res.statusCode).toBe(403);
-    }
+  test('M3.4: RBAC — JE role receives HTTP 403 on chart-data while ZO and HO are permitted', async () => {
+    const reqJe = { user: { role: 'je', mobile_number: jeMobile }, query: {} };
+    const resJe = mockRes();
+    await getHoChartData(reqJe, resJe);
+    expect(resJe.statusCode).toBe(403);
+
+    const reqZo = { user: { role: 'zo', mobile_number: zoMobile }, query: {} };
+    const resZo = mockRes();
+    await getHoChartData(reqZo, resZo);
+    expect(resZo.statusCode).toBe(200);
   });
 
   test('M3.5: Zone filter narrows bubbleMatrix to matching zone only', async () => {

@@ -499,8 +499,8 @@ async function triggerRefresh(req, res) {
 async function getHoActionableInsights(req, res) {
   try {
     // Role protection checkpoint (Security-in-Depth)
-    if (req.user.role !== 'ho' && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Access denied. Authorized executive roles only.' });
+    if (req.user.role !== 'zo' && req.user.role !== 'ho' && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Authorized executive and zonal roles only.' });
     }
 
     // 1. Fetch all ZO balances
@@ -584,8 +584,8 @@ async function getHoActionableInsights(req, res) {
 async function getHoChartData(req, res) {
   try {
     // Role protection checkpoint (Security-in-Depth)
-    if (req.user.role !== 'ho' && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Access denied. Authorized executive roles only.' });
+    if (req.user.role !== 'zo' && req.user.role !== 'ho' && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Authorized executive and zonal roles only.' });
     }
 
     const { view = 'all', zone, work_order_no, project_status, start_date, end_date } = req.query;
@@ -930,27 +930,27 @@ async function getHoChartData(req, res) {
     };
 
     // === Build executiveSummaryKpis ===
-    const woTotal = projectsList.length || 128;
-    const woRunning = projectsList.filter(p => p.status === 'Running' || p.status === 'Ongoing').length || 84;
-    const woCompleted = projectsList.filter(p => p.status === 'Completed').length || 32;
-    const woPending = projectsList.filter(p => p.status === 'Pending' || p.status === 'Draft').length || 12;
+    const woTotal = projectsList.length;
+    const woRunning = projectsList.filter(p => p.status === 'Running' || p.status === 'Ongoing').length;
+    const woCompleted = projectsList.filter(p => p.status === 'Completed' || p.status === 'Closed').length;
+    const woPending = projectsList.filter(p => p.status === 'Pending' || p.status === 'Draft' || p.status === 'Complete Under Maintenance').length;
 
-    const totalWOValueAmt = sumOf(projectsList, 'work_order_value') || 125000000;
-    const totalEstAmt = sumOf(finalEstimates, 'estimate_amount') || 118000000;
-    const totalReqAmt = sumOf(approvedReqs, 'approved_amount') || 102500000;
-    const totalHoApprAmt = sumOf(approvedFunds, 'approve_ho_amount') || 99000000;
-    const totalZoBalAmt = sumOf(zoBalRes.data || [], 'available_balance') || 11200000;
+    const totalWOValueAmt = sumOf(projectsList, 'work_order_value');
+    const totalEstAmt = sumOf(finalEstimates, 'estimate_amount');
+    const totalReqAmt = sumOf(approvedReqs, 'approved_amount');
+    const totalHoApprAmt = sumOf(approvedFunds, 'approve_ho_amount');
+    const totalZoBalAmt = sumOf(zoBalRes.data || [], 'available_balance');
 
-    const refundsList = (ledgerRes.data || []).filter(tx => tx.transaction_type === 'RETURN');
-    const totalRefundAmt = sumOf(refundsList, 'amount') || 1800000;
+    const refundsList = (filteredLedger || []).filter(tx => tx.transaction_type === 'RETURN');
+    const totalRefundAmt = sumOf(refundsList, 'amount');
 
-    const totalGrossBillAmt = sumOf(billsRes.data || [], 'gross_bill') || 86500000;
-    const totalAgencyPayAmt  = sumOf(billsRes.data || [], 'agency_payment') || 82000000;
+    const totalGrossBillAmt = sumOf(filteredBills, 'gross_bill');
+    const totalAgencyPayAmt  = sumOf(filteredBills, 'agency_payment');
 
     // Calculate QWP (Quantum of Work Progress / Work Executed Value)
     let totalQwpVal = 0;
-    if (healthProjects.length > 0) {
-      healthProjects.forEach(p => {
+    if (filteredHealth.length > 0) {
+      filteredHealth.forEach(p => {
         const estOrWoVal = estimateByWO[p.work_order_no] !== undefined 
           ? estimateByWO[p.work_order_no] 
           : Number(p.work_order_value || 0);
@@ -960,9 +960,6 @@ async function getHoChartData(req, res) {
     }
     if (totalQwpVal === 0 && totalEstAmt > 0) {
       totalQwpVal = totalEstAmt * (avgProgressVal / 100);
-    }
-    if (!totalQwpVal || totalQwpVal === 0) {
-      totalQwpVal = 95580000; // Fallback (~81% of estimate)
     }
 
     const totalDueBillAmt = totalWOValueAmt - totalGrossBillAmt;
@@ -977,35 +974,35 @@ async function getHoChartData(req, res) {
       totalWOValue: totalWOValueAmt,
       totalEstimateAmount: {
         amount: totalEstAmt,
-        pctOfWOValue: totalWOValueAmt > 0 ? parseFloat(((totalEstAmt / totalWOValueAmt) * 100).toFixed(1)) : 94.4
+        pctOfWOValue: totalWOValueAmt > 0 ? parseFloat(((totalEstAmt / totalWOValueAmt) * 100).toFixed(1)) : 0
       },
       totalRequisition: {
         amount: totalReqAmt,
-        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalReqAmt / totalEstAmt) * 100).toFixed(1)) : 86.9
+        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalReqAmt / totalEstAmt) * 100).toFixed(1)) : 0
       },
       totalApproved: {
         amount: totalHoApprAmt,
-        pctOfRequisition: totalReqAmt > 0 ? parseFloat(((totalHoApprAmt / totalReqAmt) * 100).toFixed(1)) : 96.6
+        pctOfRequisition: totalReqAmt > 0 ? parseFloat(((totalHoApprAmt / totalReqAmt) * 100).toFixed(1)) : 0
       },
       zoAvailableBalance: totalZoBalAmt,
       totalRefundAmount: totalRefundAmt,
       grossBillAmount: {
         amount: totalGrossBillAmt,
-        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalGrossBillAmt / totalEstAmt) * 100).toFixed(1)) : 73.3
+        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalGrossBillAmt / totalEstAmt) * 100).toFixed(1)) : 0
       },
       agencyPayment: {
         amount: totalAgencyPayAmt,
-        pctOfGrossBill: totalGrossBillAmt > 0 ? parseFloat(((totalAgencyPayAmt / totalGrossBillAmt) * 100).toFixed(1)) : 94.8
+        pctOfGrossBill: totalGrossBillAmt > 0 ? parseFloat(((totalAgencyPayAmt / totalGrossBillAmt) * 100).toFixed(1)) : 0
       },
       qwpValue: {
         amount: Math.round(totalQwpVal),
-        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalQwpVal / totalEstAmt) * 100).toFixed(1)) : 81.0
+        pctOfEstimate: totalEstAmt > 0 ? parseFloat(((totalQwpVal / totalEstAmt) * 100).toFixed(1)) : 0
       },
       dueBill: {
         amount: Math.round(totalDueBillAmt),
         woValue: totalWOValueAmt,
         grossBillAmount: totalGrossBillAmt,
-        pctOfWOValue: totalWOValueAmt > 0 ? parseFloat(((totalDueBillAmt / totalWOValueAmt) * 100).toFixed(1)) : 75.6
+        pctOfWOValue: totalWOValueAmt > 0 ? parseFloat(((totalDueBillAmt / totalWOValueAmt) * 100).toFixed(1)) : 0
       }
     };
 
