@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { Button, Input, Modal, SkeletonTable } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -23,6 +23,10 @@ const FundRequests = () => {
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   
   // Dashboard navigation states
   const [activeRequest, setActiveRequest] = useState(null); // request details panel view
@@ -40,6 +44,10 @@ const FundRequests = () => {
   });
 
   const isZoUser = user?.role === 'zo' || user?.role === 'staff' || user?.role === 'admin';
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filters, pageSize]);
 
   // Fetch fund requests using React Query
   const { data: requestsData, isLoading: loading, error: queryError } = useQuery({
@@ -155,6 +163,12 @@ const FundRequests = () => {
 
   const filteredRequests = getFilteredRequests();
 
+  const totalPages = Math.ceil(filteredRequests.length / pageSize) || 1;
+  const paginatedRequests = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredRequests.slice(start, start + pageSize);
+  }, [filteredRequests, currentPage, pageSize]);
+
   // Create dynamic recent activity logs
   const activityLogs = requests
     .slice(0, 4)
@@ -229,10 +243,10 @@ const FundRequests = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
               
               {/* Left Data Grid (Table) */}
-              <div className="lg:col-span-3 glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
-                <div className="p-5 border-b border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 text-left">Fund Requests List</span>
-                  <div className="flex items-center gap-3">
+              <div className="lg:col-span-3 glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#0d131f]/90 backdrop-blur-xl">
+                <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-300 text-left">Fund Requests List</span>
+                  <div className="flex flex-wrap items-center gap-3">
                     <Input
                       type="text"
                       placeholder="Search requests..."
@@ -246,6 +260,21 @@ const FundRequests = () => {
                       }
                       containerClassName="w-full sm:w-48"
                     />
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase">Show:</span>
+                      <select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(Number(e.target.value))}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-950/80 border border-white/10 text-slate-300 focus:outline-none focus:border-amber-500/50 font-bold cursor-pointer"
+                      >
+                        <option value={5}>5 / pg</option>
+                        <option value={10}>10 / pg</option>
+                        <option value={20}>20 / pg</option>
+                        <option value={50}>50 / pg</option>
+                      </select>
+                    </div>
+
                     <Button
                       onClick={() => setShowExportModal(true)}
                       title="Export Excel"
@@ -274,17 +303,60 @@ const FundRequests = () => {
                 {loading ? (
                   <SkeletonTable rows={6} cols={6} />
                 ) : filteredRequests.length === 0 ? (
-                  <div className="text-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
+                  <div className="text-center p-24 text-slate-400 text-xs uppercase font-extrabold tracking-widest">
                     No requests matching filters.
                   </div>
                 ) : (
-                  <FundRequestTable
-                    requests={filteredRequests}
-                    user={user}
-                    onRowClick={handleRowClick}
-                    onActionClick={handleRowClick}
-                    onCancelClick={(id, no) => setCancelTarget({ id, no })}
-                  />
+                  <>
+                    <FundRequestTable
+                      requests={paginatedRequests}
+                      user={user}
+                      onRowClick={handleRowClick}
+                      onActionClick={handleRowClick}
+                      onCancelClick={(id, no) => setCancelTarget({ id, no })}
+                    />
+
+                    {/* Pagination Controls Footer */}
+                    {totalPages > 1 && (
+                      <div className="p-4 border-t border-white/10 bg-slate-900/60 flex items-center justify-end gap-4 text-xs select-none">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
+                          >
+                            ‹ Prev
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                              <button
+                                key={pg}
+                                onClick={() => setCurrentPage(pg)}
+                                className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
+                                  currentPage === pg
+                                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
+                                    : 'bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300'
+                                }`}
+                              >
+                                {pg}
+                              </button>
+                            ))}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
+                          >
+                            Next ›
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 

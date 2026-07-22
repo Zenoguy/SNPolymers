@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import authApi from '../../api/authApi';
 import { useTheme } from '../../components/ThemeContext';
@@ -15,6 +15,7 @@ const formatINR = (value) => {
 };
 
 const HoDashboardView = () => {
+  const navigate = useNavigate();
   const { isDark } = useTheme();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -119,7 +120,7 @@ const HoDashboardView = () => {
     { label: 'Requisitions Awaiting Approval', value: pendingRequisitions.length, change: 'Requires operator action', color: 'text-rose-500', glow: 'shadow-[0_0_15px_rgba(244,63,94,0.05)]' },
     { label: 'Estimates Under Review', value: pendingEstimatesCount, change: 'Pending approval action', color: 'text-sky-500', glow: 'shadow-[0_0_15px_rgba(14,165,233,0.05)]' },
     { label: 'Total Requisitions Approved', value: formatINR(requisitionStats.approvedSum), change: `${requisitions.length} bills processed`, color: 'text-emerald-500', glow: 'shadow-[0_0_15px_rgba(16,185,129,0.05)]' },
-    { label: 'Active Projects', value: overview.running || projects.length, change: `Total: ${overview.totalProjects || projects.length}`, color: 'text-amber-500', glow: 'shadow-[0_0_15px_rgba(245,158,11,0.05)]' },
+    { label: 'Active Work Orders', value: overview.running || projects.length, change: `Total: ${overview.totalProjects || projects.length}`, color: 'text-amber-500', glow: 'shadow-[0_0_15px_rgba(245,158,11,0.05)]' },
   ];
 
   return (
@@ -149,7 +150,7 @@ const HoDashboardView = () => {
             </div>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
-                <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Active Projects</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Active Work Orders</span>
                 <span className="text-xl font-bold text-sky-400">{overview.running || projects.length}</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
@@ -228,23 +229,30 @@ const HoDashboardView = () => {
                 {topProjects.length > 0 ? (
                   <div className="space-y-2">
                     {topProjects.slice(0, 4).map((p) => (
-                      <div key={p.work_order_no} className="p-2.5 rounded-xl bg-white/2 border border-white/5 hover:border-white/10 transition">
+                      <div
+                        key={p.work_order_no}
+                        onClick={() => navigate(`/projects/${encodeURIComponent(p.work_order_no)}/digital-twin`)}
+                        className="p-2.5 rounded-xl bg-white/2 border border-white/5 hover:border-amber-500/40 hover:bg-amber-500/5 transition cursor-pointer group"
+                        title={`Open Digital Twin for ${p.work_order_no}`}
+                      >
                         <div className="flex justify-between items-start gap-2">
                           <div className="truncate">
-                            <div className="font-bold text-xs text-slate-100 truncate">{p.work_order_no}</div>
+                            <div className="font-bold text-xs text-slate-100 group-hover:text-amber-400 group-hover:underline transition-colors truncate">
+                              {p.work_order_no}
+                            </div>
                             <div className="text-[9px] text-slate-500 font-medium truncate mt-0.5">{p.site_details}</div>
                           </div>
                           <div className="text-right shrink-0">
                             {(filterType === 'value' || filterType === 'lowest_value') && <div className="text-xs font-bold text-amber-500 font-mono">{formatINR(p.work_order_value || 0)}</div>}
-                            {(filterType === 'progress' || filterType === 'least_estimates') && <div className="text-xs font-bold text-sky-400">{p.estimate_sheets_count || 0} Est</div>}
-                            {(filterType === 'physical_progress' || filterType === 'lowest_completion') && <div className="text-xs font-bold text-emerald-400">{p.max_physical_progress || 0}%</div>}
+                            {(filterType === 'progress' || filterType === 'least_estimates') && <div className="text-xs font-bold text-sky-400">{p.estimate_sheets_count || 0} Estimates</div>}
+                            {(filterType === 'physical_progress' || filterType === 'lowest_completion') && <div className="text-xs font-bold text-emerald-400">{p.max_physical_progress || 0}% Done</div>}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 py-8 text-center">No work order records found.</div>
+                  <div className="text-xs text-slate-500 py-8 text-center font-bold uppercase tracking-widest">No work order records found.</div>
                 )}
               </div>
             </div>

@@ -1167,13 +1167,13 @@ const DepartmentWiseEstimate = ({ data }) => {
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
 
   const fallbackData = [
-    { department: 'PWD', amount: 70500000, percentage: 83.6, color: '#3B82F6' },
-    { department: 'Dept', amount: 8500000, percentage: 10.1, color: '#10B981' },
-    { department: 'Civil', amount: 1814000, percentage: 2.1, color: '#8B5CF6' },
-    { department: 'PWD Department', amount: 1800000, percentage: 2.1, color: '#F97316' },
-    { department: 'Irrigation', amount: 750000, percentage: 0.9, color: '#64748B' },
-    { department: 'WRDD', amount: 500000, percentage: 0.6, color: '#EF4444' },
-    { department: 'PHE', amount: 500000, percentage: 0.6, color: '#14B8A6' }
+    { department: 'PWD', amount: 70500000, percentage: 83.6, count: 14, color: '#3B82F6' },
+    { department: 'Dept', amount: 8500000, percentage: 10.1, count: 5, color: '#10B981' },
+    { department: 'Civil', amount: 1814000, percentage: 2.1, count: 2, color: '#8B5CF6' },
+    { department: 'PWD Department', amount: 1800000, percentage: 2.1, count: 2, color: '#F97316' },
+    { department: 'Irrigation', amount: 750000, percentage: 0.9, count: 1, color: '#64748B' },
+    { department: 'WRDD', amount: 500000, percentage: 0.6, count: 1, color: '#EF4444' },
+    { department: 'PHE', amount: 500000, percentage: 0.6, count: 1, color: '#14B8A6' }
   ];
 
   const DEFAULT_COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F97316', '#64748B', '#EF4444', '#14B8A6', '#EC4899', '#F59E0B'];
@@ -1364,6 +1364,16 @@ const DepartmentWiseEstimate = ({ data }) => {
               {formatAmount(hoveredDept.amount)}
             </span>
           </div>
+          {hoveredDept.count !== undefined && (
+            <div className="flex items-baseline justify-between gap-3 mt-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Total Work Orders:
+              </span>
+              <span className="font-bold text-xs font-mono text-sky-400">
+                {hoveredDept.count} {hoveredDept.count === 1 ? 'Work Order' : 'Work Orders'}
+              </span>
+            </div>
+          )}
           <div className="flex items-baseline justify-between gap-3 mt-0.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Share of Estimate:
@@ -1806,16 +1816,6 @@ const KeyFinancialIndicators = ({ data }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
         </svg>
       )
-    },
-    {
-      label: 'Not Utilized',
-      value: data?.notUtilized ?? 900000,
-      bgColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-      )
     }
   ];
 
@@ -1830,7 +1830,7 @@ const KeyFinancialIndicators = ({ data }) => {
             Key Financial Indicators
           </h3>
           <p className="chart-subtitle">
-            Summary of statutory withholdings and unutilized funds
+            Summary of statutory withholdings
           </p>
         </div>
       </div>
@@ -2257,6 +2257,36 @@ const HoDashboard = () => {
   const [zoomedChart, setZoomedChart] = useState(null); // null | 'bubble' | 'fundflow' | 'zonal' | 'runway' | 'scurve' | 'revision'
   const [kpiDetailModal, setKpiDetailModal] = useState(null); // null | { title, filterType, projects: [] }
 
+  // Strict Project Status & Date Range Filters
+  const [projectStatusFilter, setProjectStatusFilter] = useState('all'); // 'all' | 'Running' | 'Closed' | 'Complete Under Maintenance'
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [datePreset, setDatePreset] = useState('all'); // 'all' | 'month' | 'quarter' | 'half' | 'custom'
+
+  const handleDatePreset = (preset) => {
+    setDatePreset(preset);
+    const now = new Date();
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+    } else if (preset === 'month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(firstDay);
+      setEndDate(today);
+    } else if (preset === 'quarter') {
+      const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(threeMonthsAgo);
+      setEndDate(today);
+    } else if (preset === 'half') {
+      const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(sixMonthsAgo);
+      setEndDate(today);
+    }
+  };
+
   // Fetch actionable insights (runways, stalled)
   const { data: insightsRes } = useQuery({
     queryKey: ['hoInsights'],
@@ -2268,9 +2298,14 @@ const HoDashboard = () => {
 
   // Fetch executive chart data
   const { data: chartRes } = useQuery({
-    queryKey: ['hoChartData', activeView],
+    queryKey: ['hoChartData', activeView, projectStatusFilter, startDate, endDate],
     queryFn: async () => {
-      const res = await getHoChartData({ view: activeView });
+      const res = await getHoChartData({
+        view: activeView,
+        project_status: projectStatusFilter,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined
+      });
       return res.data;
     }
   });
@@ -2399,37 +2434,85 @@ const HoDashboard = () => {
                 </svg>
                 {refreshMutation.isPending ? 'Refreshing...' : 'Refresh Views'}
               </button>
-              <div className="font-mono text-[10px] text-slate-500 tracking-wide bg-white/[0.025] border border-white/[0.045] px-2.5 py-1 rounded-md">
-                DATA SOURCE: executive_kpi_mv &nbsp;·&nbsp; AUTO-SYNC 15M
-              </div>
             </div>
           </div>
 
-          {/* View Toggle Pill Tabs */}
-          <div className="flex gap-2 mb-8 flex-wrap">
-            {[
-              { id: 'all', label: 'ALL — Portfolio' },
-              { id: 'zo',  label: 'ZO Wise' },
-              { id: 'je',  label: 'JE Wise' },
-              { id: 'wo',  label: 'Work Order Wise' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                id={`view-toggle-${tab.id}`}
-                onClick={() => setActiveView(tab.id)}
-                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ${
-                  activeView === tab.id
-                    ? 'border-transparent text-black'
-                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-white/[0.045]'
-                }`}
-                style={activeView === tab.id ? {
-                  background: 'linear-gradient(135deg, #f0a843 0%, #e8930a 100%)',
-                  boxShadow: '0 0 18px rgba(240,168,67,0.28)'
-                } : undefined}
-              >
-                {tab.label}
-              </button>
-            ))}
+          {/* Project Status & Date Range Filter Toolbar */}
+          <div className="glass-panel p-4 rounded-2xl mb-8 flex flex-col xl:flex-row gap-4 items-center justify-between border border-white/10 shadow-lg">
+            {/* Project Status Filter Tabs */}
+            <div className="flex items-center gap-2 flex-wrap w-full xl:w-auto">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mr-1">Project Status:</span>
+              {[
+                { id: 'all', label: 'All Projects' },
+                { id: 'Running', label: 'Running' },
+                { id: 'Closed', label: 'Closed' },
+                { id: 'Complete Under Maintenance', label: 'Under Maintenance' }
+              ].map(status => (
+                <button
+                  key={status.id}
+                  onClick={() => setProjectStatusFilter(status.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                    projectStatusFilter === status.id
+                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                      : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {status.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Date Range Controls */}
+            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Preset:</span>
+                {[
+                  { id: 'all', label: 'All Time' },
+                  { id: 'month', label: 'This Month' },
+                  { id: 'quarter', label: '3 Months' },
+                  { id: 'half', label: '6 Months' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => handleDatePreset(p.id)}
+                    className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase transition-all border cursor-pointer ${
+                      datePreset === p.id
+                        ? 'bg-white text-slate-950 border-white'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 border-l border-white/10 pl-3">
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">From:</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setDatePreset('custom');
+                    }}
+                    className="bg-slate-950/80 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 font-mono focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">To:</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      setDatePreset('custom');
+                    }}
+                    className="bg-slate-950/80 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 font-mono focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Actionable Insights Strip — continuously moving marquee ticker with theme-aware fade edges */}
@@ -2616,7 +2699,7 @@ const HoDashboard = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             {[
               {
-                label: 'Active Projects',
+                label: 'Active Work Orders',
                 value: projectsList.length,
                 subtext: 'Total ongoing',
                 color: 'text-sky-400',

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { getProjects } from '../api/projectsApi';
 import { getEstimates, getEstimateById } from '../api/estimatesApi';
@@ -1443,7 +1443,21 @@ const Requisitions = () => {
     return list;
   };
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentTab, search, pageSize]);
+
   const filteredRequisitions = getFilteredRequisitions();
+
+  const totalPages = Math.ceil(filteredRequisitions.length / pageSize) || 1;
+  const paginatedRequisitions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredRequisitions.slice(start, start + pageSize);
+  }, [filteredRequisitions, currentPage, pageSize]);
 
   // Stats computation
   const totalCount = requisitions.length;
@@ -1744,7 +1758,7 @@ const Requisitions = () => {
               </div>
 
               {currentTab !== 'directory' && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Input
                     type="text"
                     placeholder="Search requisitions…"
@@ -1758,6 +1772,21 @@ const Requisitions = () => {
                     }
                     containerClassName="w-48 sm:w-60"
                   />
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">Show:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-950/80 border border-white/10 text-slate-300 focus:outline-none focus:border-amber-500/50 font-bold cursor-pointer"
+                    >
+                      <option value={5}>5 / pg</option>
+                      <option value={10}>10 / pg</option>
+                      <option value={20}>20 / pg</option>
+                      <option value={50}>50 / pg</option>
+                    </select>
+                  </div>
+
                   <Button
                     variant="glass"
                     size="sm"
@@ -1867,94 +1896,139 @@ const Requisitions = () => {
               </div>
             ) : (
               /* Requisitions List Table */
-              <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5 min-h-[400px] flex flex-col">
+              <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#0d131f]/90 backdrop-blur-xl min-h-[400px] flex flex-col">
                 {loading ? (
                   <SkeletonTable rows={6} cols={7} />
                 ) : filteredRequisitions.length === 0 ? (
-                  <div className="text-center flex-1 flex items-center justify-center p-24 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
+                  <div className="text-center flex-1 flex items-center justify-center p-24 text-slate-400 text-xs uppercase font-extrabold tracking-widest">
                     No requisitions matching parameters.
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow hover={false}>
-                        {['Requisition No.', 'Work Order', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
-                          <TableCell key={h} isHeader={true}>
-                            {h}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRequisitions.map((req) => {
-                        const isPending = req.requisition_status === 'Pending';
-                        const isHold = req.requisition_status === 'Hold';
-                        const isOwner = req.requester_user_id === user?.mobile_number;
-                        const isAdmin = user?.role === 'admin';
-                        const canCancel = isPending && (isOwner || isAdmin);
-                        return (
-                          <TableRow key={req.requisition_id}>
-                            <TableCell className="font-mono font-semibold text-slate-100">
-                              {req.requisition_no}
+                  <>
+                    <Table>
+                      <TableHeader className="bg-slate-900/90 border-b border-white/10">
+                        <TableRow hover={false} className="border-b border-white/10 bg-slate-900/90">
+                          {['Requisition No.', 'Work Order', 'Material Head', 'Amount', 'Status', 'Submitted Date', 'Actions'].map((h) => (
+                            <TableCell key={h} isHeader={true} className="text-slate-300 font-black uppercase tracking-widest text-[10px] py-4 bg-slate-900/90">
+                              {h}
                             </TableCell>
-                            <TableCell className="font-mono text-slate-400">
-                              {req.work_order_no}
-                            </TableCell>
-                            <TableCell className="text-slate-300 font-semibold">
-                              {req.material_main_head}
-                            </TableCell>
-                            <TableCell className="font-mono font-bold text-amber-500">
-                              {req.requisition_status === 'Approved'
-                                ? formatCurrency(req.approved_amount ?? req.requisition_amount)
-                                : formatCurrency(req.requisition_amount)
-                              }
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={req.requisition_status} />
-                            </TableCell>
-                            <TableCell className="text-[11px] text-slate-500">
-                              {formatDate(req.created_at)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
-                                {/* View details */}
-                                <Button
-                                  variant="glass"
-                                  size="xs"
-                                  onClick={() => setActiveReqId(req.requisition_id)}
-                                >
-                                  View Details
-                                </Button>
-
-                                {/* Take Action Button (ZO/HO/Admin for Pending/Hold rows) */}
-                                {(isPending || isHold) && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody className="divide-y divide-white/5">
+                        {paginatedRequisitions.map((req) => {
+                          const isPending = req.requisition_status === 'Pending';
+                          const isHold = req.requisition_status === 'Hold';
+                          const isOwner = req.requester_user_id === user?.mobile_number;
+                          const isAdmin = user?.role === 'admin';
+                          const canCancel = isPending && (isOwner || isAdmin);
+                          return (
+                            <TableRow key={req.requisition_id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5">
+                              <TableCell className="font-mono font-bold text-slate-100 text-xs">
+                                {req.requisition_no}
+                              </TableCell>
+                              <TableCell className="font-mono text-slate-300 font-semibold hover:text-amber-400 cursor-pointer transition-colors text-xs">
+                                {req.work_order_no}
+                              </TableCell>
+                              <TableCell className="text-slate-200 font-bold text-xs">
+                                {req.material_main_head}
+                              </TableCell>
+                              <TableCell className="font-mono font-black text-amber-400 text-sm tracking-tight">
+                                {req.requisition_status === 'Approved'
+                                  ? formatCurrency(req.approved_amount ?? req.requisition_amount)
+                                  : formatCurrency(req.requisition_amount)
+                                }
+                              </TableCell>
+                              <TableCell>
+                                <StatusBadge status={req.requisition_status} />
+                              </TableCell>
+                              <TableCell className="text-xs text-slate-300 font-medium">
+                                {formatDate(req.created_at)}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity duration-200">
+                                  {/* View details */}
                                   <Button
                                     variant="glass"
                                     size="xs"
-                                    className="text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20"
-                                    onClick={() => setActionTargetReq(req)}
+                                    className="bg-white/10 hover:bg-white/20 text-slate-100 font-extrabold border border-white/15 shadow-sm"
+                                    onClick={() => setActiveReqId(req.requisition_id)}
                                   >
-                                    Take Action
+                                    View Details
                                   </Button>
-                                )}
-                                
-                                {/* Cancel Button */}
-                                {canCancel && (
-                                  <Button
-                                    variant="danger"
-                                    size="xs"
-                                    onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
-                                  >
-                                    Cancel
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+
+                                  {/* Take Action Button (ZO/HO/Admin for Pending/Hold rows) */}
+                                  {(isPending || isHold) && ['zo', 'ho', 'admin'].includes(user?.role) && (
+                                    <Button
+                                      variant="glass"
+                                      size="xs"
+                                      className="text-slate-950 font-black bg-amber-500 hover:bg-amber-400 border border-amber-400 shadow-md shadow-amber-500/20"
+                                      onClick={() => setActionTargetReq(req)}
+                                    >
+                                      Take Action
+                                    </Button>
+                                  )}
+                                  
+                                  {/* Cancel Button */}
+                                  {canCancel && (
+                                    <Button
+                                      variant="danger"
+                                      size="xs"
+                                      className="bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 font-bold"
+                                      onClick={() => setCancelTarget({ id: req.requisition_id, no: req.requisition_no })}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+
+                    {/* Pagination Controls Footer */}
+                    {totalPages > 1 && (
+                      <div className="p-4 border-t border-white/10 bg-slate-900/60 flex items-center justify-end gap-4 text-xs select-none">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
+                          >
+                            ‹ Prev
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                              <button
+                                key={pg}
+                                onClick={() => setCurrentPage(pg)}
+                                className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
+                                  currentPage === pg
+                                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
+                                    : 'bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300'
+                                }`}
+                              >
+                                {pg}
+                              </button>
+                            ))}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
+                          >
+                            Next ›
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

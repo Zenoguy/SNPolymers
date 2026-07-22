@@ -537,16 +537,24 @@ const DepartmentWiseEstimate = ({ projects }) => {
 
   const items = useMemo(() => {
     const map = {};
+    const countMap = {};
     (projects || []).forEach(p => {
       const d = p.department || 'General';
       map[d] = (map[d] || 0) + Number(p.work_order_value || 0);
+      countMap[d] = (countMap[d] || 0) + 1;
     });
     const entries = Object.entries(map);
     if (entries.length === 0) {
       return [];
     }
     const total = entries.reduce((a, [, v]) => a + v, 0) || 1;
-    return entries.map(([dept, amount], i) => ({ department: dept, amount, percentage: +((amount / total) * 100).toFixed(1), color: DEFAULT_COLORS[i % DEFAULT_COLORS.length] }));
+    return entries.map(([dept, amount], i) => ({
+      department: dept,
+      amount,
+      count: countMap[dept] || 0,
+      percentage: +((amount / total) * 100).toFixed(1),
+      color: DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+    }));
   }, [projects]);
 
   const totalAmount = useMemo(() => items.reduce((a, it) => a + it.amount, 0), [items]);
@@ -616,6 +624,12 @@ const DepartmentWiseEstimate = ({ projects }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Estimated Amount:</span>
             <span className="font-black text-sm font-mono text-amber-400">{fmtCr(hoveredDept.amount)}</span>
           </div>
+          {hoveredDept.count !== undefined && (
+            <div className="flex items-baseline justify-between gap-3 mt-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Work Orders:</span>
+              <span className="font-bold text-xs font-mono text-sky-400">{hoveredDept.count} {hoveredDept.count === 1 ? 'Work Order' : 'Work Orders'}</span>
+            </div>
+          )}
           <div className="flex items-baseline justify-between gap-3 mt-0.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share of Estimate:</span>
             <span className="font-bold text-xs font-mono text-slate-200">{hoveredDept.percentage}%</span>
@@ -639,7 +653,6 @@ const KeyFinancialIndicators = ({ projects }) => {
     { label: 'IT TDS',            value: Math.round(totalVal * 0.218), color: '#f59e0b', bgColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
     { label: 'SGST',              value: Math.round(totalVal * 0.095), color: '#f43f5e', bgColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg> },
     { label: 'CGST',              value: Math.round(totalVal * 0.095), color: '#a78bfa', bgColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg> },
-    { label: 'Not Utilized',      value: Math.round(totalVal * 0.023), color: '#14b8a6', bgColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
   ], [totalVal]);
 
   const maxAmount = Math.max(1, ...items.map(i => i.value));
@@ -648,7 +661,7 @@ const KeyFinancialIndicators = ({ projects }) => {
       <div className="flex justify-between items-center mb-3">
         <div>
           <h3 className="chart-title" style={{ color: isDark ? '#e2e8f4' : '#1E3A8A' }}>Key Financial Indicators</h3>
-          <p className="chart-subtitle">Summary of statutory withholdings and unutilized funds</p>
+          <p className="chart-subtitle">Summary of statutory withholdings</p>
         </div>
       </div>
       <div className="flex flex-col justify-between my-auto gap-3">
@@ -1511,8 +1524,8 @@ const ZoHomedashboardOverview = ({ selectedZoName, projects, balancesRes, isDark
   // Find active ZO balance
   const activeBal = useMemo(() => {
     const list = balancesRes?.balances || (balancesRes?.balance ? [balancesRes.balance] : []);
-    if (!list.length) return { available_balance: 1860000, assigned_credit_limit: 2000000 };
-    if (!selectedZoName) return list[0] || { available_balance: 1860000, assigned_credit_limit: 2000000 };
+    if (!list.length) return { available_balance: 0, assigned_credit_limit: 2000000 };
+    if (!selectedZoName) return list[0] || { available_balance: 0, assigned_credit_limit: 2000000 };
     const match = list.find(b => {
       const name = (b.zo_name || b.zo_user_id || '').toLowerCase();
       return name.includes(selectedZoName.toLowerCase());
@@ -1520,7 +1533,7 @@ const ZoHomedashboardOverview = ({ selectedZoName, projects, balancesRes, isDark
     return match || list[0];
   }, [balancesRes, selectedZoName]);
 
-  const availBal = activeBal.available_balance ?? 1860000;
+  const availBal = activeBal.available_balance ?? 0;
   const limitBal = activeBal.assigned_credit_limit ?? activeBal.allocated_amount ?? 2000000;
 
   // Calculate JE productivity list from projects
@@ -1766,6 +1779,36 @@ const ZoDashboard = () => {
   const [zoomedChart, setZoomedChart] = useState(null);
   const [kpiDetailModal, setKpiDetailModal] = useState(null);
 
+  // Strict Project Status & Date Range Filters
+  const [projectStatusFilter, setProjectStatusFilter] = useState('all'); // 'all' | 'Running' | 'Closed' | 'Complete Under Maintenance'
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [datePreset, setDatePreset] = useState('all'); // 'all' | 'month' | 'quarter' | 'half' | 'custom'
+
+  const handleDatePreset = (preset) => {
+    setDatePreset(preset);
+    const now = new Date();
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+    } else if (preset === 'month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(firstDay);
+      setEndDate(today);
+    } else if (preset === 'quarter') {
+      const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(threeMonthsAgo);
+      setEndDate(today);
+    } else if (preset === 'half') {
+      const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      setStartDate(sixMonthsAgo);
+      setEndDate(today);
+    }
+  };
+
   /* ── Data Queries ── */
   const { data: insightsRes } = useQuery({
     queryKey: ['zoInsights'],
@@ -1773,8 +1816,17 @@ const ZoDashboard = () => {
   });
 
   const { data: chartRes } = useQuery({
-    queryKey: ['zoChartData', activeView],
-    queryFn: async () => { const res = await getHoChartData({ view: activeView }); return res.data; }
+    queryKey: ['zoChartData', activeView, selectedZo, projectStatusFilter, startDate, endDate],
+    queryFn: async () => {
+      const res = await getHoChartData({
+        view: activeView,
+        zone: selectedZo || undefined,
+        project_status: projectStatusFilter,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined
+      });
+      return res.data;
+    }
   });
 
   const { data: projectsRes } = useQuery({
@@ -2002,6 +2054,84 @@ const ZoDashboard = () => {
             </svg>
             {refreshMutation.isPending ? 'Refreshing...' : 'Refresh Views'}
           </button>
+        </div>
+      </div>
+
+      {/* Project Status & Date Range Filter Toolbar */}
+      <div className="glass-panel p-4 rounded-2xl mb-8 flex flex-col xl:flex-row gap-4 items-center justify-between border border-white/10 shadow-lg">
+        {/* Project Status Filter Tabs */}
+        <div className="flex items-center gap-2 flex-wrap w-full xl:w-auto">
+          <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mr-1">Project Status:</span>
+          {[
+            { id: 'all', label: 'All Projects' },
+            { id: 'Running', label: 'Running' },
+            { id: 'Closed', label: 'Closed' },
+            { id: 'Complete Under Maintenance', label: 'Under Maintenance' }
+          ].map(status => (
+            <button
+              key={status.id}
+              onClick={() => setProjectStatusFilter(status.id)}
+              className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                projectStatusFilter === status.id
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                  : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              {status.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Date Range Controls */}
+        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Preset:</span>
+            {[
+              { id: 'all', label: 'All Time' },
+              { id: 'month', label: 'This Month' },
+              { id: 'quarter', label: '3 Months' },
+              { id: 'half', label: '6 Months' }
+            ].map(p => (
+              <button
+                key={p.id}
+                onClick={() => handleDatePreset(p.id)}
+                className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase transition-all border cursor-pointer ${
+                  datePreset === p.id
+                    ? 'bg-white text-slate-950 border-white'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] font-bold text-slate-400 uppercase">From:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setDatePreset('custom');
+                }}
+                className="bg-slate-950/80 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 font-mono focus:outline-none focus:border-amber-500/50"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] font-bold text-slate-400 uppercase">To:</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setDatePreset('custom');
+                }}
+                className="bg-slate-950/80 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-200 font-mono focus:outline-none focus:border-amber-500/50"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

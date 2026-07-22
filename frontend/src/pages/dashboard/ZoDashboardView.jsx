@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../components/AuthContext';
 import { getZonalBalances } from '../../api/zoBalancesApi';
 import { getProjectsHealth } from '../../api/analyticsApi';
+import { getRequisitions } from '../../api/requisitionsApi';
 
 const formatINR = (value) => {
   const num = Number(value) || 0;
@@ -45,7 +46,18 @@ const ZoDashboardView = () => {
     staleTime: 30000
   });
 
+  // 3. Fetch Requisitions for Pending Payment Requisition Amount
+  const { data: requisitionsRes } = useQuery({
+    queryKey: ['zoPendingRequisitions'],
+    queryFn: async () => {
+      const res = await getRequisitions();
+      return res.data;
+    },
+    staleTime: 30000
+  });
+
   const projects = projectsRes?.data || [];
+  const requisitionsList = requisitionsRes?.requisitions || requisitionsRes?.data || [];
   const myZoName = user?.assigned_zone || user?.zo_name || user?.display_name || user?.name || 'Zonal Office';
 
   // Filter projects for logged-in ZO
@@ -58,14 +70,24 @@ const ZoDashboardView = () => {
     });
   }, [projects, myZoName, user]);
 
+  // Compute Pending Payment Requisitions for this ZO
+  const pendingReqStats = useMemo(() => {
+    const pendingItems = (requisitionsList || []).filter(r => {
+      const status = (r.requisition_status || r.status || '').toLowerCase();
+      return status.includes('pending');
+    });
+
+    const sum = pendingItems.reduce((acc, r) => acc + Number(r.net_payable_amount || r.requested_amount || r.amount || 0), 0);
+    return { count: pendingItems.length, amount: sum };
+  }, [requisitionsList]);
+
   const balanceData = balanceRes?.balances?.[0] || balanceRes?.balance || {
-    available_balance: 1860000,
+    available_balance: 0,
     assigned_credit_limit: 2000000,
     zo_name: myZoName
   };
 
-  const availBal = balanceData.available_balance ?? 1860000;
-  const limitBal = balanceData.assigned_credit_limit ?? balanceData.credit_limit ?? 2000000;
+  const availBal = balanceData.available_balance ?? 0;
 
   // Derive JE Stats for this zone
   const jeStats = useMemo(() => {
@@ -104,7 +126,7 @@ const ZoDashboardView = () => {
               Zonal Credit Limit Ledger
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Available credit, assigned projects and junior engineer productivity for your zone.
+              Available credit, pending payment requisitions and junior engineer productivity for your zone.
             </p>
           </div>
 
@@ -133,15 +155,15 @@ const ZoDashboardView = () => {
             <span className="text-2xl font-black text-emerald-400 font-mono block mt-1">{formatINR(availBal)}</span>
             <span className="text-[10px] text-emerald-500/80 font-mono mt-1 block">Ready for requisition payout</span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Total Assigned Limit</span>
-            <span className="text-2xl font-black text-slate-200 font-mono block mt-1">{formatINR(limitBal)}</span>
-            <span className="text-[10px] text-slate-400 font-mono mt-1 block">Sanctioned Zonal Credit Cap</span>
-          </div>
           <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Pending Requisitions Amount</span>
+            <span className="text-2xl font-black text-amber-400 font-mono block mt-1">{formatINR(pendingReqStats.amount)}</span>
+            <span className="text-[10px] text-amber-500/80 font-mono mt-1 block">{pendingReqStats.count} payment bills pending review</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-sky-950/20 border border-sky-500/20">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Mapped Active Projects</span>
-            <span className="text-2xl font-black text-amber-400 font-mono block mt-1">{filteredProjects.length} WO Sites</span>
-            <span className="text-[10px] text-amber-500/80 font-mono mt-1 block">Active sites under monitoring</span>
+            <span className="text-2xl font-black text-sky-400 font-mono block mt-1">{filteredProjects.length} WO Sites</span>
+            <span className="text-[10px] text-sky-500/80 font-mono mt-1 block">Active sites under monitoring</span>
           </div>
         </div>
       </div>

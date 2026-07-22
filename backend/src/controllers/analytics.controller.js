@@ -588,7 +588,7 @@ async function getHoChartData(req, res) {
       return res.status(403).json({ success: false, message: 'Access denied. Authorized executive roles only.' });
     }
 
-    const { view = 'all', zone, work_order_no } = req.query;
+    const { view = 'all', zone, work_order_no, project_status, start_date, end_date } = req.query;
     const twelveMonthsAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
 
     const sumOf = (arr, key) =>
@@ -601,13 +601,13 @@ async function getHoChartData(req, res) {
           'work_order_no, site_details, physical_progress, approved_requisitions_amount, work_order_value, days_since_last_progress_report, health_score, health_status, zo_user_id, zone'
         ),
         supabase.from('project_cost_estimates').select('work_order_no, estimate_amount, estimate_status, estimate_revision, created_at'),
-        supabase.from('fund_requests').select('approve_ho_amount, request_status, work_order_no'),
-        supabase.from('requisitions').select('approved_amount, requisition_status, work_order_no, zo_user_id, payment_date'),
-        supabase.from('ra_final_bills').select('gross_bill, agency_payment, work_order_no, security_deposit_amount, it_tds, sgst, cgst, earnest_money_deposit'),
+        supabase.from('fund_requests').select('approve_ho_amount, request_status, work_order_no, created_at'),
+        supabase.from('requisitions').select('approved_amount, requisition_status, work_order_no, zo_user_id, payment_date, created_at'),
+        supabase.from('ra_final_bills').select('gross_bill, agency_payment, work_order_no, security_deposit_amount, it_tds, sgst, cgst, earnest_money_deposit, created_at'),
         supabase.from('zo_fund_ledger').select('zo_user_id, transaction_type, amount, created_at').gte('created_at', twelveMonthsAgo).order('created_at', { ascending: true }),
         supabase.from('daily_progress_reports').select('work_order_no, physical_work_progress, login_date').order('login_date', { ascending: true }),
         supabase.from('zone_performance_mv').select('*'),
-        supabase.from('projects_master').select('work_order_no, department, work_order_value, earnest_money_deposit'),
+        supabase.from('projects_master').select('work_order_no, department, work_order_value, earnest_money_deposit, status'),
         supabase.from('zo_balances').select('available_balance')
       ]);
 
@@ -616,8 +616,33 @@ async function getHoChartData(req, res) {
       if (r.error) throw r.error;
     }
 
+    // === Strict Filtering Logic ===
+    let allProjects = projectsRes.data || [];
+    if (project_status && project_status !== 'all') {
+      allProjects = allProjects.filter(p => p.status === project_status);
+    }
+    const allowedWoSet = new Set(allProjects.map(p => p.work_order_no));
+
+    // Helper for date bounds
+    const isWithinDateRange = (dtStr) => {
+      if (!dtStr) return true;
+      const d = dtStr.slice(0, 10);
+      if (start_date && d < start_date) return false;
+      if (end_date && d > end_date) return false;
+      return true;
+    };
+
+    // Filter raw data arrays by allowed work orders and date ranges
+    let filteredHealth = (healthRes.data || []).filter(p => allowedWoSet.has(p.work_order_no));
+    let filteredEstimates = (estimatesRes.data || []).filter(e => allowedWoSet.has(e.work_order_no) && isWithinDateRange(e.created_at));
+    let filteredFundReqs = (fundReqsRes.data || []).filter(f => allowedWoSet.has(f.work_order_no) && isWithinDateRange(f.created_at));
+    let filteredReqs = (reqsRes.data || []).filter(r => allowedWoSet.has(r.work_order_no) && isWithinDateRange(r.payment_date || r.created_at));
+    let filteredBills = (billsRes.data || []).filter(b => allowedWoSet.has(b.work_order_no) && isWithinDateRange(b.created_at));
+    let filteredLedger = (ledgerRes.data || []).filter(l => isWithinDateRange(l.created_at));
+    let filteredDpr = (dprRes.data || []).filter(d => allowedWoSet.has(d.work_order_no) && isWithinDateRange(d.login_date));
+
     // === Build bubbleMatrix ===
-    let bubbleMatrix = (healthRes.data || []).map(p => ({
+    let bubbleMatrix = filteredHealth.map(p => ({
       work_order_no: p.work_order_no,
       site_details: p.site_details,
       zone: p.zone,
@@ -634,15 +659,15 @@ async function getHoChartData(req, res) {
     if (work_order_no) bubbleMatrix = bubbleMatrix.filter(p => p.work_order_no === work_order_no);
 
     // === Build waterfallData ===
-    const finalEstimates = (estimatesRes.data || []).filter(e => e.estimate_status === 'Final Approved');
-    const approvedFunds  = (fundReqsRes.data  || []).filter(f => f.request_status === 'Approved');
-    const approvedReqs   = (reqsRes.data       || []).filter(r => r.requisition_status === 'Approved');
+    const finalEstimates = filteredEstimates.filter(e => e.estimate_status === 'Final Approved');
+    const approvedFunds  = filteredFundReqs.filter(f => f.request_status === 'Approved');
+    const approvedReqs   = filteredReqs.filter(r => r.requisition_status === 'Approved');
     const waterfallData = [
       { stage: 'Final Approved Estimate', amount: sumOf(finalEstimates, 'estimate_amount') },
       { stage: 'HO Allocated',           amount: sumOf(approvedFunds,  'approve_ho_amount') },
       { stage: 'Requisitions Approved',  amount: sumOf(approvedReqs,   'approved_amount') },
-      { stage: 'Gross Billed',           amount: sumOf(billsRes.data,  'gross_bill') },
-      { stage: 'Agency Paid',            amount: sumOf(billsRes.data,  'agency_payment') }
+      { stage: 'Gross Billed',           amount: sumOf(filteredBills,  'gross_bill') },
+      { stage: 'Agency Paid',            amount: sumOf(filteredBills,  'agency_payment') }
     ];
 
     // === Build zonalHeatmap ===
@@ -657,7 +682,7 @@ async function getHoChartData(req, res) {
 
     // === Build revisionHeatmap ===
     const revisionMap = {};
-    (estimatesRes.data || []).forEach(e => {
+    filteredEstimates.forEach(e => {
       const month = e.created_at ? e.created_at.slice(0, 7) : 'unknown';
       const key = `${e.work_order_no}__${month}`;
       if (!revisionMap[key]) revisionMap[key] = { work_order_no: e.work_order_no, month, revision_count: 0 };
@@ -667,7 +692,7 @@ async function getHoChartData(req, res) {
 
     // === Build sCurveData ===
     const dprByWO = {};
-    (dprRes.data || []).forEach(d => {
+    filteredDpr.forEach(d => {
       if (!dprByWO[d.work_order_no]) dprByWO[d.work_order_no] = [];
       dprByWO[d.work_order_no].push({ date: d.login_date, progress: Number(d.physical_work_progress || 0) });
     });
@@ -678,7 +703,7 @@ async function getHoChartData(req, res) {
 
     // === Build runwayTrend ===
     const ledgerByZO = {};
-    (ledgerRes.data || []).forEach(tx => {
+    filteredLedger.forEach(tx => {
       if (!ledgerByZO[tx.zo_user_id]) ledgerByZO[tx.zo_user_id] = [];
       ledgerByZO[tx.zo_user_id].push({
         date: tx.created_at.slice(0, 10),
@@ -696,9 +721,9 @@ async function getHoChartData(req, res) {
     });
 
     // === Build departmentWiseEstimate ===
-    const projectsList = projectsRes.data || [];
+    const projectsList = allProjects;
     const estimateByWO = {};
-    (estimatesRes.data || []).forEach(e => {
+    filteredEstimates.forEach(e => {
       if (e.estimate_status === 'Final Approved') {
         if (!estimateByWO[e.work_order_no] || Number(e.estimate_amount) > Number(estimateByWO[e.work_order_no])) {
           estimateByWO[e.work_order_no] = Number(e.estimate_amount);
@@ -710,23 +735,28 @@ async function getHoChartData(req, res) {
     projectsList.forEach(p => {
       const dept = p.department ? p.department.trim() : 'Others';
       const amt = estimateByWO[p.work_order_no] !== undefined ? estimateByWO[p.work_order_no] : Number(p.work_order_value || 0);
-      deptMap[dept] = (deptMap[dept] || 0) + amt;
+      if (!deptMap[dept]) {
+        deptMap[dept] = { amount: 0, count: 0 };
+      }
+      deptMap[dept].amount += amt;
+      deptMap[dept].count += 1;
     });
 
-    const totalDeptAmt = Object.values(deptMap).reduce((a, b) => a + b, 0);
-    let departmentWiseEstimate = Object.entries(deptMap).map(([dept, amount]) => ({
+    const totalDeptAmt = Object.values(deptMap).reduce((a, b) => a + b.amount, 0);
+    let departmentWiseEstimate = Object.entries(deptMap).map(([dept, obj]) => ({
       department: dept,
-      amount,
-      percentage: totalDeptAmt > 0 ? parseFloat(((amount / totalDeptAmt) * 100).toFixed(1)) : 0
+      amount: obj.amount,
+      count: obj.count,
+      percentage: totalDeptAmt > 0 ? parseFloat(((obj.amount / totalDeptAmt) * 100).toFixed(1)) : 0
     })).sort((a, b) => b.amount - a.amount);
 
     if (departmentWiseEstimate.length === 0) {
       departmentWiseEstimate = [
-        { department: 'Civil', amount: 44800000, percentage: 38 },
-        { department: 'Electrical', amount: 30700000, percentage: 26 },
-        { department: 'Mechanical', amount: 21200000, percentage: 18 },
-        { department: 'Plumbing', amount: 11800000, percentage: 10 },
-        { department: 'Others', amount: 9500000, percentage: 8 }
+        { department: 'Civil', amount: 44800000, count: 15, percentage: 38 },
+        { department: 'Electrical', amount: 30700000, count: 10, percentage: 26 },
+        { department: 'Mechanical', amount: 21200000, count: 8, percentage: 18 },
+        { department: 'Plumbing', amount: 11800000, count: 4, percentage: 10 },
+        { department: 'Others', amount: 9500000, count: 3, percentage: 8 }
       ];
     }
 
