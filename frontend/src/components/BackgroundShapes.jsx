@@ -14,35 +14,7 @@ const BackgroundShapes = () => {
         backgroundSize: '32px 32px' 
       }}></div>
 
-      {/* 3. Top Right Corner Concentric Rings and Polymer Hexagon (Only SVG Shape Retained) */}
-      <svg className="absolute w-[800px] h-[800px] text-white pointer-events-none" style={{ left: '80%', top: '20%', transform: 'translate(-50%, -50%)' }} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-        <g className="opacity-[0.14] origin-[400px_400px] animate-[spin_100s_linear_infinite]" style={{ transformOrigin: '400px 400px' }}>
-          <circle cx="400" cy="400" r="180" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
-          <circle cx="400" cy="400" r="240" fill="none" stroke="currentColor" strokeWidth="0.75" />
-          <circle cx="400" cy="400" r="320" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="12 6" />
-          
-          {/* Hexagonal structural silhouette */}
-          <polygon 
-            points="
-              400,300 
-              486.6,350 
-              486.6,450 
-              400,500 
-              313.4,450 
-              313.4,350
-            " 
-            fill="rgba(99, 102, 241, 0.05)" 
-            stroke="currentColor" 
-            strokeWidth="1.5" 
-          />
-          <line x1="400" y1="400" x2="400" y2="300" stroke="currentColor" strokeWidth="1" />
-          <line x1="400" y1="400" x2="486.6" y2="350" stroke="currentColor" strokeWidth="1" />
-          <line x1="400" y1="400" x2="486.6" y2="450" stroke="currentColor" strokeWidth="1" />
-          <line x1="400" y1="400" x2="400" y2="500" stroke="currentColor" strokeWidth="1" />
-          <line x1="400" y1="400" x2="313.4" y2="450" stroke="currentColor" strokeWidth="1" />
-          <line x1="400" y1="400" x2="313.4" y2="350" stroke="currentColor" strokeWidth="1" />
-        </g>
-      </svg>
+      {/* Decorative ambient background glows */}
 
       {/* Decorative Solid Gradient Silhouette shapes blurred behind glass */}
       <div className="absolute top-[35%] left-[15%] w-[12rem] h-[12rem] bg-indigo-500/10 rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%] pointer-events-none opacity-30 blur-[40px] animate-[pulse_8s_ease-in-out_infinite]"></div>
