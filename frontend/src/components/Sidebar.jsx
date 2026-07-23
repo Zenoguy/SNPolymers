@@ -620,7 +620,7 @@ const Sidebar = () => {
           />
         </Link>
         <div
-          className={`flex flex-col transition-all duration-300 ease-in-out origin-left whitespace-nowrap overflow-hidden flex-1 ${
+          className={`flex flex-col transition-[opacity,max-width] duration-300 ease-in-out origin-left whitespace-nowrap overflow-hidden flex-1 ${
             displayCollapsed ? 'opacity-0 max-w-0 pointer-events-none' : 'opacity-100 max-w-[200px]'
           }`}
         >
@@ -663,7 +663,7 @@ const Sidebar = () => {
               </svg>
             </div>
             <span
-              className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+              className={`transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                 displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[200px]'
               }`}
             >
@@ -690,7 +690,7 @@ const Sidebar = () => {
                 {icon}
               </div>
               <span
-                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                className={`transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                   displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[240px]'
                 }`}
               >
@@ -727,7 +727,7 @@ const Sidebar = () => {
                     </svg>
                   </div>
                   <span
-                    className={`text-xs font-mono font-bold transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                    className={`text-xs font-mono font-bold transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                       displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[150px]'
                     }`}
                   >
@@ -761,7 +761,7 @@ const Sidebar = () => {
               )}
             </div>
             <span
-              className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+              className={`transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                 displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[120px]'
               }`}
             >
@@ -782,7 +782,7 @@ const Sidebar = () => {
                 </div>
               </div>
               <div
-                className={`flex flex-col truncate transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                className={`flex flex-col truncate transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                   displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[150px]'
                 }`}
               >
@@ -807,7 +807,7 @@ const Sidebar = () => {
                 </svg>
               </div>
               <span
-                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                className={`transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                   displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[100px]'
                 }`}
               >
@@ -827,7 +827,7 @@ const Sidebar = () => {
                 </svg>
               </div>
               <span
-                className={`transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                className={`transition-[opacity,max-width] duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
                   displayCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[120px]'
                 }`}
               >

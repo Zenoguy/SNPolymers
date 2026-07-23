@@ -702,9 +702,7 @@ const RAFinalBill = () => {
         </div>
       )}
 
-      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
-        {/* Status Alerts */}
+      {/* Status Alerts */}
         {displayError && (
           <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg text-left">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-ping" />
@@ -886,23 +884,23 @@ const RAFinalBill = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full md:w-auto">
                 {/* Navigation Tab Switcher */}
-                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 shrink-0 self-stretch sm:self-auto">
+                <div className="flex bg-slate-900/90 p-1.5 rounded-2xl border border-white/15 backdrop-blur-xl shadow-lg shrink-0 self-stretch sm:self-auto">
                   <button
                     onClick={() => setCurrentTab('dashboard')}
-                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${
                       currentTab === 'dashboard'
-                        ? 'bg-white text-slate-950 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-white text-slate-950 shadow-md font-black'
+                        : 'text-slate-200 hover:text-white font-extrabold hover:bg-white/10'
                     }`}
                   >
                     Overview Dashboard
                   </button>
                   <button
                     onClick={() => setCurrentTab('directory')}
-                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+                    className={`flex-grow sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${
                       currentTab === 'directory'
-                        ? 'bg-white text-slate-950 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-white text-slate-950 shadow-md font-black'
+                        : 'text-slate-200 hover:text-white font-extrabold hover:bg-white/10'
                     }`}
                   >
                     Projects Directory
@@ -1182,8 +1180,6 @@ const RAFinalBill = () => {
             )}
           </div>
         )}
-      </main>
-      </div>
 
       {/* CREATE FORM OVERLAY SLIDE PANEL (No changes requested here) */}
       {/* CREATE FORM OVERLAY SLIDE PANEL (No changes requested here) */}

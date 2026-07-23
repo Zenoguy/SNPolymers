@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import authApi from '../api/authApi';
-import { Button, Input, TextArea, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { Button, Input, TextArea, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell, Pagination } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // API Clients
@@ -58,8 +58,13 @@ const DailyProgress = () => {
 
   const isSelectedDateBackdated = (() => {
     if (!siteVisitDate) return false;
-    const [year, month, day] = siteVisitDate.split('-').map(Number);
-    const inputDate = new Date(year, month - 1, day);
+    const parts = siteVisitDate.split('-');
+    if (parts.length !== 3) return false;
+    const year = parseInt(parts[0], 10);
+    if (isNaN(year) || year < 1000 || year > 9999) return false;
+
+    const [y, m, d] = parts.map(Number);
+    const inputDate = new Date(y, m - 1, d);
 
     const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
     const formatter = new Intl.DateTimeFormat('en-CA', options);
@@ -69,24 +74,28 @@ const DailyProgress = () => {
   })();
 
   const handleDateChange = (dateVal) => {
-    if (!dateVal) {
-      setSiteVisitDate('');
-      return;
-    }
-    const [year, month, day] = dateVal.split('-').map(Number);
-    const inputDate = new Date(year, month - 1, day);
+    setSiteVisitDate(dateVal);
+  };
+
+  const handleDateBlur = () => {
+    if (!siteVisitDate) return;
+    const parts = siteVisitDate.split('-');
+    if (parts.length !== 3) return;
+    const year = parseInt(parts[0], 10);
+    if (isNaN(year) || year < 1000 || year > 9999) return;
+
+    const [y, m, d] = parts.map(Number);
+    const inputDate = new Date(y, m - 1, d);
 
     const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
     const formatter = new Intl.DateTimeFormat('en-CA', options);
     const [tYear, tMonth, tDay] = formatter.format(new Date()).split('-').map(Number);
     const todayDate = new Date(tYear, tMonth - 1, tDay);
 
-    if (inputDate < todayDate) {
-      setPendingBackDateVal(dateVal);
+    if (inputDate < todayDate && (!remarksAfterSiteVisit || !remarksAfterSiteVisit.trim())) {
+      setPendingBackDateVal(siteVisitDate);
       setBackDateReason('');
       setShowBackDateModal(true);
-    } else {
-      setSiteVisitDate(dateVal);
     }
   };
 
@@ -102,10 +111,16 @@ const DailyProgress = () => {
   const [uploadError, setUploadError] = useState('');
   const [photoMissing, setPhotoMissing] = useState(false);
 
-  // Project Search Filters (Directory tab)
+  // Project Search Filters & Pagination (Directory tab)
   const [searchWO, setSearchWO] = useState('');
   const [searchDept, setSearchDept] = useState('');
   const [searchZone, setSearchZone] = useState('');
+  const [dirPage, setDirPage] = useState(1);
+  const dirPageSize = 10;
+
+  useEffect(() => {
+    setDirPage(1);
+  }, [searchWO, searchDept, searchZone]);
 
   const fileInputRef = useRef(null);
 
@@ -380,13 +395,17 @@ const DailyProgress = () => {
     }
   };
 
-  // Filter projects list (landing directory tab)
+  // Filter & Paginate projects list (landing directory tab)
   const filteredProjects = projects.filter(p => {
     const matchesWO = p.work_order_no.toLowerCase().includes(searchWO.toLowerCase());
     const matchesDept = p.department.toLowerCase().includes(searchDept.toLowerCase());
     const matchesZone = (p.zone || '').toLowerCase().includes(searchZone.toLowerCase());
     return matchesWO && matchesDept && matchesZone;
   });
+
+  const totalDirProjects = filteredProjects.length;
+  const totalDirPages = Math.max(1, Math.ceil(totalDirProjects / dirPageSize));
+  const paginatedProjects = filteredProjects.slice((dirPage - 1) * dirPageSize, dirPage * dirPageSize);
 
   // Calculate summary metrics for active project spreadsheet
   const getSummaryMetrics = () => {
@@ -495,10 +514,7 @@ const DailyProgress = () => {
 
   return (
     <>
-      <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        <main className="flex-grow p-6 md:p-10 overflow-y-auto w-full relative z-10">
-
-          {/* Status Alerts */}
+      {/* Status Alerts */}
           {displayError && (
             <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-2xl text-xs text-red-300 mb-5 flex items-center gap-2.5 shadow-lg">
               <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-ping" />
@@ -665,6 +681,7 @@ const DailyProgress = () => {
                             value={siteVisitDate}
                             max={getTodayDateString()}
                             onChange={(e) => handleDateChange(e.target.value)}
+                            onBlur={handleDateBlur}
                             size="sm"
                           />
                         </TableCell>
@@ -822,30 +839,30 @@ const DailyProgress = () => {
                   <button
                     onClick={() => navigate('/analytics/leaderboard')}
                     title="View Leaderboards & Field Rankings"
-                    className="p-3 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-amber-400/10 to-yellow-500/20 border border-amber-500/30 hover:border-amber-400/50 hover:scale-105 transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)] group flex items-center gap-2"
+                    className="p-3 rounded-2xl bg-slate-900/90 border border-amber-500/50 hover:border-amber-400 backdrop-blur-xl shadow-lg hover:scale-105 transition-all group flex items-center gap-2"
                   >
                     <svg className="w-6 h-6 text-amber-400 group-hover:text-yellow-300 transition-colors drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V18H8v2h8v-2h-3v-2.1c2.16-.4 3.86-2.07 4.39-4.24C19.08 11.33 21 9.25 21 7V6c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
                     </svg>
-                    <span className="hidden sm:inline text-xs font-extrabold uppercase tracking-wider text-amber-300 group-hover:text-yellow-200">Leaderboards</span>
+                    <span className="hidden sm:inline text-xs font-black uppercase tracking-wider text-amber-300 group-hover:text-yellow-200">Leaderboards</span>
                   </button>
 
                   {/* Navigation Tab Switcher */}
-                  <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 flex-1 md:flex-none">
+                  <div className="flex bg-slate-900/90 p-1.5 rounded-2xl border border-white/15 backdrop-blur-xl shadow-lg flex-1 md:flex-none">
                     <button
                       onClick={() => setCurrentTab('dashboard')}
-                      className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${currentTab === 'dashboard'
-                        ? 'bg-white text-slate-950 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
+                      className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${currentTab === 'dashboard'
+                        ? 'bg-white text-slate-950 shadow-md font-black'
+                        : 'text-slate-200 hover:text-white font-extrabold hover:bg-white/10'
                         }`}
                     >
                       Overview Dashboard
                     </button>
                     <button
                       onClick={() => setCurrentTab('directory')}
-                      className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${currentTab === 'directory'
-                        ? 'bg-white text-slate-950 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
+                      className={`flex-grow md:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${currentTab === 'directory'
+                        ? 'bg-white text-slate-950 shadow-md font-black'
+                        : 'text-slate-200 hover:text-white font-extrabold hover:bg-white/10'
                         }`}
                     >
                       Projects Directory
@@ -1239,8 +1256,8 @@ const DailyProgress = () => {
                   <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5 bg-gradient-to-br from-white/[0.01] to-transparent">
                     <div className="p-5 border-b border-white/5 flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Projects Registry</span>
-                      <span className="px-2 py-0.5 bg-slate-800 text-slate-300 font-mono text-[10px] rounded-lg">
-                        {filteredProjects.length} projects
+                      <span className="px-2.5 py-1 bg-slate-800 text-slate-300 font-mono text-[10px] font-bold rounded-lg border border-white/10">
+                        {totalDirProjects} {totalDirProjects === 1 ? 'project' : 'projects'}
                       </span>
                     </div>
 
@@ -1250,57 +1267,68 @@ const DailyProgress = () => {
                           <div key={idx} className="h-12 w-full bg-white/[0.02] rounded-xl border border-white/5 animate-pulse" />
                         ))}
                       </div>
-                    ) : filteredProjects.length === 0 ? (
+                    ) : totalDirProjects === 0 ? (
                       <div className="text-center p-20 text-slate-500 text-xs uppercase font-extrabold tracking-widest">
                         No projects matching directory filters.
                       </div>
                     ) : (
-                      <Table>
-                        <TableHeader className="bg-white/[0.01]">
-                          <TableRow hover={false} className="text-[9px]">
-                            <TableCell isHeader={true} className="pl-6" size="sm">Work Order No</TableCell>
-                            <TableCell isHeader={true} size="sm">Department</TableCell>
-                            <TableCell isHeader={true} size="sm">Zone (Area)</TableCell>
-                            <TableCell isHeader={true} size="sm">State / District</TableCell>
-                            <TableCell isHeader={true} align="center" size="sm">Status</TableCell>
-                            <TableCell isHeader={true} className="pr-6" align="right" size="sm">Actions</TableCell>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredProjects.map((project) => (
-                            <TableRow
-                              key={project.work_order_no}
-                              className="text-slate-300 text-left"
-                            >
-                              <TableCell className="pl-6 font-mono font-bold text-slate-200" size="sm">
-                                {project.work_order_no}
-                              </TableCell>
-                              <TableCell className="font-semibold text-slate-300 truncate max-w-[200px]" title={project.department} size="sm">
-                                {project.department}
-                              </TableCell>
-                              <TableCell className="font-mono font-semibold text-slate-300" size="sm">
-                                {project.zone || 'N/A'}
-                              </TableCell>
-                              <TableCell size="sm">
-                                {project.state} / {project.district}
-                              </TableCell>
-                              <TableCell align="center" size="sm">
-                                <Badge variant={project.status === 'Running' ? 'emerald' : 'red'} showDot={false}>
-                                  {project.status === 'Running' ? 'Active' : project.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="pr-6" align="right" size="sm">
-                                <Button
-                                  onClick={() => setActiveWO(project)}
-                                  size="xs"
-                                >
-                                  View Ledger Sheet
-                                </Button>
-                              </TableCell>
+                      <>
+                        <Table>
+                          <TableHeader className="bg-white/[0.01]">
+                            <TableRow hover={false} className="text-[9px]">
+                              <TableCell isHeader={true} className="pl-6" size="sm">Work Order No</TableCell>
+                              <TableCell isHeader={true} size="sm">Department</TableCell>
+                              <TableCell isHeader={true} size="sm">Zone (Area)</TableCell>
+                              <TableCell isHeader={true} size="sm">State / District</TableCell>
+                              <TableCell isHeader={true} align="center" size="sm">Status</TableCell>
+                              <TableCell isHeader={true} className="pr-6" align="right" size="sm">Actions</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedProjects.map((project) => (
+                              <TableRow
+                                key={project.work_order_no}
+                                className="text-slate-300 text-left"
+                              >
+                                <TableCell className="pl-6 font-mono font-bold text-slate-200" size="sm">
+                                  {project.work_order_no}
+                                </TableCell>
+                                <TableCell className="font-semibold text-slate-300 truncate max-w-[200px]" title={project.department} size="sm">
+                                  {project.department}
+                                </TableCell>
+                                <TableCell className="font-mono font-semibold text-slate-300" size="sm">
+                                  {project.zone || 'N/A'}
+                                </TableCell>
+                                <TableCell size="sm">
+                                  {project.state} / {project.district}
+                                </TableCell>
+                                <TableCell align="center" size="sm">
+                                  <Badge variant={project.status === 'Running' ? 'emerald' : 'red'} showDot={false}>
+                                    {project.status === 'Running' ? 'Active' : project.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="pr-6" align="right" size="sm">
+                                  <Button
+                                    onClick={() => setActiveWO(project)}
+                                    size="xs"
+                                  >
+                                    View Ledger Sheet
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+
+                        <Pagination
+                          currentPage={dirPage}
+                          totalPages={totalDirPages}
+                          onPageChange={setDirPage}
+                          maxVisible={5}
+                          showLabel={true}
+                          totalRecords={totalDirProjects}
+                        />
+                      </>
                     )}
                   </div>
                 </div>
@@ -1518,8 +1546,6 @@ const DailyProgress = () => {
               </div>
             </Modal>
           )}
-        </main>
-      </div>
     </>
   );
 };
