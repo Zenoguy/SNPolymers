@@ -461,13 +461,9 @@ async function getProjectDigitalTwin(req, res) {
       materials: materialsRes.data || [],
       approvals: approvalsRes.data || [],
       budget: budgetRes.data || null,
-<<<<<<< HEAD
-      photos: photosWithUrls,
+      photos: siteMedia,
+      media: siteMedia,
       audits: enrichedAudits
-=======
-      audits: enrichedAudits,
-      media: siteMedia
->>>>>>> fca5531 (ui)
     });
   } catch (error) {
     console.error('[ANALYTICS] Error in getProjectDigitalTwin:', error.message || error);
