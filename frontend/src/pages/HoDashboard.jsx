@@ -757,12 +757,12 @@ const SCurveProgress = ({ data }) => {
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-2">
           <ChartInfoTooltip
-            description="Cumulative project timeline comparing planned linear progress trajectory with actual DPR progress logs."
+            description="Cumulative project timeline comparing planned sigmoidal S-curve target with actual DPR progress logs."
             formula="Actual Trajectory = Cumulative Avg(DPR Physical Work Progress %)"
           />
           <div>
             <h3 className="chart-title">S-Curve Performance Progress</h3>
-            <p className="chart-subtitle">Planned linear trajectory vs actual DPR submissions</p>
+            <p className="chart-subtitle">Planned sigmoidal S-curve target vs actual DPR submissions</p>
           </div>
         </div>
         <select
@@ -779,20 +779,26 @@ const SCurveProgress = ({ data }) => {
 
       <div className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+          {/* Y Axis Title */}
+          <text x={14} y={H / 2 - 10} textAnchor="middle" fill={c.labelNormal} fontSize="8" fontWeight="bold" letterSpacing="1" transform={`rotate(-90, 14, ${H / 2 - 10})`}>PHYSICAL PROGRESS %</text>
+
+          {/* X Axis Title */}
+          <text x={W / 2} y={H - 6} textAnchor="middle" fill={c.labelNormal} fontSize="8" fontWeight="bold" letterSpacing="1">MONTH TIMELINE / PROJECT DURATION</text>
+
           {/* Y Axis Grid lines */}
           {[0, 25, 50, 75, 100].map((v, i) => {
             const y = (H - PAD) - (v / 100) * (H - 2 * PAD);
             return (
               <g key={i}>
                 <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke={c.gridLine} />
-                <text x={PAD - 8} y={y + 3} textAnchor="end" fill={c.labelMuted} fontSize="7" className="font-mono">{v}%</text>
+                <text x={PAD - 8} y={y + 3} textAnchor="end" fill={c.labelNormal} fontSize="8" fontWeight="bold" className="font-mono">{v}%</text>
               </g>
             );
           })}
 
           {/* Time markers */}
-          <text x={PAD} y={H - PAD + 14} fill={c.labelMuted} fontSize="7">START DATE</text>
-          <text x={W - PAD} y={H - PAD + 14} textAnchor="end" fill={c.labelMuted} fontSize="7">COMPLETION</text>
+          <text x={PAD} y={H - PAD + 14} fill={c.labelNormal} fontSize="8" fontWeight="bold">START DATE</text>
+          <text x={W - PAD} y={H - PAD + 14} textAnchor="end" fill={c.labelNormal} fontSize="8" fontWeight="bold">COMPLETION</text>
 
           {/* Planned Line (Dashed Amber) */}
           <polyline

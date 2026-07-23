@@ -965,16 +965,26 @@ const SCurveProgress = ({ projects }) => {
           <h3 className="chart-title">S-Curve Performance Progress</h3>
           <p className="chart-subtitle">Planned sigmoidal S-curve target vs actual DPR submissions</p>
         </div>
+        <ChartInfoTooltip
+          description="Cumulative project timeline comparing planned sigmoidal S-curve target with actual DPR physical work progress logs."
+          formula="Actual Progress = Cumulative Avg(DPR Physical Work Progress %)"
+        />
       </div>
       <div className="relative flex-1 flex flex-col justify-center">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+          {/* Y Axis Title */}
+          <text x={14} y={H / 2 - 10} textAnchor="middle" fill={c.labelNormal} fontSize="8" fontWeight="bold" letterSpacing="1" transform={`rotate(-90, 14, ${H / 2 - 10})`}>PHYSICAL PROGRESS %</text>
+
+          {/* X Axis Title */}
+          <text x={W / 2} y={H - 6} textAnchor="middle" fill={c.labelNormal} fontSize="8" fontWeight="bold" letterSpacing="1">MONTH TIMELINE / PROJECT DURATION</text>
+
           {[0, 25, 50, 75, 100].map((v, i) => {
             const y = toY(v);
-            return <g key={i}><line x1={PAD_SIDE} y1={y} x2={W - PAD_SIDE} y2={y} stroke={c.gridLine} /><text x={PAD_SIDE - 8} y={y + 3} textAnchor="end" fill={c.labelMuted} fontSize="8">{v}%</text></g>;
+            return <g key={i}><line x1={PAD_SIDE} y1={y} x2={W - PAD_SIDE} y2={y} stroke={c.gridLine} /><text x={PAD_SIDE - 8} y={y + 3} textAnchor="end" fill={c.labelNormal} fontSize="8" fontWeight="bold">{v}%</text></g>;
           })}
-          <text x={PAD_SIDE} y={H - PAD_BOT + 16} fill={c.labelMuted} fontSize="8">START DATE</text>
-          <text x={W - PAD_SIDE} y={H - PAD_BOT + 16} textAnchor="end" fill={c.labelMuted} fontSize="8">COMPLETION</text>
-          {months.map((m, i) => <text key={m} x={toX(i)} y={H - PAD_BOT + 32} textAnchor="middle" fill={c.labelMuted} fontSize="9" fontWeight="bold">{m}</text>)}
+          <text x={PAD_SIDE} y={H - PAD_BOT + 16} fill={c.labelNormal} fontSize="8" fontWeight="bold">START DATE</text>
+          <text x={W - PAD_SIDE} y={H - PAD_BOT + 16} textAnchor="end" fill={c.labelNormal} fontSize="8" fontWeight="bold">COMPLETION</text>
+          {months.map((m, i) => <text key={m} x={toX(i)} y={H - PAD_BOT + 32} textAnchor="middle" fill={c.labelNormal} fontSize="9" fontWeight="bold">{m}</text>)}
           <polyline fill="none" stroke={c.isDark ? '#f59e0b' : '#d97706'} strokeWidth="2" strokeDasharray="5 4" points={pts(planned)} />
           <polyline fill="none" stroke={c.isDark ? '#10b981' : '#059669'} strokeWidth="3" points={pts(actual)} />
           {actual.map((v, i) => <circle key={i} cx={toX(i)} cy={toY(v)} r="4" fill={c.isDark ? '#10b981' : '#059669'} />)}
