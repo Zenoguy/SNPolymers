@@ -373,7 +373,7 @@ async function getProjectDigitalTwin(req, res) {
       supabase.from('budget_leakage_mv').select('*').eq('work_order_no', work_order_no).maybeSingle(),
       supabase.from('audit_log').select('*').in('record_identifier', allowedIdentifiers).order('timestamp', { ascending: false }).limit(50),
       supabase.from('projects_master').select('site_latitude, site_longitude, department').eq('work_order_no', work_order_no).maybeSingle(),
-      supabase.from('daily_progress_reports').select('report_id, site_visit_date, physical_work_progress, daily_site_photo_url, original_photo_filename, remarks_after_site_visit, created_by').eq('work_order_no', work_order_no).order('site_visit_date', { ascending: false }).limit(10)
+      supabase.from('daily_progress_reports').select('report_id, site_visit_date, physical_work_progress, daily_site_photo_url, original_photo_filename, remarks_after_site_visit, created_by').eq('work_order_no', work_order_no).order('site_visit_date', { ascending: false }).limit(2)
     ]);
 
     if (overviewRes.error) throw overviewRes.error;
