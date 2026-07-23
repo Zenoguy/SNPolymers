@@ -2517,23 +2517,20 @@ const ZoDashboard = () => {
 
       {/* ── Section: Trends & Projections ── */}
       <SectionLabel>Trends &amp; Projections {selectedZoName ? `— ${selectedZoName}` : ''}</SectionLabel>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
         <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('scurve')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <SCurveProgress projects={filteredProjects} />
-          </div>
-        </ZoomCard>
-        <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('revision')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <InvestmentRecoveryPlot projects={filteredProjects} />
-          </div>
+          <SCurveProgress projects={filteredProjects} />
         </ZoomCard>
         <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('jeleaderboard')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <JeLeaderboard projects={filteredProjects} selectedZoName={selectedZoName} />
-          </div>
+          <JeLeaderboard projects={filteredProjects} selectedZoName={selectedZoName} />
         </ZoomCard>
       </div>
+
+      {/* ── Section: Financial Realization Pipeline ── */}
+      <SectionLabel>Financial Realization &amp; Bill Recovery {selectedZoName ? `— ${selectedZoName}` : ''}</SectionLabel>
+      <ZoomCard className="mb-6" onZoom={() => setZoomedChart('revision')}>
+        <InvestmentRecoveryPlot projects={filteredProjects} />
+      </ZoomCard>
 
       {/* ── Section: Project Health Summary ── */}
       <SectionLabel>Project Health Summary {selectedZoName ? `— ${selectedZoName}` : ''}</SectionLabel>

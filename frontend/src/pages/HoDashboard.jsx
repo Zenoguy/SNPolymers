@@ -2895,30 +2895,29 @@ const HoDashboard = () => {
         <span className="font-mono text-[9.5px] uppercase tracking-[2.5px] text-slate-500">Trends &amp; Projections</span>
         <div className="flex-1 h-px bg-white/[0.045]" />
       </div>
-      {/* ── Row 4: Runway (1/3) + S-Curve (1/3) + Revision Heatmap (1/3) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
         <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('runway')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <PredictiveRunwayLines
-              trendData={chartRes?.runwayTrend || []}
-              runwayData={insightsRes?.runwayData || []}
-            />
-          </div>
+          <PredictiveRunwayLines
+            trendData={chartRes?.runwayTrend || []}
+            runwayData={insightsRes?.runwayData || []}
+          />
         </ZoomCard>
         <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('scurve')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <SCurveProgress data={chartRes?.sCurveData || []} />
-          </div>
-        </ZoomCard>
-        <ZoomCard className="lg:col-span-1" onZoom={() => setZoomedChart('revision')}>
-          <div style={{ minHeight: '420px' }} className="h-full">
-            <InvestmentRecoveryPlot
-              projects={filteredProjects}
-              agencyPaymentAmount={chartRes?.executiveSummaryKpis?.agencyPayment?.amount}
-            />
-          </div>
+          <SCurveProgress data={chartRes?.sCurveData || []} />
         </ZoomCard>
       </div>
+
+      {/* ── Section: Financial Realization Pipeline ── */}
+      <div className="flex items-center gap-3 mb-3 mt-2">
+        <span className="font-mono text-[9.5px] uppercase tracking-[2.5px] text-slate-500">Financial Realization &amp; Bill Recovery</span>
+        <div className="flex-1 h-px bg-white/[0.045]" />
+      </div>
+      <ZoomCard className="mb-6" onZoom={() => setZoomedChart('revision')}>
+        <InvestmentRecoveryPlot
+          projects={filteredProjects}
+          agencyPaymentAmount={chartRes?.executiveSummaryKpis?.agencyPayment?.amount}
+        />
+      </ZoomCard>
 
       {/* ── Section: Project Health Summary ── */}
       <div className="flex items-center gap-3 mb-3 mt-2">
