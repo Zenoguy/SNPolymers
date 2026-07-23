@@ -11,7 +11,7 @@ Welcome to the **Integrated Digital Business Platform (IDBP)** for **S.N. Polyme
 
 ---
 
-##  Repository Architecture
+## 🏗️ Repository Architecture
 
 The project is split into two primary folders:
 
@@ -19,58 +19,68 @@ The project is split into two primary folders:
 SNPolymers/
 ├── backend/            # Express.js REST API with Supabase integration
 │   ├── src/
-│   │   ├── controllers/ # Route handler logic (Auth, Admin, & RA/Final Bills)
+│   │   ├── controllers/ # Route handler logic (Auth, Admin, Estimates, Requisitions, & RA/Final Bills)
 │   │   ├── db/          # Supabase client, query layer, and SQL migrations
 │   │   ├── middleware/  # Rate limiting, validation, & JWT Auth guards
 │   │   ├── routes/      # Express route definitions
 │   │   └── services/    # Telegram Bot, Email (Nodemailer), & audit services
 │   └── package.json
 │
-├── frontend/           # React + Vite client-side dashboard UI
+├── frontend/           # React 19 + Vite client-side dashboard UI
+│   ├── public/          # Static assets & theme background images (Serene Beach Night, Beach Daylight, Tech Arc)
 │   ├── src/
 │   │   ├── api/         # Axios instance & API client endpoints
-│   │   ├── components/  # Reusable UI controls, auth wrappers, & contexts
-│   │   ├── pages/       # Portal pages (Home, Dashboard, Requisitions, RA/Final Bills)
-│   │   └── index.css    # Tailwind CSS imports & global styles
+│   │   ├── components/  # Reusable UI controls, auth wrappers, & theme contexts
+│   │   │   ├── ui/      # Centralized primitive UI library (Button, Input, Modal, Table, Pagination, Skeleton)
+│   │   │   ├── Sidebar.jsx # Responsive hardware-accelerated side-by-side drawer
+│   │   │   └── ThemeContext.jsx # Theme engine & background preset manager
+│   │   ├── pages/       # Portal pages (Daily Progress, Requisitions, Estimates, RA/Final Bills, Analytics)
+│   │   └── index.css    # Tailwind CSS directives, glassmorphic tokens, & dual-theme rules
+│   ├── frontend_guidelines.md # Mandatory UI architecture & component standards
 │   └── package.json
 ```
 
 ---
 
-## Tech Stack & Key Technologies
+## ⚡ Tech Stack & Key Technologies
 
 ### Frontend
-- **Framework:** React 19 (Vite bundler)
-- **Styling:** Tailwind CSS + PostCSS
+- **Framework:** React 19 (Vite 8.0 bundler)
+- **Styling:** Tailwind CSS + PostCSS + Custom Glassmorphism Token Suite
 - **Navigation:** React Router DOM v6
-- **HTTP Client:** Axios (configured with interceptors & credentials support)
+- **Data Fetching:** TanStack React Query v5
+- **Design System & Aesthetics:**
+  - **Glassmorphism Engine:** Centralized translucency tokens (`.glass-panel`, `.glass-input`, `.glass-card-hover`, `.glass-nav`) with HSL color palettes and backdrop blur.
+  - **Dynamic Theme Presets:** Dual Dark Mode / Light Mode support with customizable background presets (Serene Beach Night 🏖️, Serene Beach Daylight 🏖️, Light Tech Arc, Oceanic Wave, CAD Blueprint, Minimal Slate).
+  - **Centralized UI Primitives:** Strict Zero Ad-Hoc Components policy ([frontend_guidelines.md](file:///home/zenoguy/Desktop/projects/SNPolymers/frontend/frontend_guidelines.md)) using primitive UI components (`<Pagination />`, `<SkeletonTable />`, `<Modal />`, `<Badge />`, `<Input />`, `<Button />`, `<Table />`).
+  - **Hardware Acceleration:** Hardware-accelerated CSS flexbox side-by-side transitions for smooth 60 FPS sidebar expansion without main screen reflow jank.
 
 ### Backend
 - **Framework:** Node.js + Express.js
 - **Database / Auth Storage:** Supabase (PostgreSQL with Service Role permissions)
 - **Security:** JSON Web Tokens (JWT), `bcrypt` password hashing, cookie parser
 - **Integrations:**
-  - **Telegram Bot API:** Secure Multi-Factor / OTP Verification via @snpolymers_bot
-  - **Nodemailer (SMTP):** Secure corporate notifications
+  - **Telegram Bot API:** Secure Multi-Factor / OTP Verification via `@snpolymers_bot`
+  - **Nodemailer (SMTP):** Secure corporate notifications & email alerts
   - **Supabase Storage:** Private bucket file storage (`ra-bill-copies`) with timed signed URL generation (TTL: 1 hour) for secure document retrieval.
 - **Resilience:** Rate limiter middleware (`express-rate-limit`) to prevent abuse
 
 ---
 
-## System Modules (Phases 1–6)
+## 📦 System Modules (Phases 1–6)
 
 The IDBP features a comprehensive set of enterprise resource planning modules implemented across several rollout phases:
 
-* **Phase 1 — Auth & Access Controls:** Multi-factor authentication via Telegram OTP bot, custom role-based privileges (`admin`, `ho`, `zo`, `je`, `staff`), and corporate fund reports.
+* **Phase 1 — Auth & Access Controls:** Multi-factor authentication via Telegram OTP bot, custom role-based privileges (`admin`, `ho`, `zo`, `je`, `staff`), corporate fund reports, and profile background customization.
 * **Phase 2 — Project Cost Estimation:** Creation of project cost estimates by JEs, review by Zonal Offices (ZO), and final approval by the Head Office (HO) with detailed revision history tracking.
 * **Phase 3 — Fund Requests:** ZO fund request generation and HO workflow approvals mapping disbursements to Credit Control (CC), Overdraft (OD), or Cash Credit (CR) accounts.
 * **Phase 4 — Payment Requisition Management:** Procurement requisition logging against active projects, ensuring amount allocations stay within remaining estimate bounds. Supports GST declarations and invoice attachment uploads.
-* **Phase 5 — Daily Work Progress:** Daily site visit logging for JEs, including photo uploads, cumulative work percentage updates, and authority review comment capabilities.
+* **Phase 5 — Daily Work Progress:** Daily site visit logging for JEs, including photo uploads, streak tracking, cumulative work percentage updates, paginated Projects Directory registry (`<Pagination />`), and authority review comment capabilities.
 * **Phase 6 — RA / Final Bill Entry:** Run-time billing management for projects. Enforces sequential RA billing ($N-1$ must exist before $N$), prevents edits/deletions on financial records via database constraints, and computes live billing summary calculations (Previous Bill Amount, Current Bill Amount, Total Billed, Balance Amount).
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 Follow these steps to set up and run the entire application locally.
 
@@ -118,7 +128,7 @@ The client UI will run on `http://localhost:5173`.
 
 ---
 
-## Running Verification Tests
+## 🧪 Running Verification Tests
 
 The monorepo contains comprehensive test suites to verify database constraints, security controls, and endpoint logic.
 
@@ -144,7 +154,7 @@ npm run test:p6:m3 # File uploading and bucket security controls
 
 ---
 
-## Live Deployment
+## 🌐 Live Deployment
 
 ### Production Environment
 
@@ -179,14 +189,14 @@ Supabase PostgreSQL
 ```env
 VITE_API_URL=https://snpolymers.onrender.com/api/v1/auth
 ```
+
 ---
 
-## Security & Best Practices
+## 🔒 Security & Best Practices
 
 - **Zero Client-Side Secret Leak:** The client never directly calls Supabase. All security operations, user management, and DB mutations are mediated securely by the Express.js Backend API.
 - **Secure Sessions:** Sessions are reinforced using JWT authorization cookies and secure token verification.
 - **Audit Logging:** Every critical administrative action is recorded systematically to provide trace logs for corporate compliance.
 - **MIME type verification:** Storage uploads restrict incoming files to strict PDF/JPG/PNG structures using server-side inspection instead of trusting extensions.
 - **Immutability Protection:** Running account and final bill documents are protected against unauthorized updates or deletions at the database schema level via triggers.
-
-...
+- **UI Architecture Discipline:** Frontend strictly enforces Zero Ad-Hoc Components Policy, responsive drawer standards, and dual-theme accessibility per [frontend_guidelines.md](file:///home/zenoguy/Desktop/projects/SNPolymers/frontend/frontend_guidelines.md).
