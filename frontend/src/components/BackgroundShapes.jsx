@@ -4,6 +4,9 @@ import { useTheme } from './ThemeContext';
 const BackgroundShapes = () => {
   const { theme, darkBg, lightBg } = useTheme();
 
+  const isPureBlack = theme === 'dark' && darkBg === 'pure-black';
+  if (isPureBlack) return null;
+
   // Check if current active background is the rotating SVG overlay preset
   const isRotatingSvgActive = theme === 'dark'
     ? darkBg === 'rotating-svg-dark'

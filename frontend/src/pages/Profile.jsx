@@ -78,7 +78,6 @@ const Profile = () => {
           
           {/* Identity Card */}
           <div className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-500 flex items-center justify-center font-black text-slate-950 text-3xl select-none shadow-lg">
               {profile.display_name ? profile.display_name[0].toUpperCase() : 'U'}
@@ -170,7 +169,6 @@ const Profile = () => {
                         </div>
                         <div>
                           <div className="text-xs font-bold">{bg.name}</div>
-                          <div className="text-[10px] text-slate-500">{bg.url ? 'High-res image background' : 'CSS vector / gradient'}</div>
                         </div>
                       </div>
                       {darkBg === bg.id && (
@@ -212,7 +210,6 @@ const Profile = () => {
                         </div>
                         <div>
                           <div className="text-xs font-bold">{bg.name}</div>
-                          <div className="text-[10px] text-slate-500">{bg.url ? 'High-res image background' : 'CSS vector / gradient'}</div>
                         </div>
                       </div>
                       {lightBg === bg.id && (

@@ -64,10 +64,10 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   }
 
-  /* Universal Translucent Nested Cards inside Glass Panels */
+  /* Universal Dark Translucent Nested Cards inside Glass Panels */
   .glass-panel .bg-white\/2,
   .glass-panel .bg-white\/5 {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: rgba(10, 15, 26, 0.45) !important;
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -76,7 +76,7 @@
 
   .glass-panel .bg-white\/2:hover,
   .glass-panel .bg-white\/5:hover {
-    background-color: rgba(255, 255, 255, 0.10) !important;
+    background-color: rgba(15, 23, 42, 0.70) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
   }
 
@@ -1216,4 +1216,45 @@ body.light .chart-stat-cell {
 
 body.light .chart-stat-cell:hover {
   background: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Minimal Deep Matte Black Theme Overrides */
+body.theme-pure-black {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+
+body.theme-pure-black .glass-panel,
+body.theme-pure-black [class*="glass-panel"],
+body.theme-pure-black .glass-nav {
+  background: #09090b !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-pure-black .glass-panel .bg-white\/2,
+body.theme-pure-black .glass-panel .bg-white\/5,
+body.theme-pure-black .bg-white\/2,
+body.theme-pure-black .bg-white\/5 {
+  background-color: #121215 !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+}
+
+body.theme-pure-black .glass-panel .bg-white\/2:hover,
+body.theme-pure-black .glass-panel .bg-white\/5:hover,
+body.theme-pure-black .bg-white\/5:hover {
+  background-color: #1a1a1e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.theme-pure-black input:not([type="checkbox"]):not([type="radio"]),
+body.theme-pure-black select,
+body.theme-pure-black textarea,
+body.theme-pure-black .glass-input {
+  background: #121215 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
 }

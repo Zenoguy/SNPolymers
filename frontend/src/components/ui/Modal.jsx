@@ -77,9 +77,6 @@ const Modal = ({
         className={`glass-panel p-6 rounded-3xl w-full shadow-[0_25px_60px_rgba(0,0,0,0.8)] border border-white/10 relative overflow-hidden transition-all duration-300 transform scale-100 ${maxWidthClass} ${className}`}
         {...props}
       >
-        {/* Amber Ambient Glow Effect */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
-
         {/* Modal Header */}
         <div className="flex justify-between items-start mb-5 relative z-10">
           <div>

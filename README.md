@@ -7,11 +7,11 @@
 [![Supabase](https://img.shields.io/badge/Database-Supabase-green.svg)](https://supabase.com)
 [![License](https://img.shields.io/badge/license-UNLICENSED-red.svg)](#)
 
-Welcome to the **Integrated Digital Business Platform (IDBP)** for **S.N. Polymers**. This project is a monorepo containing both the backend and frontend components designed to centralize access, management, and tracking of manufacturing formulation pipelines, logistics controls, and government infrastructure projects.
+Welcome to the **Integrated Digital Business Platform (IDBP)** for **S.N. Polymers**. This project is a monorepo containing both backend and frontend enterprise components designed to centralize access, management, and tracking of manufacturing formulation pipelines, logistics controls, and government infrastructure projects.
 
 ---
 
-## 🏗️ Repository Architecture
+## Repository Architecture
 
 The project is split into two primary folders:
 
@@ -42,7 +42,7 @@ SNPolymers/
 
 ---
 
-## ⚡ Tech Stack & Key Technologies
+## Tech Stack & Key Technologies
 
 ### Frontend
 - **Framework:** React 19 (Vite 8.0 bundler)
@@ -51,38 +51,38 @@ SNPolymers/
 - **Data Fetching:** TanStack React Query v5
 - **Design System & Aesthetics:**
   - **Glassmorphism Engine:** Centralized translucency tokens (`.glass-panel`, `.glass-input`, `.glass-card-hover`, `.glass-nav`) with HSL color palettes and backdrop blur.
-  - **Dynamic Theme Presets:** Dual Dark Mode / Light Mode support with customizable background presets (Serene Beach Night 🏖️, Serene Beach Daylight 🏖️, Light Tech Arc, Oceanic Wave, CAD Blueprint, Minimal Slate).
+  - **Dynamic Theme Presets:** Dual Dark Mode / Light Mode support with customizable background presets (Serene Beach Night, Serene Beach Daylight, Light Tech Arc, Oceanic Wave, CAD Blueprint, Minimal Slate).
   - **Centralized UI Primitives:** Strict Zero Ad-Hoc Components policy ([frontend_guidelines.md](file:///home/zenoguy/Desktop/projects/SNPolymers/frontend/frontend_guidelines.md)) using primitive UI components (`<Pagination />`, `<SkeletonTable />`, `<Modal />`, `<Badge />`, `<Input />`, `<Button />`, `<Table />`).
-  - **Hardware Acceleration:** Hardware-accelerated CSS flexbox side-by-side transitions for smooth 60 FPS sidebar expansion without main screen reflow jank.
+  - **Hardware Acceleration:** Hardware-accelerated CSS flexbox side-by-side transitions for smooth 60 FPS sidebar expansion without main screen reflow.
 
 ### Backend
 - **Framework:** Node.js + Express.js
 - **Database / Auth Storage:** Supabase (PostgreSQL with Service Role permissions)
 - **Security:** JSON Web Tokens (JWT), `bcrypt` password hashing, cookie parser
 - **Integrations:**
-  - **Telegram Bot API:** Secure Multi-Factor / OTP Verification via `@snpolymers_bot`
+  - **Telegram Bot API:** Multi-Factor / OTP Verification via `@snpolymers_bot`
   - **Nodemailer (SMTP):** Secure corporate notifications & email alerts
   - **Supabase Storage:** Private bucket file storage (`ra-bill-copies`) with timed signed URL generation (TTL: 1 hour) for secure document retrieval.
 - **Resilience:** Rate limiter middleware (`express-rate-limit`) to prevent abuse
 
 ---
 
-## 📦 System Modules (Phases 1–6)
+## System Modules
 
-The IDBP features a comprehensive set of enterprise resource planning modules implemented across several rollout phases:
+The IDBP features a comprehensive set of enterprise resource planning modules:
 
-* **Phase 1 — Auth & Access Controls:** Multi-factor authentication via Telegram OTP bot, custom role-based privileges (`admin`, `ho`, `zo`, `je`, `staff`), corporate fund reports, and profile background customization.
-* **Phase 2 — Project Cost Estimation:** Creation of project cost estimates by JEs, review by Zonal Offices (ZO), and final approval by the Head Office (HO) with detailed revision history tracking.
-* **Phase 3 — Fund Requests:** ZO fund request generation and HO workflow approvals mapping disbursements to Credit Control (CC), Overdraft (OD), or Cash Credit (CR) accounts.
-* **Phase 4 — Payment Requisition Management:** Procurement requisition logging against active projects, ensuring amount allocations stay within remaining estimate bounds. Supports GST declarations and invoice attachment uploads.
-* **Phase 5 — Daily Work Progress:** Daily site visit logging for JEs, including photo uploads, streak tracking, cumulative work percentage updates, paginated Projects Directory registry (`<Pagination />`), and authority review comment capabilities.
-* **Phase 6 — RA / Final Bill Entry:** Run-time billing management for projects. Enforces sequential RA billing ($N-1$ must exist before $N$), prevents edits/deletions on financial records via database constraints, and computes live billing summary calculations (Previous Bill Amount, Current Bill Amount, Total Billed, Balance Amount).
+* **Authentication & Access Controls:** Multi-factor authentication via Telegram OTP bot, custom role-based privileges (`admin`, `ho`, `zo`, `je`, `staff`), corporate fund reports, and profile background customization.
+* **Project Cost Estimation & Technical Audit:** Creation of project cost estimates by JEs, review by Zonal Offices (ZO), and final approval by the Head Office (HO) with detailed revision history tracking.
+* **Zonal Fund Requests & Capital Allocations:** ZO fund request generation and HO workflow approvals mapping disbursements to Credit Control (CC), Overdraft (OD), or Cash Credit (CR) accounts.
+* **Procurement & Payment Requisition Management:** Procurement requisition logging against active projects, ensuring amount allocations stay within remaining estimate bounds. Supports GST declarations and invoice attachment uploads.
+* **Daily Work Progress & Site Operations:** Daily site visit logging for JEs, including photo uploads, streak tracking, cumulative work percentage updates, paginated Projects Directory registry (`<Pagination />`), and authority review comment capabilities.
+* **Running Account (RA) & Final Bill Entry:** Run-time billing management for projects. Enforces sequential RA billing ($N-1$ must exist before $N$), prevents edits or deletions on financial records via database constraints, and computes live billing summary calculations (Previous Bill Amount, Current Bill Amount, Total Billed, Balance Amount).
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-Follow these steps to set up and run the entire application locally.
+Follow these steps to set up and run the application locally.
 
 ### Prerequisites
 Make sure you have [Node.js](https://nodejs.org/) (v18.0.0 or higher) and `npm` installed.
@@ -108,7 +108,7 @@ The frontend communicates directly with `http://localhost:5000/api/v1` by defaul
 
 ### 2. Installation and Running
 
-You need to spin up the backend and the frontend in separate terminals.
+Run the backend and frontend in separate terminal instances.
 
 #### Run Backend
 ```bash
@@ -128,7 +128,7 @@ The client UI will run on `http://localhost:5173`.
 
 ---
 
-## 🧪 Running Verification Tests
+## Running Verification Tests
 
 The monorepo contains comprehensive test suites to verify database constraints, security controls, and endpoint logic.
 
@@ -139,14 +139,14 @@ cd backend
 npm run test:all
 ```
 
-### Run Phase 6 Specific Tests
-To test the Database Foundation, Core CRUD APIs, and Storage upload controls for the RA / Final Bill Entry module:
+### Run RA & Final Bill Module Tests
+To test the Database Foundation, Core CRUD APIs, and Storage upload controls for the Running Account and Final Bill module:
 ```bash
 cd backend
 # Run DB, CRUD, and Upload tests
 npm run test:p6:all
 
-# Or run individual milestones:
+# Or run individual milestone tests:
 npm run test:p6:m1 # Database schema, checks & constraints
 npm run test:p6:m2 # Core CRUD and billing summary statistics
 npm run test:p6:m3 # File uploading and bucket security controls
@@ -154,7 +154,7 @@ npm run test:p6:m3 # File uploading and bucket security controls
 
 ---
 
-## 🌐 Live Deployment
+## Live Deployment
 
 ### Production Environment
 
@@ -192,7 +192,7 @@ VITE_API_URL=https://snpolymers.onrender.com/api/v1/auth
 
 ---
 
-## 🔒 Security & Best Practices
+## Security & Best Practices
 
 - **Zero Client-Side Secret Leak:** The client never directly calls Supabase. All security operations, user management, and DB mutations are mediated securely by the Express.js Backend API.
 - **Secure Sessions:** Sessions are reinforced using JWT authorization cookies and secure token verification.
