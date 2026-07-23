@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import authApi from '../../api/authApi';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
 const formatINR = (value) => {
   const num = Number(value) || 0;
@@ -37,10 +38,7 @@ const StaffDashboardView = () => {
           <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Pending Requisitions Checklist</h2>
           
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 gap-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-amber-500" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Loading requisitions...</span>
-            </div>
+            <SkeletonCard />
           ) : pendingRequisitions.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-xs uppercase font-extrabold tracking-widest border border-dashed border-white/5 rounded-2xl">
               No pending requisitions to verify.

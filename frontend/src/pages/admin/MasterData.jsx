@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Modal from '../../components/ui/Modal';
+import { SkeletonTable } from '../../components/ui/Skeleton';
+import Pagination from '../../components/ui/Pagination';
 import { getProjects, createProject, updateProject, updateProjectStatus } from '../../api/projectsApi';
 import { exportProjectsToExcel } from '../../utils/exportHelpers';
 import { getEligibleZOs } from '../../api/userMappingsApi';
@@ -648,8 +650,8 @@ const MasterData = () => {
 
         {/* ── Table ── */}
         {loading ? (
-          <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5 flex items-center justify-center p-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
+          <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+            <SkeletonTable rows={6} cols={10} />
           </div>
         ) : (
           <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
@@ -666,25 +668,12 @@ const MasterData = () => {
                 Showing <span className="font-extrabold text-slate-200">{activeProjectsList.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-extrabold text-slate-200">{Math.min(startIndex + pageSize, activeProjectsList.length)}</span> of <span className="font-extrabold text-slate-200">{activeProjectsList.length}</span> records
               </span>
               {totalPages > 1 && (
-                <div className="flex gap-1.5 items-center">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold uppercase transition"
-                  >
-                    Prev
-                  </button>
-                  <span className="text-slate-400 px-2 font-semibold">
-                    Page <span className="text-amber-500">{currentPage}</span> of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold uppercase transition"
-                  >
-                    Next
-                  </button>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  maxVisible={5}
+                />
               )}
             </div>
           </div>

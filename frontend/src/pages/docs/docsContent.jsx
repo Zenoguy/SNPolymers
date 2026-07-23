@@ -21,7 +21,8 @@ export const docSections = [
         headings: [
           { id: 'overview', text: 'Overview', level: 2 },
           { id: 'core-functions', text: 'Core Functional Modules', level: 2 },
-          { id: 'access-control', text: 'Access Model', level: 2 }
+          { id: 'analytics-twins', text: 'Analytics & Digital Twin Hub', level: 2 },
+          { id: 'access-control', text: 'Access & Role Model', level: 2 }
         ],
         content: (
           <div className="space-y-6">
@@ -29,20 +30,25 @@ export const docSections = [
               Welcome to the <strong>Integrated Digital Business Platform (IDBP)</strong> for <strong>S.N. Polymers Pvt. Ltd.</strong>
             </p>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The IDBP is a central enterprise resource planning hub designed to streamline and automate civil engineering projects, raw materials formulation pipelines, municipal infrastructure billing, and regional financial controls.
+              The IDBP is an enterprise resource planning and telemetry hub designed to streamline civil engineering projects, raw material catalogs, municipal infrastructure billing, regional zonal balances, and executive financial controls.
             </p>
-            
+
             <h2 id="core-functions" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Core Functional Modules</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li><strong>Cost Estimations</strong>: Collaborative drafting, review, and approval of civil engineering budgets against contracts.</li>
-              <li><strong>Procurement Logs</strong>: Tracking vendor payment requisitions, invoicing, and project credit limit balances.</li>
-              <li><strong>Site Monitoring</strong>: Daily physical progress tracking, photologging, and engineering site checklists.</li>
-              <li><strong>Financial Controls</strong>: Fund disbursement requisitions and sequential contractor running account billing (RA bills).</li>
+              <li><strong>Cost Estimations</strong>: Collaborative drafting, multi-tier review, and approval of civil engineering budgets against contract limits.</li>
+              <li><strong>Procurement & Requisitions</strong>: Tracking vendor payment requisitions, invoice document uploads, and budget limit checks.</li>
+              <li><strong>Site Telemetry & DPR</strong>: Daily physical progress tracking, geotagged photologging, and site inspection checklists.</li>
+              <li><strong>Financial Controls & Billing</strong>: Sequential contractor running account (RA) bills, Zonal Office fund requests, and excess fund return workflows.</li>
             </ul>
 
-            <h2 id="access-control" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Access Model</h2>
+            <h2 id="analytics-twins" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Analytics & Digital Twin Hub</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The platform utilizes strict role-based access control (RBAC). Your user profile initials, name, and registered role will dictate the navigation menu options, dashboards, and write clearances available to you on both mobile and desktop views.
+              The platform features advanced executive dashboards, real-time work order health scoring, gamified field engineer leaderboards, and interactive 3D Project Digital Twins that compare physical progress against financial disbursements.
+            </p>
+
+            <h2 id="access-control" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Access & Role Model</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The platform operates on strict Role-Based Access Control (RBAC). Your assigned role (<code className="text-amber-400">je</code>, <code className="text-amber-400">zo</code>, <code className="text-amber-400">ho</code>, or <code className="text-amber-400">admin</code>) and work order assignments govern available navigation menus, telemetry views, and write clearances.
             </p>
           </div>
         )
@@ -82,7 +88,7 @@ export const docSections = [
                     <div id="login-portal" className="space-y-2">
                       <p>Open your desktop or mobile browser and navigate to the portal login link:</p>
                       <a href="https://sn-polymers.vercel.app/" target="_blank" rel="noreferrer" className="text-amber-500 underline font-bold">https://sn-polymers.vercel.app/</a>
-                      <p className="mt-1">Enter your 10-digit mobile number in the login field. The system automatically handles country formatting (<code className="text-slate-200">+91</code> suffix prepending) and strips out dashes or letters.</p>
+                      <p className="mt-1">Enter your 10-digit mobile number in the login field. The system automatically handles country formatting (<code className="text-slate-200">+91</code>) and strips out invalid characters.</p>
                     </div>
                   )
                 },
@@ -92,13 +98,13 @@ export const docSections = [
                     <div id="telegram-bot" className="space-y-2">
                       <p>If you log in for the first time, the platform will redirect you to the <strong>Telegram Link Setup</strong> screen.</p>
                       <DocCallout type="warning">
-                        Do not skip this process. One-Time Passcodes (OTPs) are delivered solely via our secure Telegram gateway to prevent cellular SMS delays.
+                        Do not skip this process. One-Time Passcodes (OTPs) are delivered solely via our secure Telegram gateway to prevent SMS delays.
                       </DocCallout>
                       <ol className="list-decimal pl-5 space-y-1.5 mt-2 text-[11px] text-slate-400">
-                        <li>Click the redirection link to launch Telegram and start a chat with the official bot: <a href="https://t.me/snpolymers_bot" target="_blank" rel="noreferrer" className="text-amber-500 underline font-bold">@snpolymers_bot</a>.</li>
-                        <li>Click the <strong>Start</strong> button in the chat screen.</li>
-                        <li>When prompted by the bot, click <strong>Share Contact</strong>. This securely links your Telegram identifier with your whitelisted phone number.</li>
-                        <li>Once linked, return to the browser login page to proceed.</li>
+                        <li>Click the link to launch Telegram and start a chat with the official bot: <a href="https://t.me/snpolymers_bot" target="_blank" rel="noreferrer" className="text-amber-500 underline font-bold">@snpolymers_bot</a>.</li>
+                        <li>Click the <strong>Start</strong> button in Telegram.</li>
+                        <li>Click <strong>Share Contact</strong> when prompted. This securely binds your Telegram ID with your whitelisted phone number.</li>
+                        <li>Return to the browser login page to complete authentication.</li>
                       </ol>
                     </div>
                   )
@@ -128,7 +134,7 @@ export const docSections = [
                   content: (
                     <div id="otp-generation" className="space-y-1">
                       <p>Enter your whitelisted mobile number on the login page and click <strong>Verify Whitelist & Send OTP</strong>.</p>
-                      <p>The server matches the whitelisting records and issues an API command to our Telegram bot dispatcher.</p>
+                      <p>The server validates your whitelisted record and dispatches an OTP request via Telegram.</p>
                     </div>
                   )
                 },
@@ -136,8 +142,8 @@ export const docSections = [
                   title: 'Retrieving Code',
                   content: (
                     <div className="space-y-1">
-                      <p>Open your Telegram application and click the chat thread for <strong>S.N. Polymers Bot</strong>.</p>
-                      <p>A message containing a secure 6-digit numeric login code will arrive immediately. The code remains active for <strong>5 minutes</strong>.</p>
+                      <p>Open your Telegram application and open the chat thread for <strong>S.N. Polymers Bot</strong>.</p>
+                      <p>A message containing a 6-digit login passcode will arrive immediately (valid for 5 minutes).</p>
                     </div>
                   )
                 },
@@ -145,10 +151,10 @@ export const docSections = [
                   title: 'Verification',
                   content: (
                     <div id="otp-verification" className="space-y-2">
-                      <p>Type the 6-digit code in the numeric input boxes in your browser and click <strong>Verify Code</strong>.</p>
-                      <p>If the code timer runs down to zero before you input the numbers, click <strong>Resend Code</strong> to dispatch a fresh passcode.</p>
+                      <p>Type the 6-digit code in the numeric input fields and click <strong>Verify Code</strong>.</p>
+                      <p>If the timer expires before you submit, click <strong>Resend Code</strong> to request a fresh OTP.</p>
                       <DocCallout type="note">
-                        Upon successful verification, the browser stores your authorization token locally and redirects you directly to the Console Dashboard.
+                        Upon successful verification, your token is stored securely and you are redirected to the Console Dashboard.
                       </DocCallout>
                     </div>
                   )
@@ -162,28 +168,32 @@ export const docSections = [
         id: 'navigation-tour',
         title: 'Platform Navigation Tour',
         headings: [
-          { id: 'desktop-sidebar', text: 'Desktop Sidebar Details', level: 2 },
-          { id: 'mobile-navigation', text: 'Mobile Header & Drawer', level: 2 }
+          { id: 'desktop-sidebar', text: 'Desktop Sidebar & Top Navigation', level: 2 },
+          { id: 'mobile-navigation', text: 'Mobile Responsive Navigation', level: 2 },
+          { id: 'theme-toggle', text: 'Dark / Light High-Contrast Theme Toggle', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The IDBP client application is built to load instantly and scale fluidly across laptop monitors, site tablets, and smartphones.
+              The IDBP web application is optimized for desktop workstations, site tablets, and smartphones under sunlight conditions.
             </p>
 
-            <h2 id="desktop-sidebar" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Desktop Sidebar Details</h2>
+            <h2 id="desktop-sidebar" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Desktop Sidebar & Top Navigation</h2>
             <ul className="list-disc pl-5 space-y-2.5 text-slate-300 mt-3 text-xs">
-              <li><strong>Menu Collapse</strong>: Click the arrow control (<code className="text-slate-200">&lt;</code> / <code className="text-slate-200">&gt;</code>) at the top of the sidebar. This collapses the bar to a compact, icon-only layout to maximize screen real estate for billing sheets. The collapse selection is saved in browser localStorage.</li>
-              <li><strong>Role-Filtered Menus</strong>: Menu selections are injected conditionally. Junior Engineers will not see billing logs or fund requests, ensuring a clean workplace interface.</li>
-              <li><strong>Theme Mode Toggle</strong>: Located at the bottom of the sidebar. Toggle between <strong>Dark Mode</strong> (indigo-black palette for indoor reporting) and <strong>Light Mode</strong> (high-contrast screen values for outdoor inspection under high ambient sunlight).</li>
-              <li><strong>Operator Panel</strong>: Displays display name, initials, active role, and a secure <strong>Sign Out</strong> button to invalidate the current cookie/token set.</li>
+              <li><strong>Sidebar Toggle</strong>: Click the collapse arrow at the top of the sidebar to collapse into icon mode, expanding grid layout width for large spreadsheets.</li>
+              <li><strong>Top Navbar Shortcuts</strong>: Gives instant access to <strong>Dashboard</strong>, <strong>Analytics Hub</strong>, <strong>Digital Twin</strong>, and <strong>Documentation</strong>.</li>
+              <li><strong>Role-Filtered Menus</strong>: Navigation items dynamically adjust based on your permissions.</li>
             </ul>
 
-            <h2 id="mobile-navigation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Mobile Header & Drawer</h2>
-            <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li>On small phone screens, the sidebar slides off-screen. Tap the menu toggle icon on the left header bar to slide out the navigation menu.</li>
-              <li>The header bar offers quick buttons for the <strong>Console Dashboard</strong> or <strong>Admin Configuration</strong> panels matching your credentials.</li>
-            </ul>
+            <h2 id="mobile-navigation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Mobile Responsive Navigation</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              On mobile devices, tap the hamburger menu icon in the top header bar to reveal the full navigation drawer. All forms and data tables are optimized for touch interaction.
+            </p>
+
+            <h2 id="theme-toggle" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dark / Light High-Contrast Theme Toggle</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Toggle between <strong>Dark Mode</strong> (sleek dark palette for office monitoring) and <strong>Light Mode</strong> (high-contrast mode designed for outdoor field inspection in bright sunlight).
+            </p>
           </div>
         )
       },
@@ -199,34 +209,37 @@ export const docSections = [
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Upon accessing the platform console for the first time, complete these quick validation checklists tailored to your functional role.
+              Complete these quick validation checklists tailored to your functional role upon your first login:
             </p>
 
             <h2 id="je-checklist" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Junior Engineer (JE) Checklist</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li>Go to <strong>Material Master</strong>. Type a search query (e.g. "Steel" or "Cement") to check catalog search response.</li>
-              <li>Go to <strong>Cost Estimates</strong> and click <strong>New Sheet</strong>. Pick a work order number to verify cascading metadata details (Client, Contract value, State) load correctly.</li>
-              <li>Go to <strong>Daily Progress</strong> to confirm regional project directory listings populate.</li>
+              <li>Go to <strong>Material Master</strong> and search catalog rates for items (e.g., Cement, HDPE Pipes).</li>
+              <li>Open <strong>Cost Estimates</strong> and click <strong>New Sheet</strong> to select your assigned work order.</li>
+              <li>Go to <strong>Daily Progress</strong> to verify site photologging and physical progress entry.</li>
+              <li>Check your score on the <strong>JE Field Leaderboard</strong> under Analytics.</li>
             </ul>
 
             <h2 id="zo-checklist" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Zonal Office (ZO) Checklist</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li>Access <strong>Cost Estimates</strong>. Check for items flagged as <strong>Under ZO Review</strong> to inspect budget lines.</li>
-              <li>Go to <strong>Fund Requests</strong> and verify that status distribution pie charts and budget allocation gauges (CC, OD, CR accounts) load.</li>
-              <li>Access <strong>RA / Final Bills</strong> and check that your regional work folders load.</li>
+              <li>Open <strong>ZO Analytics Dashboard</strong> (<code className="text-slate-200">/analytics/zo</code>) to review regional cash runway and project telemetry.</li>
+              <li>Check <strong>Cost Estimates</strong> for sheets flagged as <strong>Under ZO Review</strong>.</li>
+              <li>Go to <strong>Zonal Balances & Returns</strong> to check CC/OD/CR account allocations.</li>
+              <li>Manage <strong>RA & Final Bills</strong> to record sequential client billings.</li>
             </ul>
 
-            <h2 id="ho-checklist" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Head Office Checklist</h2>
+            <h2 id="ho-checklist" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Head Office (HO) Checklist</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li>Open <strong>Cost Estimates</strong>. Change views to <strong>Active Queue</strong> to inspect estimates requiring final approval.</li>
-              <li>Open <strong>Fund Requests</strong>. Find a request flagged as <strong>Pending</strong>, open its action drawer, and confirm that Credit source assignment dropdowns populate.</li>
+              <li>Open <strong>HO Command Center</strong> (<code className="text-slate-200">/analytics/ho</code>) to view the 10-KPI strip and telemetry table.</li>
+              <li>Review pending <strong>Fund Requests</strong> and assign funding sources (CC, OD, CR).</li>
+              <li>Inspect <strong>Audit & Compliance Center</strong> for system risk flags and audit trails.</li>
             </ul>
 
             <h2 id="admin-checklist" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Administrator Checklist</h2>
             <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li>Access the <strong>Access Whitelist</strong> page and search for your login record to verify details.</li>
-              <li>Navigate to <strong>Audit Trail Logs</strong> and filter system events by "Auth" or "Estimate" categories.</li>
-              <li>Go to <strong>Purchase Options</strong> to inspect active vendor and ledger mappings.</li>
+              <li>Access <strong>Access Whitelist</strong> to view and register user phone records.</li>
+              <li>Configure <strong>User & Work Order Mappings</strong> to assign JEs to Zonal Office clusters.</li>
+              <li>Audit system logs under <strong>Audit Trail Logs</strong> and <strong>Master Data</strong>.</li>
             </ul>
           </div>
         )
@@ -240,7 +253,7 @@ export const docSections = [
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Operational reference dictionary for key ERP and logistics terms used throughout S.N. Polymers Pvt. Ltd. modules.
+              Operational reference dictionary for key ERP, financial, and digital twin terms:
             </p>
 
             <h2 id="terminology" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">Enterprise Terminology</h2>
@@ -254,27 +267,27 @@ export const docSections = [
               <tbody className="divide-y divide-white/5 text-slate-300">
                 <tr className="hover:bg-white/[0.02] transition">
                   <td className="p-3 font-extrabold text-amber-400">Work Order (WO)</td>
-                  <td className="p-3">A contract allocated to the enterprise. Contains customer details, pricing caps, and geographical location bounds.</td>
+                  <td className="p-3">A contract allocated to the enterprise. Contains client details, pricing caps, and regional department bounds.</td>
                 </tr>
                 <tr className="hover:bg-white/[0.02] transition">
-                  <td className="p-3 font-extrabold text-amber-400">Estimate Sheet</td>
-                  <td className="p-3">A priced bill of materials sheet (e.g. <code className="text-slate-300">EST-2026-XXXX</code>) compiled by engineers detailing material and labor allocations for a Work Order.</td>
+                  <td className="p-3 font-extrabold text-amber-400">3D Digital Twin</td>
+                  <td className="p-3">Virtual 3D CAD/GIS rendering of a construction site that overlays physical progress timelines, photologs, and financial completion.</td>
+                </tr>
+                <tr className="hover:bg-white/[0.02] transition">
+                  <td className="p-3 font-extrabold text-amber-400">Health Score</td>
+                  <td className="p-3">Real-time composite telemetry metric (0–100) computed from DPR frequency, budget overrun percentage, and milestone progress.</td>
                 </tr>
                 <tr className="hover:bg-white/[0.02] transition">
                   <td className="p-3 font-extrabold text-amber-400">Running Account (RA) Bill</td>
                   <td className="p-3">Sequential invoice structures compiled against complete stages of work. Immutable once saved in DB.</td>
                 </tr>
                 <tr className="hover:bg-white/[0.02] transition">
-                  <td className="p-3 font-extrabold text-amber-400">Fund Request</td>
-                  <td className="p-3">Cash allocation requisition filed by Zonal Managers to Head Office to settle local vendor bills.</td>
+                  <td className="p-3 font-extrabold text-amber-400">Excess Fund Return</td>
+                  <td className="p-3">Formal ledger transaction returning unspent cash allocations from Zonal Offices back to Head Office accounts.</td>
                 </tr>
                 <tr className="hover:bg-white/[0.02] transition">
-                  <td className="p-3 font-extrabold text-amber-400">Whitelisting</td>
-                  <td className="p-3">System security filter blocking all incoming mobile OTP commands except those matching pre-authorized phone logs.</td>
-                </tr>
-                <tr className="hover:bg-white/[0.02] transition">
-                  <td className="p-3 font-extrabold text-amber-400">Telegram Bot Gate</td>
-                  <td className="p-3">The programmatic channel (<code className="text-slate-300">@snpolymers_bot</code>) transmitting instant login validation OTPs to user mobile feeds.</td>
+                  <td className="p-3 font-extrabold text-amber-400">JE Field Leaderboard</td>
+                  <td className="p-3">Gamified ranking system scoring Junior Engineers based on DPR reporting timeliness, photolog completeness, and accuracy.</td>
                 </tr>
               </tbody>
             </DocTable>
@@ -297,31 +310,156 @@ export const docSections = [
         title: 'Console Dashboard',
         headings: [
           { id: 'dashboard-overview', text: 'Main Page Interface', level: 2 },
-          { id: 'dashboard-role-adaptation', text: 'Dynamic Role-Based Presentation', level: 2 },
-          { id: 'dashboard-components', text: 'Dashboard Widgets & Live Refresh', level: 2 }
+          { id: 'dashboard-role-adaptation', text: 'Dynamic Role Adaptation', level: 2 },
+          { id: 'dashboard-components', text: 'Live Audit Log & Counter Widgets', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p id="dashboard-overview" className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Console Dashboard</strong> acts as the central command center of the IDBP application. Once your login session is verified via Telegram OTP, you are redirected here.
-            </p>
-            
-            <h2 id="dashboard-role-adaptation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dynamic Role-Based Presentation</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              The dashboard dynamically changes its elements based on the operator's active permissions. JEs are presented with estimate draft buttons and site progress logs, whereas ZOs, HOs, and Admins are presented with summary gauges, pending approval queues, and system audit feeds.
+              The <strong>Console Dashboard</strong> serves as the default landing portal after login, providing quick access to active work order stats and recent operations.
             </p>
 
-            <h2 id="dashboard-components" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dashboard Widgets & Live Refresh</h2>
-            <ul className="list-disc pl-5 space-y-3.5 text-slate-300 mt-3 text-xs">
-              <li>
-                <strong>Operator Profile Details</strong>: Displays active session info, display name, whitelisted phone number, and dynamic privilege badges.
-              </li>
-              <li>
-                <strong>Project Status Counters</strong>: Categorizes and counts projects into <em>Total Registered</em>, <em>Running (Active)</em>, and <em>Closed (Finalized)</em> states.
-              </li>
-              <li>
-                <strong>Live Audit Logs Feed</strong>: Keeps track of recent database modifications (CREATE, UPDATE, STATUS_CHANGE) across all modules. This widget automatically polls the backend database every <strong>30 seconds</strong> to ensure all users see real-time updates.
-              </li>
+            <h2 id="dashboard-role-adaptation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Dynamic Role Adaptation</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Widgets dynamically change according to the user's role. Junior Engineers see quick links to estimate creation and daily progress logs; ZOs and HOs see financial summary counters, pending approval queues, and zonal telemetry.
+            </p>
+
+            <h2 id="dashboard-components" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Live Audit Log & Counter Widgets</h2>
+            <ul className="list-disc pl-5 space-y-2.5 text-slate-300 mt-3 text-xs">
+              <li><strong>Project Counters</strong>: Live breakdown of Total Work Orders, Running Projects, and Completed Contracts.</li>
+              <li><strong>Live Audit Stream</strong>: Displays real-time database activities (CREATE, UPDATE, STATUS_CHANGE) with 30-second background polling.</li>
+            </ul>
+          </div>
+        )
+      },
+      {
+        id: 'ho-analytics',
+        title: 'HO Executive Command Center',
+        headings: [
+          { id: 'kpi-strip', text: '10-KPI Executive Financial Strip', level: 2 },
+          { id: 'financial-charts', text: 'Interactive Financial & Runway Charts', level: 2 },
+          { id: 'telemetry-table', text: 'Work Order Telemetry & Health Score', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>HO Executive Command Center</strong> (<code className="text-slate-200">/analytics/ho</code>) delivers enterprise-wide executive oversight over monetary flows, project health, and zonal liquidity.
+            </p>
+
+            <h2 id="kpi-strip" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">10-KPI Executive Financial Strip</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The top strip features 10 real-time financial indicators:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Total Work Orders</strong> & <strong>Total WO Value</strong></li>
+              <li><strong>Total Estimate Amount</strong> & <strong>Total Requisitions</strong></li>
+              <li><strong>Total Approved Funds</strong> & <strong>ZO Available Balance</strong></li>
+              <li><strong>Total Excess Refunds</strong> & <strong>Gross Bill Amount</strong></li>
+              <li><strong>Agency Net Payments</strong> & <strong>Due Bill Exposure</strong></li>
+            </ul>
+
+            <h2 id="financial-charts" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Interactive Financial & Runway Charts</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Executive visualization suite includes:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Fund Flow Bubble & Sankey</strong>: Visualizing cash movement from HO ledgers to Zonal accounts.</li>
+              <li><strong>Zonal Performance Comparison</strong>: Benchmarking budget consumption across Zonal Offices.</li>
+              <li><strong>Cash Runway Gauges</strong>: Predicting zonal fund exhaustion dates based on burn rate.</li>
+              <li><strong>Physical Progress S-Curves</strong>: Planned vs. actual site progress trajectories.</li>
+            </ul>
+
+            <h2 id="telemetry-table" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Work Order Telemetry & Health Score</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              High-density project tracking table featuring real-time <strong>Health Scores</strong> (0–100), filters for department/zone, and one-click <strong>Excel Export</strong>. Clicking any work order opens its 3D Digital Twin.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'zo-analytics',
+        title: 'ZO Zonal Operations Dashboard',
+        headings: [
+          { id: 'zo-overview', text: 'Zonal Telemetry & Metrics', level: 2 },
+          { id: 'zo-runway', text: 'Regional Runway & Fund Allocation', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>ZO Analytics Dashboard</strong> (<code className="text-slate-200">/analytics/zo</code>) empowers Zonal Managers to monitor regional projects, track available cash credit, and oversee site progress.
+            </p>
+
+            <h2 id="zo-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Zonal Telemetry & Metrics</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Provides Zonal Officers with real-time counters of active work orders, total estimated budget, approved fund requisitions, and pending contractor bills within their specific zone.
+            </p>
+
+            <h2 id="zo-runway" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Regional Runway & Fund Allocation</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Features visual gauges for CC, OD, and CR accounts, highlighting low-runway warnings to prevent site material delays.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'digital-twin',
+        title: '3D Project Digital Twin & Hub',
+        headings: [
+          { id: 'twin-hub', text: 'Digital Twin Directory Hub', level: 2 },
+          { id: 'twin-viewer', text: 'Interactive 3D Site Twin & Photologs', level: 2 },
+          { id: 'twin-telemetry', text: 'Physical vs. Financial Progress Comparison', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Project Digital Twin</strong> module (<code className="text-slate-200">/analytics/digital-twin</code> & <code className="text-slate-200">/projects/:wo/digital-twin</code>) creates a virtual 3D replica of civil engineering sites linked to live field data.
+            </p>
+
+            <h2 id="twin-hub" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Digital Twin Directory Hub</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Central catalog listing active work orders with 3D model status badges, health score indicators, and instant navigation to site digital twins.
+            </p>
+
+            <h2 id="twin-viewer" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Interactive 3D Site Twin & Photologs</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Features interactive 3D site visualization:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>Milestone Scrubber</strong>: Scrub backward and forward in time to watch 3D site construction stages evolve.</li>
+              <li><strong>Hotspot Markers</strong>: Click site camera hotspots to inspect geotagged high-resolution photologs uploaded by field engineers.</li>
+              <li><strong>Progress Heatmap</strong>: Color-coded structural elements indicating physical completion percentages.</li>
+            </ul>
+
+            <h2 id="twin-telemetry" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Physical vs. Financial Progress Comparison</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Side-by-side gauge comparing <strong>Physical Progress (%)</strong> against <strong>Financial Disbursement (%)</strong>, immediately flagging budget overruns or lagging physical work.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'je-leaderboard',
+        title: 'JE Field Leaderboard',
+        headings: [
+          { id: 'leaderboard-scoring', text: 'Gamified Performance Scoring', level: 2 },
+          { id: 'leaderboard-metrics', text: 'Key Ranking Indicators', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>JE Field Leaderboard</strong> (<code className="text-slate-200">/analytics/leaderboard</code>) incentivizes timely and accurate daily field progress reporting across Junior Engineers.
+            </p>
+
+            <h2 id="leaderboard-scoring" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Gamified Performance Scoring</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Engineers earn performance points and rank badges based on consistency, site visit logging frequency, and high-quality photologs.
+            </p>
+
+            <h2 id="leaderboard-metrics" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Key Ranking Indicators</h2>
+            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+              <li><strong>DPR Logging Streak</strong>: Consecutive days of submitted daily progress reports.</li>
+              <li><strong>Photolog Completeness</strong>: Percentage of entries containing verified site inspection photos.</li>
+              <li><strong>Audit Compliance Rate</strong>: Submissions passed without revision requests.</li>
             </ul>
           </div>
         )
@@ -332,34 +470,28 @@ export const docSections = [
         headings: [
           { id: 'catalog-search', text: 'Search and Debounce Controls', level: 2 },
           { id: 'catalog-active-status', text: 'Active/Inactive Status Logic', level: 2 },
-          { id: 'catalog-export', text: 'Excel Catalog Exporting', level: 2 },
-          { id: 'catalog-actions', text: 'Editing Materials (Admin)', level: 2 }
+          { id: 'catalog-export', text: 'Excel Catalog Exporting', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Material Master Catalog</strong> is the centralized registry of civil engineering materials, equipment rentals, and labor heads. It enforces standard item names and unit configurations across all project sites.
+              The <strong>Material Master Catalog</strong> is the central catalog of civil engineering materials, equipment rentals, and labor heads.
             </p>
 
             <h2 id="catalog-search" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Search and Debounce Controls</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              To prevent server resource exhaustion, the search bar implements a <strong>400ms client-side debounce</strong>. When searching for raw items (e.g., "Steel" or "Cement"), queries are only dispatched after you pause typing. Category filters and sub-heading dropdowns let you isolate specific supply lines.
+              Includes a <strong>400ms client-side debounce</strong> filter to ensure smooth catalog search across thousands of material items without server lag.
             </p>
 
             <h2 id="catalog-active-status" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Active/Inactive Status Logic</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Materials can be toggled between <strong>Active</strong> and <strong>Inactive</strong>. Inactivating a catalog item hides it from Junior Engineers compiling new cost estimates, preventing obsolete material specifications.
+              Items can be toggled between Active and Inactive. Inactive items are hidden from new estimate compilation.
             </p>
 
             <h2 id="catalog-export" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Excel Catalog Exporting</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The catalog provides a one-click <strong>Export to Excel</strong> function. This compiles the current filtered view into a formatted spreadsheet (<code className="text-slate-200">.xlsx</code>) containing item descriptions, categories, units, and rates for offline pricing analysis.
+              One-click <strong>Export to Excel</strong> button downloads current material prices, categories, and unit specifications into formatted spreadsheet files.
             </p>
-
-            <h2 id="catalog-actions" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Editing Materials (Admin Only)</h2>
-            <DocCallout type="note">
-              Only Administrators can add, edit, or toggle the activity status of catalog items. Any modification triggers a global audit trail log indicating the old and new values.
-            </DocCallout>
           </div>
         )
       },
@@ -368,80 +500,49 @@ export const docSections = [
         title: 'Cost Estimating',
         headings: [
           { id: 'estimate-workflow', text: 'Estimate Approval Lifecycle', level: 2 },
-          { id: 'estimate-compilation', text: 'Priced Sheet Compilation & Grid Controls', level: 2 },
-          { id: 'estimate-drafts', text: 'Draft Sheets & Intermittent Saving', level: 2 },
-          { id: 'estimate-row-approvals', text: 'Row-Level Approvals & Rejections', level: 2 },
-          { id: 'estimate-telegram', text: 'Automated Telegram Dispatcher', level: 2 },
-          { id: 'estimate-auto-resubmit', text: 'Automatic Resubmission Mechanics', level: 2 }
+          { id: 'estimate-compilation', text: 'Priced Sheet Grid Controls', level: 2 },
+          { id: 'estimate-drafts', text: 'Intermittent Saving & Drafts', level: 2 },
+          { id: 'estimate-auto-resubmit', text: 'Revision Timers & Auto-Resubmission', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Cost Estimates</strong> module manages the project budgets. It is designed to ensure strict quality checks, pricing controls, and automated review workflows.
+              The <strong>Cost Estimates</strong> module manages project budgets through a multi-tier review workflow.
             </p>
 
             <h2 id="estimate-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Estimate Approval Lifecycle</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Cost estimates progress through a strict multi-tier workflow:
-            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mt-2">
               <div className="bg-white/5 p-3 rounded border border-white/5">
-                <span className="font-bold text-amber-400 block mb-1">ZO Stage Workflow</span>
+                <span className="font-bold text-amber-400 block mb-1">ZO Review Stage</span>
                 <DocStepList
                   steps={[
-                    { title: 'Draft', content: 'Created and edited solely by the assigned JE.' },
-                    { title: 'Submitted', content: 'Estimate sent by JE. Locks the sheet against further edits.' },
-                    { title: 'Under ZO Review', content: 'ZO Manager reviews individual line items.' },
-                    { title: 'ZO Approved / Rejected', content: 'Passed to HO if all rows approved; else returned to JE for revision.' }
+                    { title: 'Draft', content: 'Compiled by assigned JE.' },
+                    { title: 'Submitted', content: 'Sent by JE, sheet locked.' },
+                    { title: 'Under ZO Review', content: 'ZO Manager audits items.' },
+                    { title: 'ZO Approved', content: 'Passed to HO for final approval.' }
                   ]}
                 />
               </div>
               <div className="bg-white/5 p-3 rounded border border-white/5">
-                <span className="font-bold text-amber-400 block mb-1">HO Stage Workflow</span>
+                <span className="font-bold text-amber-400 block mb-1">HO Review Stage</span>
                 <DocStepList
                   steps={[
-                    { title: 'Under HO Review', content: 'HO Director audits the ZO-approved cost estimate.' },
-                    { title: 'Final Approved', content: 'The estimate budget is locked, allowing project billing and procurement.' },
-                    { title: 'HO Revision Requested', content: 'Returned to JE for adjustments.' },
-                    { title: 'Estimate Reopened', content: 'A finalized estimate is reopened by HO for appending new items.' }
+                    { title: 'Under HO Review', content: 'HO Director audits estimate.' },
+                    { title: 'Final Approved', content: 'Budget locked for procurement & billing.' },
+                    { title: 'HO Revision', content: 'Returned to JE with comments.' }
                   ]}
                 />
               </div>
             </div>
 
-            <h2 id="estimate-compilation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Priced Sheet Compilation & Grid Controls</h2>
+            <h2 id="estimate-compilation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Priced Sheet Grid Controls</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              JEs compile estimate sheets using an interactive grid linked to the database:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 text-slate-300 text-xs">
-              <li><strong>Real-time Totals</strong>: The row amount (<code className="text-slate-200">Qty × Rate</code>) and the gross estimate amount update instantly in the frontend grid.</li>
-              <li><strong>Duplicate Prevention</strong>: The grid blocks adding the exact same material multiple times.</li>
-              <li><strong>Transactional Rollback</strong>: On saving drafts or submitting, the backend processes items as a single transaction. If any row contains an invalid material ID, missing values, or negative numbers, the database performs a complete rollback to prevent corrupt data entry.</li>
-            </ul>
-
-            <h2 id="estimate-drafts" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Draft Sheets & Intermittent Saving</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Save Draft</strong> button allows JEs to store intermediate budget lines without locking the estimate or routing it to the reviewer queues. The draft remains editable and serves as a working copy.
+              Interactive calculation grid with real-time totals (<code className="text-slate-200">Qty × Rate</code>), duplicate item checks, and transactional rollback on save errors.
             </p>
 
-            <h2 id="estimate-row-approvals" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Row-Level Approvals & Rejections</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Reviewers audit estimates row-by-row rather than blindly approving sheets. ZOs and HOs mark each row as <em>Approve</em> or <em>Not Approve</em>. If a reviewer selects <strong>Not Approve</strong>, they must supply a justification in the row's remarks field. If undecided rows exist, the overall review submission is blocked.
-            </p>
-
-            <h2 id="estimate-telegram" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Automated Telegram Dispatcher</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              To keep the team aligned without delay, the backend is linked to our **Telegram Notification Gateway**:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
-              <li><strong>Submissions</strong>: When a JE submits a new sheet, the system dispatches an alert to the Zonal Manager's registered Telegram handle.</li>
-              <li><strong>Approvals</strong>: Approving an estimate routes a release notification to Head Office directors.</li>
-              <li><strong>Revisions</strong>: If a revision is requested, the bot immediately alerts the JE with the comments and the submission timeline.</li>
-            </ul>
-
-            <h2 id="estimate-auto-resubmit" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Automatic Resubmission Mechanics</h2>
+            <h2 id="estimate-auto-resubmit" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Revision Timers & Auto-Resubmission</h2>
             <DocCallout type="important">
-              <strong>Revision Countdown Gate</strong>: When a review is returned with a revision request, a countdown timer (defaulting to 24 hours) is registered. If the deadline expires, the next review attempt by the ZO or HO will automatically trigger an <strong>Auto-Resubmission</strong>. This updates the status back to <em>Submitted</em> (or <em>Under HO Review</em>), increments the revision cycle sequence, resets the rejected items to null for re-evaluation, and records an system audit log.
+              When a revision is requested, a 24-hour deadline timer starts. If unaddressed, the backend triggers an automatic resubmission for re-audit.
             </DocCallout>
           </div>
         )
@@ -450,77 +551,49 @@ export const docSections = [
         id: 'payment-requisitions',
         title: 'Payment Requisitions',
         headings: [
-          { id: 'requisition-directory', text: 'Project Directory & Ledger View', level: 2 },
-          { id: 'requisition-workflow', text: 'Filing & Document Upload', level: 2 },
-          { id: 'requisition-limits', text: 'Budget Constraint Enforcement', level: 2 },
-          { id: 'requisition-ledger', text: 'Ledger and Purchase Mappings', level: 2 }
+          { id: 'requisition-workflow', text: 'Invoice Upload & Filing', level: 2 },
+          { id: 'requisition-limits', text: 'Budget Limit Verification', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Payment Requisitions</strong> module tracks material procurement invoices, sub-contractor bills, and supplier payments against project budgets.
+              The <strong>Payment Requisitions</strong> module records vendor invoice claims and sub-contractor bill payments.
             </p>
 
-            <h2 id="requisition-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Project Directory & Ledger View</h2>
+            <h2 id="requisition-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Invoice Upload & Filing</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The interface divides controls between a global dashboard view and a **Project Directory**. Under the directory tab, you can search and filter the master work order list. Selecting a project work order opens a detailed, chronological table listing all requisition entries filed for that specific project, summarizing their approval state.
+              Engineers select a work order, input supplier details, GST breakdowns, and upload scanned invoice files (<code className="text-slate-200">.pdf</code>, <code className="text-slate-200">.jpg</code>, <code className="text-slate-200">.png</code>). Uploaded files are obfuscated with UUIDs for security.
             </p>
 
-            <h2 id="requisition-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Filing & Document Upload</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              To file a requisition, select a running project and input the invoice category, reference number, quantity, rate, and GST details. You must upload a scanned copy of the vendor invoice:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
-              <li><strong>Format Validation</strong>: The backend checks files and rejects uploads that do not match supported formats (<code className="text-slate-200">.pdf</code>, <code className="text-slate-200">.png</code>, <code className="text-slate-200">.jpg</code>).</li>
-              <li><strong>UUID Obfuscation</strong>: Uploaded filenames are obfuscated using UUIDs to prevent directory path traversal vulnerabilities.</li>
-            </ul>
-
-            <h2 id="requisition-limits" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Budget Constraint Enforcement</h2>
+            <h2 id="requisition-limits" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Budget Limit Verification</h2>
             <DocCallout type="warning">
-              <strong>Strict Budget Block</strong>: Requisition values are validated in real-time. If a submitted amount (including tax options) exceeds the remaining budget of the approved project estimate, the database transaction blocks the entry. Only approved requisition values count towards the remaining budget.
+              Requisition totals are checked against the remaining approved estimate balance. Requisitions exceeding available budget caps are blocked.
             </DocCallout>
-
-            <h2 id="requisition-ledger" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Ledger and Purchase Mappings</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Requisitions must map to specific suppliers and debit ledger sources. Administrators maintain vendor profiles and payment terms in the Purchase Options Manager to keep options consistent.
-            </p>
           </div>
         )
       },
       {
         id: 'daily-progress',
-        title: 'Daily Work Progress',
+        title: 'Daily Work Progress (DPR)',
         headings: [
-          { id: 'progress-directory', text: 'Active Project Directory', level: 2 },
-          { id: 'progress-logging', text: 'On-Site Status Logging & Progress Tables', level: 2 },
-          { id: 'progress-backdate', text: 'Back-Date Validation & Approvals', level: 2 },
-          { id: 'progress-storage', text: 'Image Storage Security & Signed URLs', level: 2 }
+          { id: 'progress-logging', text: 'Site Visit Logging & Photologs', level: 2 },
+          { id: 'progress-backdate', text: 'Back-Date Approval Gate', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Daily Work Progress</strong> module provides daily monitoring of physical site progress, establishing a detailed chronological audit trail of project completion.
+              The <strong>Daily Work Progress</strong> module collects daily site inspection logs, physical progress percentages, and geotagged site photologs.
             </p>
 
-            <h2 id="progress-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Active Project Directory</h2>
+            <h2 id="progress-logging" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Site Visit Logging & Photologs</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              The daily progress workspace features a **Project Directory** directory panel. Clicking on any work order folder opens the chronological logs dashboard for that site. This drills down into a historical table view of all daily progress entries logged by JEs.
+              Junior Engineers input work descriptions, physical progress percentages, and attach site inspection photos. Images are stored securely with temporary signed URLs.
             </p>
 
-            <h2 id="progress-logging" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">On-Site Status Logging & Progress Tables</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Junior Engineers submit reports detailing site visit dates, work summaries, current physical progress percentages (rounded to integer values), and site photologs. These logs compile into a structured tabular progress feed for that work order.
-            </p>
-
-            <h2 id="progress-backdate" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Back-Date Validation & Approvals</h2>
+            <h2 id="progress-backdate" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Back-Date Approval Gate</h2>
             <DocCallout type="important">
-              <strong>Back-Date Security Gate</strong>: Logging progress for a past date requires writing a detailed remark justifying the delayed submission. Back-dated reports are marked as <strong>Pending Approval</strong>. They do not appear in the public project timelines until reviewed and approved by Zonal or Head Office authorities.
+              Logging progress for past dates requires mandatory justification remarks and undergoes Zonal Manager review before entering public timelines.
             </DocCallout>
-
-            <h2 id="progress-storage" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Image Storage Security & Signed URLs</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Site photos are stored in a private Supabase storage bucket. The app denies direct public URLs. Instead, temporary **Signed URLs** with a 1-hour expiration token are generated dynamically for authorized users, securing site photos against unauthorized access.
-            </p>
           </div>
         )
       },
@@ -528,28 +601,25 @@ export const docSections = [
         id: 'fund-requests',
         title: 'Fund Requests',
         headings: [
-          { id: 'fund-metrics', text: 'Financial Gauges & Accounts', level: 2 },
-          { id: 'fund-workflow', text: 'Review and Source Allocation', level: 2 }
+          { id: 'fund-metrics', text: 'Zonal Credit Accounts (CC, OD, CR)', level: 2 },
+          { id: 'fund-workflow', text: 'Approval & Debit Source Assignment', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Fund Requests</strong> module manages cash disbursement requests filed by Zonal Managers to settle local supplier and sub-contractor liabilities.
+              The <strong>Fund Requests</strong> module manages cash requests filed by Zonal Managers to settle site vendor bills.
             </p>
 
-            <h2 id="fund-metrics" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Financial Gauges & Accounts</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              The module dashboard features allocation gauges displaying remaining credits across active accounts:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 text-xs">
+            <h2 id="fund-metrics" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Zonal Credit Accounts (CC, OD, CR)</h2>
+            <ul className="list-disc pl-5 space-y-1 text-slate-300 text-xs">
               <li><strong>Credit Control (CC)</strong>: Primary cash account.</li>
-              <li><strong>Overdraft (OD)</strong>: Short-term credit line.</li>
+              <li><strong>Overdraft (OD)</strong>: Short-term credit facility.</li>
               <li><strong>Cash Credit (CR)</strong>: Secondary working capital account.</li>
             </ul>
 
-            <h2 id="fund-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Review and Source Allocation</h2>
+            <h2 id="fund-workflow" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Approval & Debit Source Assignment</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Zonal Officers file fund requests in a <em>Pending</em> state. Head Office reviewers audit request details, select the source debit account (CC, OD, or CR), and input approval comments. Releasing funds updates account ledger balances.
+              HO Directors audit pending requests, select the active source account (CC/OD/CR), and release funds, immediately updating zonal ledger balances.
             </p>
           </div>
         )
@@ -558,42 +628,58 @@ export const docSections = [
         id: 'ra-final-bills',
         title: 'RA & Final Bills',
         headings: [
-          { id: 'bill-directory', text: 'Billing Directory & Work Order Selection', level: 2 },
-          { id: 'bill-calculations', text: 'Bill Balance Logs & Breakdown Integrity', level: 2 },
-          { id: 'bill-sequence', text: 'Sequential Bill Verification', level: 2 },
-          { id: 'bill-immutability', text: 'Permanent Immutability Safeguard', level: 2 }
+          { id: 'bill-calculations', text: 'Bill Calculation & Breakdown Sum Check', level: 2 },
+          { id: 'bill-sequence', text: 'Sequential Billing Validation', level: 2 },
+          { id: 'bill-immutability', text: 'Database Immutability Safeguard', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Running Account (RA) & Final Bills</strong> ledger records formal project invoices submitted to clients for civil works completed.
+              The <strong>Running Account (RA) & Final Bills</strong> ledger records formal invoices submitted to clients for civil works executed.
             </p>
 
-            <h2 id="bill-directory" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Billing Directory & Work Order Selection</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              The workspace provides a **Billing Directory** view showing all work orders. Selecting a project opens its specific Billing Ledger Sheet. This presents a chronological table listing all historical RA bill entries and balance computations for that project work order.
-            </p>
-
-            <h2 id="bill-calculations" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Bill Balance Logs & Breakdown Integrity</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Every bill entry calculates previous billings, the current invoice value, and remaining project contract values. The backend enforces a strict breakdown sum rule:
-            </p>
+            <h2 id="bill-calculations" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Bill Calculation & Breakdown Sum Check</h2>
             <div className="bg-white/5 p-3 rounded font-mono text-[11px] text-amber-400 border border-white/5 mt-2">
-              Gross Bill = Agency Payment + Security Deposit + Earnest Money Deposit + Special Security + Other Retentions + IT TDS + Taxes (SGST & CGST)
+              Gross Bill = Agency Payment + Security Deposit + EMD + Retentions + IT TDS + SGST + CGST
             </div>
             <p className="text-slate-300 text-xs mt-2">
-              If the submitted gross bill deviates from the sum of these breakdown fields (by 0.01 or more), the API rejects the request with a validation error.
+              The system enforces exact breakdown totals. If the gross bill differs from the breakdown sum, submission is rejected.
             </p>
 
-            <h2 id="bill-sequence" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Sequential Bill Verification</h2>
+            <h2 id="bill-sequence" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Sequential Billing Validation</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              To ensure sequential billing compliance, the database validates billing logs. Creating a bill labeled <em>RA Bill N</em> is blocked unless a record for <em>RA Bill N-1</em> exists in the work order directory.
+              RA Bills must be filed sequentially (<code className="text-slate-200">RA Bill N</code> requires <code className="text-slate-200">RA Bill N-1</code>).
             </p>
 
-            <h2 id="bill-immutability" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Permanent Immutability Safeguard</h2>
+            <h2 id="bill-immutability" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Database Immutability Safeguard</h2>
             <DocCallout type="caution">
-              <strong>Immutable Database Records</strong>: Once written, RA and Final Bill records cannot be edited, modified, or deleted by any user role (including System Administrators). This constraint is enforced by database triggers and API validation layers.
+              Once written, saved RA Bill records cannot be edited or deleted by any user role (including System Admins).
             </DocCallout>
+          </div>
+        )
+      },
+      {
+        id: 'zonal-balances-returns',
+        title: 'Zonal Balances & Excess Fund Returns',
+        headings: [
+          { id: 'zonal-ledgers', text: 'Zonal Credit Ledger Balances', level: 2 },
+          { id: 'excess-returns', text: 'Excess Fund Return Transactions', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Zonal Balances</strong> and <strong>Excess Fund Returns</strong> modules (<code className="text-slate-200">/zonal-balances</code> & <code className="text-slate-200">/excess-fund-returns</code>) manage regional cash ledgers and return unspent capital.
+            </p>
+
+            <h2 id="zonal-ledgers" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Zonal Credit Ledger Balances</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Presents real-time balances for each Zonal Office across available cash, reserved liabilities, and total disbursements.
+            </p>
+
+            <h2 id="excess-returns" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Excess Fund Return Transactions</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Allows Zonal Officers to initiate formal <code className="text-slate-200">RETURN</code> transactions, transferring unspent project funds back to Head Office accounts and logging audit entries.
+            </p>
           </div>
         )
       },
@@ -602,28 +688,48 @@ export const docSections = [
         title: 'Project Fund Reports',
         headings: [
           { id: 'report-overview', text: 'Financial Disbursements Tracking', level: 2 },
-          { id: 'report-constraints', text: 'Immutability and Project Closure', level: 2 }
+          { id: 'report-constraints', text: 'Immutability & Soft Delete Controls', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The <strong>Project Fund Reports</strong> module tracks and registers actual corporate disbursement events mapped to active project work orders.
+              The <strong>Project Fund Reports</strong> module (<code className="text-slate-200">/fund-reports</code>) registers corporate payment disbursements mapped to active work orders.
             </p>
 
             <h2 id="report-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Financial Disbursements Tracking</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Users with active credentials can submit a new disbursement log by entering the Work Order Number, the disbursed amount (INR), and NEFT/RTGS transaction reference remarks. The system automatically pulls project location and department info from Master Data.
+              Users submit disbursement logs with NEFT/RTGS transaction remarks, auto-populating project department and location metadata.
             </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-slate-300 mt-3 text-xs">
-              <li><strong>Refreshed Analytics Header</strong>: Real-time summaries show the total disbursement volume, active reports count, running projects, and closed projects.</li>
-              <li><strong>Edit access</strong>: General roles can view, compile, and update details for active reports.</li>
-              <li><strong>Administrative control</strong>: Administrators can soft-delete active records, view deleted logs in a dedicated <strong>Deleted</strong> tab, and restore soft-deleted items instantly.</li>
-            </ul>
 
-            <h2 id="report-constraints" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Immutability and Project Closure</h2>
-            <DocCallout type="caution">
-              <strong>Closed Project Lock</strong>: If a project's status is changed to <strong>Closed</strong> in Master Data, all linked fund reports are locked immediately. Creation, modification, soft-deletion, or restoration requests for closed projects are blocked on both the client side and the database level.
+            <h2 id="report-constraints" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Immutability & Soft Delete Controls</h2>
+            <DocCallout type="note">
+              Administrators can soft-delete erroneous disbursement entries and restore them from the <strong>Deleted Reports</strong> tab. Closed projects automatically lock linked fund reports.
             </DocCallout>
+          </div>
+        )
+      },
+      {
+        id: 'audit-compliance',
+        title: 'Audit & Compliance Center',
+        headings: [
+          { id: 'compliance-overview', text: 'System Risk Scoring & Anomaly Detection', level: 2 },
+          { id: 'compliance-audits', text: 'Policy Verification & Event Logs', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Audit & Compliance Center</strong> (<code className="text-slate-200">/analytics/audit</code>) provides real-time oversight of security events, policy compliance, and data anomalies.
+            </p>
+
+            <h2 id="compliance-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">System Risk Scoring & Anomaly Detection</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Computes real-time system risk indices by analyzing failed auth attempts, out-of-sequence bill attempts, and unauthorized API calls.
+            </p>
+
+            <h2 id="compliance-audits" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Policy Verification & Event Logs</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Allows compliance officers to audit system activity, filter events by severity/category, and export compliance verification reports.
+            </p>
           </div>
         )
       }
@@ -647,20 +753,19 @@ export const docSections = [
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Overview of the operational workflow for Junior Engineers (JE) tracking site activities.
+              Operational workflow for Junior Engineers (JE) conducting site operations and estimate compilations.
             </p>
 
             <h2 id="je-steps" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">On-Site Engineering Steps</h2>
             <DocRoleWorkflow
               role="je"
               steps={[
-                'Verify Telegram @snpolymers_bot connection and log in',
-                'Inspect the Material Master list for catalog item rates',
-                'Create a Cost Estimate draft for an active Work Order',
-                'Submit the estimate sheet for Zonal review',
-                'Log daily physical site progress percentages and upload photos',
-                'Create payment requisitions and attach raw invoice files',
-                'Log project disbursements under the Fund Reports portal (/fund-reports)'
+                'Log in via Telegram @snpolymers_bot OTP gateway',
+                'Check catalog item rates in Material Master',
+                'Compile Cost Estimate draft for assigned Work Order and submit',
+                'Log daily physical site progress (%) and upload geotagged photologs',
+                'File payment requisitions and attach vendor invoice files',
+                'Track score and streak on JE Field Leaderboard (/analytics/leaderboard)'
               ]}
             />
           </div>
@@ -675,18 +780,18 @@ export const docSections = [
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Overview of the operational workflow for Zonal Office (ZO) managers coordinating regional operations.
+              Operational workflow for Zonal Office (ZO) managers overseeing regional work order execution.
             </p>
 
             <h2 id="zo-steps" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Regional Management Steps</h2>
             <DocRoleWorkflow
               role="zo"
               steps={[
-                'Log in and open the Cost Estimates approval queue',
-                'Audit JE sheets: Approve or Request Revision with a submission timer',
-                'Submit Zonal Fund Requests to HO to pay local vendor bills',
-                'Log work completion and file sequential Running Account (RA) bills',
-                'Submit disbursement logs under the Fund Reports console (/fund-reports)'
+                'Open ZO Analytics Dashboard (/analytics/zo) to monitor cash runway',
+                'Audit JE Cost Estimates: Approve or Request Revision',
+                'File Zonal Fund Requests to HO for local supplier bills',
+                'Record sequential Running Account (RA) Bills',
+                'Manage Zonal Balances and execute Excess Fund Returns (/excess-fund-returns)'
               ]}
             />
           </div>
@@ -696,23 +801,23 @@ export const docSections = [
         id: 'ho-workflow',
         title: 'Head Office Workflow',
         headings: [
-          { id: 'ho-steps', text: 'Executive Approval and Funding Steps', level: 2 }
+          { id: 'ho-steps', text: 'Executive Approval & Financial Control Steps', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Overview of the operational workflow for Head Office (HO) directors managing financial controls and approvals.
+              Operational workflow for Head Office (HO) directors managing enterprise finances and approvals.
             </p>
 
-            <h2 id="ho-steps" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Executive Approval and Funding Steps</h2>
+            <h2 id="ho-steps" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Executive Approval & Financial Control Steps</h2>
             <DocRoleWorkflow
               role="ho"
               steps={[
-                'Access pending lists to final approve cost estimate sheets',
-                'Monitor live progress updates, site photologs, and billing ledger balances',
-                'Review regional Fund Requests and select the debit credit source (CC, OD, CR)',
-                'Authorize fund releases and track ledger disbursements',
-                'Track and compile regional project disbursements under Fund Reports (/fund-reports)'
+                'Monitor HO Executive Command Center (/analytics/ho) KPI strip and telemetry',
+                'Final approve ZO-audited Cost Estimates',
+                'Audit regional Fund Requests and assign debit credit sources (CC, OD, CR)',
+                'Inspect 3D Project Digital Twins and physical vs. financial progress ratios',
+                'Review Audit & Compliance Center for system risk flags'
               ]}
             />
           </div>
@@ -722,23 +827,22 @@ export const docSections = [
         id: 'admin-workflow',
         title: 'Administrator Workflow',
         headings: [
-          { id: 'admin-steps', text: 'System Administration and Compliance Steps', level: 2 }
+          { id: 'admin-steps', text: 'System Administration & Security Steps', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Overview of system setup, whitelisting, and compliance workflows for Administrators.
+              Operational workflow for System Administrators managing user whitelists, mappings, and security policies.
             </p>
 
-            <h2 id="admin-steps" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">System Administration and Compliance Steps</h2>
             <DocRoleWorkflow
               role="admin"
               steps={[
-                'Access the Whitelist menu to register or deactivate users',
-                'Reset Telegram links for users updating phone hardware',
-                'Maintain material heads, sub-heads, and catalog rates',
-                'Review global Audit Trail logs for security and compliance checks',
-                'Manage project fund reports: view active/deleted, soft-delete, and restore logs (/fund-reports)'
+                'Manage user accounts in Access Whitelist',
+                'Assign JEs and Zonal Managers in User & Work Order Mappings',
+                'Maintain Material Master rates, sub-heads, and catalog categories',
+                'Manage Purchase Options and ledger vendor mappings',
+                'Monitor system Audit Trail Logs and reset Telegram bot webhooks if required'
               ]}
             />
           </div>
@@ -761,22 +865,62 @@ export const docSections = [
         title: 'Access Whitelist Management',
         headings: [
           { id: 'user-addition', text: 'Adding Authorized Users', level: 2 },
-          { id: 'user-deactivation', text: 'Deactivating Access Accounts', level: 2 }
+          { id: 'user-deactivation', text: 'Deactivating Accounts', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Administrators manage platform security by whitelisting employee mobile credentials.
+              Administrators control system access by whitelisting employee mobile numbers and assigning role credentials.
             </p>
 
             <h2 id="user-addition" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Adding Authorized Users</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Click <strong>Add User</strong> in the Admin panel. Input the user's Full Name, their 10-digit mobile number, and assign a role dropdown value. Once whitelisted, the user can establish their Telegram connection.
+              Click <strong>Add User</strong> in the Whitelist panel. Supply display name, 10-digit mobile number, and role (<code className="text-amber-400">je</code>, <code className="text-amber-400">zo</code>, <code className="text-amber-400">ho</code>, <code className="text-amber-400">admin</code>).
             </p>
 
-            <h2 id="user-deactivation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Deactivating Access Accounts</h2>
+            <h2 id="user-deactivation" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Deactivating Accounts</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              To revoke access, edit the user's whitelist entry and toggle their active checkbox to <em>Inactive</em>. The authentication gate will block the next login request, and the server's API route guards will reject active sessions instantly.
+              Toggle user status to <em>Inactive</em> to revoke authentication privileges and invalidate session tokens immediately.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'user-wo-mappings',
+        title: 'User & Work Order Mappings',
+        headings: [
+          { id: 'je-zo-mappings', text: 'JE to Zonal Office Clustering', level: 2 },
+          { id: 'wo-assignments', text: 'Work Order Project Assignments', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>User Mappings</strong> and <strong>Work Order Mappings</strong> managers (<code className="text-slate-200">/user-mappings</code> & <code className="text-slate-200">/work-order-mappings</code>) configure organizational hierarchy and site ownership.
+            </p>
+
+            <h2 id="je-zo-mappings" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">JE to Zonal Office Clustering</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Assigns Junior Engineers to specific Zonal Offices, routing their estimates and requisitions to the correct Zonal Manager queue.
+            </p>
+
+            <h2 id="wo-assignments" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Work Order Project Assignments</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Binds specific work orders to assigned field engineers for targeted daily progress entry and requisition filing.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'master-data',
+        title: 'Master Data Management',
+        headings: [
+          { id: 'master-projects', text: 'Work Order Master Records', level: 2 },
+          { id: 'master-depts', text: 'Departments & Zonal Configurations', level: 2 }
+        ],
+        content: (
+          <div className="space-y-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The <strong>Master Data Panel</strong> (<code className="text-slate-200">/admin/master-data</code>) maintains core work order contracts, department lists, client details, and zonal boundaries.
             </p>
           </div>
         )
@@ -785,13 +929,12 @@ export const docSections = [
         id: 'purchase-options',
         title: 'Purchase Options Manager',
         headings: [
-          { id: 'purchase-overview', text: 'Authorized Vendors', level: 2 }
+          { id: 'purchase-vendors', text: 'Vendor & Supplier Profiles', level: 2 }
         ],
         content: (
           <div className="space-y-6">
-            <h2 id="purchase-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">Authorized Vendors</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              This panel manages the default supplier profiles and cash ledger sources displayed during cost estimate and payment requisition compilation.
+              Manages authorized material supplier profiles, credit terms, and cash ledger debits for payment requisitions.
             </p>
           </div>
         )
@@ -800,13 +943,12 @@ export const docSections = [
         id: 'audit-logs',
         title: 'Audit Trail Logs',
         headings: [
-          { id: 'audit-overview', text: 'Inspecting System Audit Logs', level: 2 }
+          { id: 'audit-inspection', text: 'System Event Inspection', level: 2 }
         ],
         content: (
           <div className="space-y-6">
-            <h2 id="audit-overview" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">Inspecting System Audit Logs</h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              This module tracks system activity logs for compliance checks. The log records user actions, timestamps, and target records (e.g. estimate sheet changes, fund approvals, role updates). Use the query fields to filter records by user or date.
+              Centralized security audit log (<code className="text-slate-200">/admin/sessions</code>) recording user logins, document updates, estimate approvals, and administrative actions with IP/browser timestamps.
             </p>
           </div>
         )
@@ -827,40 +969,31 @@ export const docSections = [
         title: 'Role Key Overview',
         headings: [
           { id: 'role-keys', text: 'Active System Roles', level: 2 },
-          { id: 'access-levels', text: 'Functional Access Definitions', level: 2 }
+          { id: 'access-levels', text: 'Access Levels', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The system operates a role-based access control (RBAC) model. Review role definitions and permissions mapping below.
+              Overview of system user roles and access capabilities across modules:
             </p>
 
-            <h2 id="role-keys" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Active System Roles</h2>
             <ul className="space-y-3.5 mt-3 text-xs font-semibold">
               <li className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <DocBadge role="je" />
-                <span className="text-slate-400">Junior Engineer: Sites monitoring, estimate drafting, daily progress logging, and payment requisitions.</span>
+                <span className="text-slate-400">Junior Engineer: Site DPR logging, photologging, cost estimate drafting, payment requisitions.</span>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <DocBadge role="zo" />
-                <span className="text-slate-400">Zonal Office: Regional managers reviewing estimates, requesting funds, and compiling contractor bills.</span>
+                <span className="text-slate-400">Zonal Office: Regional project telemetry, ZO estimate review, zonal fund requests, RA billing.</span>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <DocBadge role="ho" />
-                <span className="text-slate-400">Head Office: Directors coordinating approvals, allocating debit sources, and disbursing funds.</span>
+                <span className="text-slate-400">Head Office: Executive 10-KPI strip, final estimate approvals, fund request disbursements, compliance oversight.</span>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <DocBadge role="admin" />
-                <span className="text-slate-400">Administrator: Configuration managers controlling user whitelisting, catalog tables, and system security.</span>
+                <span className="text-slate-400">Administrator: Full system configuration, whitelisting, user mappings, master data, audit logs.</span>
               </li>
-            </ul>
-
-
-            <h2 id="access-levels" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Functional Access Definitions</h2>
-            <ul className="list-disc pl-5 space-y-2 text-slate-300 mt-3 text-xs">
-              <li><strong>Full Access</strong>: Clearance to read, build, edit, and submit modifications.</li>
-              <li><strong>View Only</strong>: Clearance to read log columns, charts, and metrics feeds without write capabilities.</li>
-              <li><strong>No Access</strong>: Menu blocks and API guards deny access. Elements are hidden from the user interface.</li>
             </ul>
           </div>
         )
@@ -869,15 +1002,14 @@ export const docSections = [
         id: 'permissions-matrix',
         title: 'Full Permissions Matrix',
         headings: [
-          { id: 'matrix-table', text: 'System Modules Matrix', level: 2 }
+          { id: 'matrix-table', text: 'Module Permissions Matrix', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              Full mapping table of role clearances across IDBP modules and database actions.
+              Complete matrix of role clearances across IDBP modules:
             </p>
 
-            <h2 id="matrix-table" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">System Modules Matrix</h2>
             <DocTable>
               <thead>
                 <tr className="border-b border-white/10 bg-white/5 text-slate-200 font-extrabold text-[10px] uppercase tracking-wider">
@@ -889,248 +1021,107 @@ export const docSections = [
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-slate-300">
-                {/* Section Group */}
                 <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Authentication & Setup</td>
+                  <td colSpan="5" className="p-2 pl-3">Analytics & Telemetry</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Mobile input OTP logging</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Telegram link verification setup</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3">HO Executive Command Center (/analytics/ho)</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Adjust UI viewing theme</td>
+                  <td className="p-3">ZO Zonal Operations Dashboard (/analytics/zo)</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                </tr>
+                <tr className="hover:bg-white/[0.01] transition">
+                  <td className="p-3">3D Digital Twin Viewer & Hub</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                </tr>
+                <tr className="hover:bg-white/[0.01] transition">
+                  <td className="p-3">JE Field Leaderboard (/analytics/leaderboard)</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                </tr>
+                <tr className="hover:bg-white/[0.01] transition">
+                  <td className="p-3">Audit & Compliance Center (/analytics/audit)</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
 
-                {/* Section Group */}
-                <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Console Dashboard</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">View construction project logs</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Inspect project pricing logs</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Inspect live recent operations feed</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-
-                {/* Section Group */}
-                <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Material Master</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Search & filter material items list</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Export catalog to spreadsheet</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Add, modify, or toggle item statuses</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-
-                {/* Section Group */}
                 <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
                   <td colSpan="5" className="p-2 pl-3">Cost Estimating</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Inspect estimation logs list</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Compile estimate draft and route to review</td>
+                  <td className="p-3">Draft & submit cost estimate sheet</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Zonal intermediate review (ZO stage)</td>
+                  <td className="p-3">ZO intermediate audit review</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Final approval execution (HO stage)</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Send sheet back to revision</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-
-                {/* Section Group */}
-                <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Payment Requisitions</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">View requisitions and invoice copies</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">File requisition & upload files</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Revoke/delete active requisition log</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-
-                {/* Section Group */}
-                <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Daily Work Progress</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Read progress entries and photologs</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Update daily progress and photolog</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Attach evaluation remarks</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-
-                {/* Section Group */}
-                <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Fund Requests</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Read request ledger and charts</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Submit zonal funding request</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Revoke pending request draft</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Approve request or set hold flags</td>
+                  <td className="p-3">HO final estimate approval</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
 
-                {/* Section Group */}
                 <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Contractor Billing (RA Bills)</td>
+                  <td colSpan="5" className="p-2 pl-3">Financials & Billing</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">View billing history ledger</td>
+                  <td className="p-3">File Zonal Fund Request</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                </tr>
+                <tr className="hover:bg-white/[0.01] transition">
+                  <td className="p-3">Approve Fund Request & assign source (CC/OD/CR)</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Create sequential billing records</td>
+                  <td className="p-3">Record Running Account (RA) Bills</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                </tr>
+                <tr className="hover:bg-white/[0.01] transition">
+                  <td className="p-3">Execute Excess Fund Returns</td>
+                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
+                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                   <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
                 </tr>
 
-                {/* Section Group */}
                 <tr className="bg-white/[0.02] font-extrabold text-[10px] text-amber-500 uppercase tracking-widest">
-                  <td colSpan="5" className="p-2 pl-3">Administration Panel</td>
+                  <td colSpan="5" className="p-2 pl-3">Administration & Setup</td>
                 </tr>
                 <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Add or edit whitelist records</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Reset user Telegram webhook links</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-slate-500 font-normal">None</td>
-                  <td className="p-3 text-center text-emerald-400 font-bold">Full</td>
-                </tr>
-                <tr className="hover:bg-white/[0.01] transition">
-                  <td className="p-3">Inspect global system audit trail</td>
+                  <td className="p-3">Whitelist User Management & Mappings</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
                   <td className="p-3 text-center text-slate-500 font-normal">None</td>
@@ -1145,29 +1136,24 @@ export const docSections = [
         id: 'security-rules',
         title: 'Security Rules & Constraints',
         headings: [
-          { id: 'security-policies', text: 'Important Security Policies', level: 2 }
+          { id: 'security-policies', text: 'Important System Security Constraints', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <p className="text-slate-300 text-sm leading-relaxed">
-              The IDBP database forces specific structural rules that cannot be bypassed.
+              The IDBP system enforces core structural security constraints that cannot be overridden:
             </p>
 
-            <h2 id="security-policies" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">Important Security Policies</h2>
             <DocCallout type="caution">
-              <strong>1. Immutable Billing Records</strong>: Once a Running Account (RA) or Final Bill is successfully written to the database, it cannot be modified or deleted by any user account (including administrators) once written to the database to ensure compliance with financial audits.
+              <strong>1. Immutable Billing Records</strong>: Once written to the database, Running Account (RA) and Final Bill records cannot be modified or deleted by any user account (including System Admins).
             </DocCallout>
 
             <DocCallout type="important">
-              <strong>2. Sequential Billing Checks</strong>: The system verifies billing ranges. You cannot submit bill log $N$ unless bill entry $N-1$ is registered in the system index.
+              <strong>2. Sequential Billing Rule</strong>: Submitting RA Bill $N$ requires RA Bill $N-1$ to be present in database indices.
             </DocCallout>
 
             <DocCallout type="warning">
-              <strong>3. Revision Timers</strong>: When a review officer requests an estimate modification, the system updates a live submission countdown clock. If the timer expires, the estimate input locks automatically for non-admin accounts.
-            </DocCallout>
-
-            <DocCallout type="note">
-              <strong>4. API Security Filters</strong>: UI blocks hide menu components, but the backend server inspects all incoming requests for active JWT authorization tags to verify clearances.
+              <strong>3. Budget Limit Enforcement</strong>: Payment requisitions and estimate totals exceeding project contract limits are blocked by backend transaction guards.
             </DocCallout>
           </div>
         )
@@ -1188,53 +1174,35 @@ export const docSections = [
         title: 'Frequently Asked Questions',
         headings: [
           { id: 'otp-faqs', text: 'Authentication & OTP Issues', level: 2 },
-          { id: 'estimates-faqs', text: 'Estimate Editing & Revision Issues', level: 2 },
-          { id: 'upload-faqs', text: 'File Upload & Format Issues', level: 2 },
-          { id: 'billing-faqs', text: 'Contractor Billing Issues', level: 2 }
+          { id: 'twin-faqs', text: '3D Digital Twin Viewer Issues', level: 2 },
+          { id: 'estimates-faqs', text: 'Estimate Editing & Revision Issues', level: 2 }
         ],
         content: (
           <div className="space-y-6">
             <h2 id="otp-faqs" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-4">Authentication & OTP Issues</h2>
             <div className="space-y-4 my-4">
               <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: I did not receive my login OTP code in Telegram.</h4>
+                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: I did not receive my login OTP in Telegram.</h4>
                 <ol className="list-decimal pl-5 space-y-1 mt-1 text-xs text-slate-300">
-                  <li>Verify that the mobile number typed matches your profile registration.</li>
-                  <li>Confirm with your administrator that your phone details are in the whitelist database.</li>
-                  <li>Open Telegram, search for the chat channel: <a href="https://t.me/snpolymers_bot" className="text-amber-500 underline font-bold">@snpolymers_bot</a> and type <code className="text-slate-300">/start</code> to reset the channel link.</li>
+                  <li>Verify that your mobile number is whitelisted by an Administrator.</li>
+                  <li>Search for Telegram bot <a href="https://t.me/snpolymers_bot" className="text-amber-500 underline font-bold">@snpolymers_bot</a> and send <code className="text-slate-300">/start</code> to reset the connection.</li>
                 </ol>
               </div>
+            </div>
+
+            <h2 id="twin-faqs" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">3D Digital Twin Viewer Issues</h2>
+            <div className="space-y-4 my-4">
               <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: System says "Access Denied: Registered whitelisted credentials required."</h4>
-                <p className="text-xs text-slate-300 mt-1">Your mobile number is not registered in the system whitelist. Contact your Administrator to whitelist your phone number.</p>
+                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: 3D Site Model is not rendering on mobile.</h4>
+                <p className="text-xs text-slate-300 mt-1">Ensure WebGL is enabled in your browser settings. For high-resolution 3D models, use modern mobile browsers (Chrome/Safari).</p>
               </div>
             </div>
 
             <h2 id="estimates-faqs" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Estimate Editing & Revision Issues</h2>
             <div className="space-y-4 my-4">
               <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: Why cannot I modify my cost estimate sheet?</h4>
-                <p className="text-xs text-slate-300 mt-1">Once submitted, estimate sheets are locked. If you need adjustments, contact a Zonal or Head Office reviewer to request a revision.</p>
-              </div>
-              <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: Why is my estimate revision locked?</h4>
-                <p className="text-xs text-slate-300 mt-1">Your revision deadline has expired. Contact your Zonal Office or an Administrator to extend the deadline.</p>
-              </div>
-            </div>
-
-            <h2 id="upload-faqs" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">File Upload & Format Issues</h2>
-            <div className="space-y-4 my-4">
-              <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: Why was my file upload rejected?</h4>
-                <p className="text-xs text-slate-300 mt-1">The server validates files to prevent security issues. Ensure you upload uncorrupted <code className="text-slate-300">.pdf</code>, <code className="text-slate-300">.png</code>, or <code className="text-slate-300">.jpg</code> formats. Other file extensions are blocked.</p>
-              </div>
-            </div>
-
-            <h2 id="billing-faqs" className="text-lg font-bold text-slate-200 border-b border-white/5 pb-2 mt-6">Contractor Billing Issues</h2>
-            <div className="space-y-4 my-4">
-              <div>
-                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: Why cannot I save a new Running Account Bill?</h4>
-                <p className="text-xs text-slate-300 mt-1">The system forces sequential contractor billing. You cannot create bill entry $N$ unless bill entry $N-1$ is registered in the database index.</p>
+                <h4 className="text-xs font-extrabold text-amber-500 uppercase tracking-wide">Q: Why is my estimate sheet locked?</h4>
+                <p className="text-xs text-slate-300 mt-1">Once submitted for ZO or HO review, estimate sheets are locked to prevent unauthorized changes during audit.</p>
               </div>
             </div>
           </div>

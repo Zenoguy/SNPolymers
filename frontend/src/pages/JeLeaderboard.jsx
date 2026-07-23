@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 import { useAuth } from '../components/AuthContext';
-import { SkeletonTable, SkeletonCard } from '../components/ui';
+import { SkeletonTable, SkeletonCard, Pagination } from '../components/ui';
 
 const JeLeaderboard = () => {
   const { user } = useAuth();
@@ -98,7 +98,7 @@ const JeLeaderboard = () => {
             { id: 'weekly', label: 'Weekly' },
             { id: 'monthly', label: 'Monthly' },
             { id: 'annually', label: 'Annually' },
-            { id: 'lifetime', label: 'Lifetime' }
+            { id: 'lifetime', label: 'All Time' }
           ].map((tf) => (
             <button
               key={tf.id}
@@ -283,42 +283,12 @@ const JeLeaderboard = () => {
                 <span className="text-slate-400 font-bold">
                   Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredLeaderboard.length)} of {filteredLeaderboard.length} Engineers (Page {currentPage} of {totalPages})
                 </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 font-extrabold uppercase text-[10px] tracking-wider transition cursor-pointer"
-                  >
-                    ‹ Prev
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                      <button
-                        key={pg}
-                        onClick={() => setCurrentPage(pg)}
-                        className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
-                          currentPage === pg
-                            ? 'bg-amber-500 text-slate-950 shadow-md'
-                            : 'hover:bg-white/10 text-slate-400'
-                        }`}
-                      >
-                        {pg}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 font-extrabold uppercase text-[10px] tracking-wider transition cursor-pointer"
-                  >
-                    Next ›
-                  </button>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  maxVisible={5}
+                />
               </div>
             )}
           </div>

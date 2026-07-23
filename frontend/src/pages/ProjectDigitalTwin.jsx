@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProjectDigitalTwin } from '../api/analyticsApi';
+import Modal from '../components/ui/Modal';
 
 const formatINR = (value) => {
   const num = Number(value) || 0;
@@ -87,6 +88,7 @@ const ProjectDigitalTwin = () => {
   const { work_order_no } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   // Fetch all component-level digital twin metrics for this project
   const { data: twinData, isLoading, error } = useQuery({
@@ -100,12 +102,11 @@ const ProjectDigitalTwin = () => {
 
   const isForbidden = error?.response?.status === 403;
 
-
-
   const overview = twinData?.overview || {};
   const materials = twinData?.materials || [];
   const approvals = twinData?.approvals || [];
   const budget = twinData?.budget || {};
+  const media = twinData?.media || [];
   const approvedRequisitionAmt = budget.approved_requisitions_amount || 0;
   const overrunAmt = Math.max(0, approvedRequisitionAmt - (overview.work_order_value || 0));
   const overrunPct = Math.max(0, (budget.budget_variance_pct || 0) - 100);
@@ -249,23 +250,74 @@ const ProjectDigitalTwin = () => {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-slate-500 font-bold uppercase tracking-widest block text-[10px]">
-                              Site Attachment Gallery {photos.length > 0 && `(${photos.length} Latest)`}
+                              Site Attachment Gallery ({media.length})
                             </span>
+                            {media.length > 0 && (
+                              <span className="text-[9px] font-mono text-amber-500 font-bold">
+                                Latest: {new Date(media[0].site_visit_date).toLocaleDateString('en-IN')}
+                              </span>
+                            )}
                           </div>
-                          
-                          {photos.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {photos.map((item, idx) => (
-                                <SitePhotoCard key={item.report_id || idx} item={item} idx={idx} />
-                              ))}
+
+                          {media.length === 0 ? (
+                            <div className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 text-center flex flex-col items-center justify-center gap-2">
+                              <span className="text-2xl opacity-40">📷</span>
+                              <p className="text-xs text-slate-400 font-medium">No site progress photos uploaded for this project yet.</p>
+                              <button
+                                onClick={() => navigate(`/daily-progress?work_order_no=${encodeURIComponent(work_order_no)}`)}
+                                className="mt-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-500 hover:underline"
+                              >
+                                Submit Progress Report &rarr;
+                              </button>
                             </div>
                           ) : (
-                            <div className="aspect-video bg-white/[0.02] rounded-2xl border border-white/5 flex flex-col items-center justify-center p-6 text-center">
-                              <span className="text-2xl mb-2">📷</span>
-                              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">No Site Photos Uploaded Yet</p>
-                              <p className="text-[9.5px] text-slate-500 mt-1 max-w-xs">
-                                Site visit photos attached by Junior Engineers in Daily Progress Reports will automatically appear here.
-                              </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {media.map((item) => (
+                                <div
+                                  key={item.report_id}
+                                  onClick={() => setSelectedPhoto(item)}
+                                  className="glass-panel glass-card-hover rounded-2xl border border-white/10 overflow-hidden cursor-pointer group flex flex-col justify-between"
+                                >
+                                  <div className="relative aspect-video bg-black/40 overflow-hidden">
+                                    {item.signed_url ? (
+                                      <img
+                                        src={item.signed_url}
+                                        alt={item.original_photo_filename || 'Site Attachment'}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                      />
+                                    ) : null}
+                                    <div
+                                      className={`w-full h-full items-center justify-center bg-slate-900/90 text-slate-400 text-xs font-bold uppercase tracking-widest ${
+                                        item.signed_url ? 'hidden' : 'flex'
+                                      }`}
+                                    >
+                                      <span>🖼️ Preview Unavailable</span>
+                                    </div>
+
+                                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-[9px] font-mono font-bold text-amber-400">
+                                      {item.physical_work_progress}% Progress
+                                    </div>
+                                  </div>
+
+                                  <div className="p-3 bg-white/[0.02] flex items-center justify-between border-t border-white/5">
+                                    <div className="truncate pr-2">
+                                      <span className="text-[10px] font-mono font-bold text-slate-200 block truncate">
+                                        {item.original_photo_filename || `Photo ${item.site_visit_date}`}
+                                      </span>
+                                      <span className="text-[9px] text-slate-500 font-semibold block">
+                                        {new Date(item.site_visit_date).toLocaleDateString('en-IN')}
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-400 shrink-0">
+                                      View ↗
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -568,6 +620,54 @@ const ProjectDigitalTwin = () => {
 
             </div>
           )}
+
+      {/* Full-screen Photo Modal */}
+      {selectedPhoto && (
+        <Modal
+          isOpen={!!selectedPhoto}
+          onClose={() => setSelectedPhoto(null)}
+          title={`Site Attachment — ${new Date(selectedPhoto.site_visit_date).toLocaleDateString('en-IN')}`}
+          subtitle={`Work Order: ${work_order_no}`}
+          size="lg"
+        >
+          <div className="space-y-4 text-left">
+            <div className="rounded-2xl overflow-hidden bg-black/80 border border-white/10 flex items-center justify-center max-h-[60vh]">
+              {selectedPhoto.signed_url ? (
+                <img
+                  src={selectedPhoto.signed_url}
+                  alt={selectedPhoto.original_photo_filename || 'Site Photo'}
+                  className="max-h-[60vh] w-auto object-contain"
+                />
+              ) : (
+                <div className="p-12 text-slate-400 text-xs font-bold uppercase tracking-wider">Image preview unavailable</div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 glass-panel p-4 rounded-2xl text-xs">
+              <div>
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Site Visit Date</span>
+                <span className="text-slate-200 font-mono font-bold">{selectedPhoto.site_visit_date}</span>
+              </div>
+              <div>
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Physical Work Progress</span>
+                <span className="text-amber-500 font-mono font-bold">{selectedPhoto.physical_work_progress}% Completed</span>
+              </div>
+              {selectedPhoto.original_photo_filename && (
+                <div className="col-span-2">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Original Filename</span>
+                  <span className="text-slate-300 font-mono text-xs">{selectedPhoto.original_photo_filename}</span>
+                </div>
+              )}
+              {selectedPhoto.remarks_after_site_visit && (
+                <div className="col-span-2">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">Site Visit Remarks</span>
+                  <p className="text-slate-300 leading-relaxed font-medium mt-0.5">{selectedPhoto.remarks_after_site_visit}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

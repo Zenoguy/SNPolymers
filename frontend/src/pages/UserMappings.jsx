@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import Modal from '../components/ui/Modal';
-import { SkeletonTable } from '../components/ui';
+import { SkeletonTable, Pagination } from '../components/ui';
 import { getUserMappings, createUserMapping, getEligibleJEs, getEligibleZOs } from '../api/userMappingsApi';
 
 const UserMappings = () => {
@@ -345,44 +345,7 @@ const UserMappings = () => {
             {/* Pagination Controls */}
             {(() => {
               const totalPages = Math.ceil(filteredMappings.length / pageSize);
-              if (totalPages <= 1) return null;
-              return (
-                <div className="px-6 py-4 bg-white/2 border-t border-white/5 flex items-center justify-end text-xs select-none">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      disabled={page === 1}
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
-                    >
-                      ‹ Prev
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                        <button
-                          key={pg}
-                          onClick={() => setPage(pg)}
-                          className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
-                            page === pg
-                              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
-                              : 'bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300'
-                          }`}
-                        >
-                          {pg}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      disabled={page === totalPages}
-                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                      className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
-                    >
-                      Next ›
-                    </button>
-                  </div>
-                </div>
-              );
+              return <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} maxVisible={5} />;
             })()}
           </div>
         </div>

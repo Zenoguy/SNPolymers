@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import authApi from '../../api/authApi';
+import { SkeletonTable } from '../../components/ui';
 
 const AuditLog = () => {
   const [sessions, setSessions] = useState([]);
@@ -153,9 +154,7 @@ const AuditLog = () => {
         {/* Sessions Table */}
         <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/5">
           {loading ? (
-            <div className="flex items-center justify-center p-24">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"></div>
-            </div>
+            <SkeletonTable rows={6} cols={6} />
           ) : sessions.length === 0 ? (
             <div className="text-center p-24 text-slate-400 text-xs uppercase font-extrabold tracking-widest">
               No session records match requested query specifications.

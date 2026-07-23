@@ -16,7 +16,7 @@ import {
   getMainHeadCapacity
 } from '../api/requisitionsApi';
 import { getZonalBalances } from '../api/zoBalancesApi';
-import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell, SkeletonTable, SkeletonCard } from '../components/ui';
+import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell, SkeletonTable, SkeletonCard, Pagination } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Helper for currency formatting
@@ -1989,45 +1989,7 @@ const Requisitions = () => {
                     </Table>
 
                     {/* Pagination Controls Footer */}
-                    {totalPages > 1 && (
-                      <div className="p-4 border-t border-white/10 bg-slate-900/60 flex items-center justify-end gap-4 text-xs select-none">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
-                          >
-                            ‹ Prev
-                          </button>
-
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                              <button
-                                key={pg}
-                                onClick={() => setCurrentPage(pg)}
-                                className={`w-7 h-7 rounded-lg text-xs font-black transition cursor-pointer ${
-                                  currentPage === pg
-                                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
-                                    : 'bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300'
-                                }`}
-                              >
-                                {pg}
-                              </button>
-                            ))}
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className="px-3.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-200 font-black uppercase text-[10px] tracking-wider transition cursor-pointer"
-                          >
-                            Next ›
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} maxVisible={5} />
                   </>
                 )}
               </div>

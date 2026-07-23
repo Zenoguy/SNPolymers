@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import { Button, Input, Modal, TextArea } from '../components/ui';
+import { SkeletonPage } from '../components/ui/Skeleton';
 import authApi from '../api/authApi';
 import { exportToExcel } from '../utils/exportHelpers';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -413,11 +414,7 @@ const EstimateView = () => {
   // };
 
   if (loading) {
-    return (
-      <div className="flex-grow flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
-      </div>
-    );
+    return <SkeletonPage />;
   }
 
   if (!estimate) {

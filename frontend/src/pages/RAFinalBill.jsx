@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
-import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui';
+import { Button, Input, TextArea, Select, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell, Pagination } from '../components/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProjects } from '../api/projectsApi';
 import {
@@ -1095,27 +1095,7 @@ const RAFinalBill = () => {
                   </Table>
 
                   {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="p-4 border-t border-white/5 bg-white/[0.01] flex justify-between items-center">
-                      <Button
-                        disabled={page <= 1}
-                        onClick={() => setPage(p => Math.max(p - 1, 1))}
-                        size="xs"
-                        variant="secondary"
-                      >
-                        Previous
-                      </Button>
-                      <span className="text-xs text-slate-400">Page {page} of {totalPages}</span>
-                      <Button
-                        disabled={page >= totalPages}
-                        onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                        size="xs"
-                        variant="secondary"
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  )}
+                  <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} maxVisible={5} showLabel={true} />
                 </div>
               </div>
             )}

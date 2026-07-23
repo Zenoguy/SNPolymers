@@ -413,12 +413,13 @@
 
 /* ─── Light Mode Styles & Overrides ────────────────────────────────────────── */
 body.light {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
   background-image:
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.06) 0px, transparent 50%);
   background-attachment: fixed;
+  font-weight: 500;
 }
 
 body.light ::-webkit-scrollbar-track {
@@ -433,92 +434,233 @@ body.light ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.24);
 }
 
-/* Glassmorphism Panel overrides - Apple x Oracle Light Mode (70% Transparency) */
-body.light .glass-panel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.30) 0%, rgba(241, 245, 249, 0.30) 100%) !important;
+/* Glassmorphism Panel overrides - Apple x Oracle Light Mode (Translucent + Backdrop Blur) */
+body.light .glass-panel,
+body.light [class*="glass-panel"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(241, 245, 249, 0.35) 100%) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.8) !important;
   box-shadow: 
     0 15px 35px -5px rgba(0, 0, 0, 0.03),
     inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
 }
 
+/* Modal backdrop overlay in light mode */
+body.light .fixed.bg-black\/85,
+body.light .fixed.bg-black\/80,
+body.light .fixed.bg-black\/75,
+body.light .fixed.inset-0 {
+  background-color: rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Nested Translucent Card & Box Container Overrides in Light Mode */
 body.light .glass-panel .bg-white\/2,
-body.light .glass-panel .bg-white\/5 {
-  background-color: rgba(255, 255, 255, 0.25) !important;
+body.light .glass-panel .bg-white\/5,
+body.light .glass-panel .bg-white\/10,
+body.light .glass-panel .bg-white\/\[0\.01\],
+body.light .glass-panel .bg-white\/\[0\.02\],
+body.light .bg-white\/2,
+body.light .bg-white\/5,
+body.light .bg-white\/10,
+body.light .bg-white\/\[0\.01\],
+body.light .bg-white\/\[0\.02\],
+body.light .bg-slate-900,
+body.light .bg-slate-900\/90,
+body.light .bg-slate-900\/80,
+body.light .bg-slate-900\/60,
+body.light .bg-slate-900\/40,
+body.light .bg-slate-900\/20,
+body.light .bg-slate-900\/10,
+body.light .bg-slate-900\/5,
+body.light .bg-slate-950,
+body.light .bg-slate-950\/80,
+body.light .bg-slate-950\/90,
+body.light .bg-neutral-950,
+body.light .dark\:bg-neutral-950,
+body.light .bg-\[\#0d131f\],
+body.light .bg-\[\#0d131f\]\/90,
+body.light .bg-black\/40,
+body.light .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.35) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+  color: #0f172a !important;
 }
 
 body.light .glass-panel .bg-white\/2:hover,
-body.light .glass-panel .bg-white\/5:hover {
-  background-color: rgba(255, 255, 255, 0.45) !important;
+body.light .glass-panel .bg-white\/5:hover,
+body.light .bg-white\/5:hover,
+body.light .bg-slate-900\/20:hover {
+  background-color: rgba(255, 255, 255, 0.55) !important;
   border-color: rgba(245, 158, 11, 0.4) !important;
 }
 
 /* Translucent Data Grid Tables in Light Mode */
-body.light table thead tr.bg-white\/2 {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+body.light table thead tr,
+body.light table thead tr.bg-white\/2,
+body.light table thead tr.bg-slate-900\/90 {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light table thead th,
+body.light table thead td {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+body.light table tbody tr {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
 }
 
 body.light table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.35) !important;
+  background-color: rgba(255, 255, 255, 0.45) !important;
 }
 
 /* Hoverable Glass Card overrides */
 body.light .glass-card-hover:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
-  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.75) 100%) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
   box-shadow:
     0 20px 40px -15px rgba(245, 158, 11, 0.25),
     0 0 25px rgba(99, 102, 241, 0.08),
-    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+    inset 0 1px 2px rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Glassmorphic inputs overrides */
+body.light input:not([type="checkbox"]):not([type="radio"]),
+body.light select,
+body.light textarea,
 body.light .glass-input {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(99, 102, 241, 0.15);
-  color: #0f172a;
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
+  color: #0f172a !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
 
+body.light input:focus,
+body.light select:focus,
+body.light textarea:focus,
 body.light .glass-input:focus {
-  background: #ffffff;
-  border-color: rgba(245, 158, 11, 0.6);
+  background: #ffffff !important;
+  border-color: rgba(245, 158, 11, 0.6) !important;
   box-shadow:
     0 0 15px rgba(245, 158, 11, 0.15),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
 }
 
-body.light .glass-input::placeholder {
-  color: #64748b;
+body.light input::placeholder,
+body.light textarea::placeholder {
+  color: #64748b !important;
 }
 
 /* Floating navigation & sidebar glass overrides */
-body.light .glass-nav {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.1) 100%) !important;
+body.light .glass-nav,
+body.light header.glass-nav,
+body.light aside.glass-nav {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(248, 250, 252, 0.2) 100%) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.7) !important;
   box-shadow:
     0 10px 30px -5px rgba(0, 0, 0, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
 }
 
+/* Ensure inner nav element inside sidebar is completely transparent with no double box */
+body.light aside nav,
+body.light .glass-nav nav {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Sidebar navigation item styling in light mode */
+body.light aside nav a,
+body.light aside a {
+  color: #475569 !important;
+}
+
+body.light aside nav a:hover,
+body.light aside a:hover {
+  color: #0f172a !important;
+  background-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+body.light aside a.bg-amber-500\/10,
+body.light aside a.text-amber-400 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #b45309 !important;
+  font-weight: 800 !important;
+}
+
+body.light aside a.bg-amber-500\/10 div,
+body.light aside a.text-amber-400 div {
+  color: #b45309 !important;
+}
+
 /* Dynamic Glow effects for active cards overrides */
 body.light .glow-border-active {
   border-color: rgba(245, 158, 11, 0.5) !important;
-  box-shadow:
-    0 8px 32px -8px rgba(245, 158, 11, 0.25),
-    0 0 20px rgba(245, 158, 11, 0.08),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px -6px rgba(245, 158, 11, 0.2) !important;
 }
 
-/* Enhance contrast and color readability of role and status badges in light mode */
+/* Typography contrast overrides in Light Mode */
+body.light .text-slate-100,
+body.light .text-slate-200,
+body.light .text-slate-300,
+body.light .text-slate-800,
+body.light .text-slate-900,
+body.light .text-white {
+  color: #0f172a !important;
+}
+
+body.light .text-slate-400,
+body.light .text-slate-500 {
+  color: #475569 !important;
+}
+
+body.light .text-slate-600,
+body.light .text-slate-700 {
+  color: #334155 !important;
+}
+
+body.light .border-white\/5,
+body.light .border-white\/10,
+body.light .border-white\/15,
+body.light .border-white\/20 {
+  border-color: #e2e8f0 !important;
+}
+
+body.light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+/* Force dark page wrappers to show the light body background */
+body.light .bg-black {
+  background-color: transparent !important;
+}
+
+/* Keep primary action buttons readable */
+body.light button.bg-white {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+/* Enhance contrast of status badges in light mode */
 body.light .bg-indigo-950\/40,
 body.light .bg-indigo-950\/20,
 body.light .bg-indigo-500\/10,
@@ -597,7 +739,7 @@ body.light .text-amber-500,
 body.light .dark\:text-amber-200,
 body.light .dark\:text-amber-300,
 body.light .dark\:text-amber-400 {
-  color: #92400e !important;
+  color: #b45309 !important;
   font-weight: 800 !important;
 }
 

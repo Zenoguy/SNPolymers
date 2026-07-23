@@ -373,7 +373,12 @@ async function getProjectDigitalTwin(req, res) {
       supabase.from('budget_leakage_mv').select('*').eq('work_order_no', work_order_no).maybeSingle(),
       supabase.from('audit_log').select('*').in('record_identifier', allowedIdentifiers).order('timestamp', { ascending: false }).limit(50),
       supabase.from('projects_master').select('site_latitude, site_longitude, department').eq('work_order_no', work_order_no).maybeSingle(),
-      supabase.from('daily_progress_reports').select('report_id, site_visit_date, physical_work_progress, daily_site_photo_url, original_photo_filename, remarks_after_site_visit, created_by').eq('work_order_no', work_order_no).order('site_visit_date', { ascending: false }).limit(2)
+      supabase.from('daily_progress_reports')
+        .select('report_id, site_visit_date, physical_work_progress, daily_site_photo_url, original_photo_filename, remarks_after_site_visit, created_by, created_at')
+        .eq('work_order_no', work_order_no)
+        .not('daily_site_photo_url', 'is', null)
+        .order('site_visit_date', { ascending: false })
+        .limit(20)
     ]);
 
     if (overviewRes.error) throw overviewRes.error;
@@ -381,6 +386,34 @@ async function getProjectDigitalTwin(req, res) {
     if (approvalsRes.error) throw approvalsRes.error;
     if (budgetRes.error) throw budgetRes.error;
     if (auditsRes.error) throw auditsRes.error;
+
+    // Resolve signed URLs for site progress photos
+    let siteMedia = [];
+    if (!photosRes.error && photosRes.data && photosRes.data.length > 0) {
+      siteMedia = await Promise.all(
+        photosRes.data.map(async (photo) => {
+          let signedUrl = null;
+          if (photo.daily_site_photo_url) {
+            if (photo.daily_site_photo_url.startsWith('http://') || photo.daily_site_photo_url.startsWith('https://') || photo.daily_site_photo_url.startsWith('data:')) {
+              signedUrl = photo.daily_site_photo_url;
+            } else {
+              try {
+                const { data: signData } = await supabase.storage
+                  .from('daily-progress-photos')
+                  .createSignedUrl(photo.daily_site_photo_url, 3600);
+                signedUrl = signData?.signedUrl || null;
+              } catch (e) {
+                signedUrl = null;
+              }
+            }
+          }
+          return {
+            ...photo,
+            signed_url: signedUrl
+          };
+        })
+      );
+    }
 
     const enrichedAudits = await enrichAuditsWithUserNames(auditsRes.data || []);
     const matchedEstimate = (estimatesRes.data || [])[0];
@@ -428,8 +461,13 @@ async function getProjectDigitalTwin(req, res) {
       materials: materialsRes.data || [],
       approvals: approvalsRes.data || [],
       budget: budgetRes.data || null,
+<<<<<<< HEAD
       photos: photosWithUrls,
       audits: enrichedAudits
+=======
+      audits: enrichedAudits,
+      media: siteMedia
+>>>>>>> fca5531 (ui)
     });
   } catch (error) {
     console.error('[ANALYTICS] Error in getProjectDigitalTwin:', error.message || error);
