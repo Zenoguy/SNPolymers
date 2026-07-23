@@ -479,17 +479,24 @@ body.light .bg-slate-900\/5,
 body.light .bg-slate-950,
 body.light .bg-slate-950\/80,
 body.light .bg-slate-950\/90,
+body.light .bg-slate-950\/40,
+body.light .bg-slate-800,
+body.light .bg-slate-800\/80,
+body.light .bg-slate-800\/50,
+body.light .bg-\[\#101520\],
+body.light .bg-\[\#101520\]\/90,
+body.light .bg-\[\#0b0e14\],
 body.light .bg-neutral-950,
 body.light .dark\:bg-neutral-950,
 body.light .bg-\[\#0d131f\],
 body.light .bg-\[\#0d131f\]\/90,
 body.light .bg-black\/40,
 body.light .bg-black\/60 {
-  background-color: rgba(255, 255, 255, 0.35) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
   color: #0f172a !important;
 }
 

@@ -1249,36 +1249,36 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
 
           {/* Gross Bill → Deductions → Net Paid Pipeline */}
           {metrics.grossBilled > 0 && (
-            <div className="my-2 p-2.5 rounded-xl border border-white/5 bg-slate-950/40">
+            <div className={`my-2 p-2.5 rounded-xl border transition-all ${isDark ? 'border-white/5 bg-slate-950/40' : 'border-slate-200 bg-white/80'}`}>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400 font-mono">Gross Bill → Deductions → Net Paid Pipeline</p>
+                <p className={`text-[8.5px] font-black uppercase tracking-wider font-mono ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>Gross Bill → Deductions → Net Paid Pipeline</p>
                 <ChartInfoTooltip
                   description="Shows how gross billed amount reduces to net agency payment after statutory deductions (TDS, Security Deposit, GST, EMD etc.)."
                   formula="Deductions = Gross Bill Amount − Net Agency Payment"
                 />
               </div>
               <div className="flex items-center gap-2 text-[8px] font-mono flex-wrap">
-                <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20 min-w-[80px]">
-                  <span className="text-sky-300 font-bold uppercase tracking-wider text-[7px]">Gross Billed</span>
-                  <span className="text-sky-200 font-black text-[11px]">{fmtCr(metrics.grossBilled)}</span>
+                <div className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border min-w-[80px] ${isDark ? 'bg-sky-500/10 border-sky-500/20 text-sky-200' : 'bg-sky-50 border-sky-200 text-sky-900'}`}>
+                  <span className={`font-bold uppercase tracking-wider text-[7px] ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>Gross Billed</span>
+                  <span className={`font-black text-[11px] ${isDark ? 'text-sky-200' : 'text-sky-950'}`}>{fmtCr(metrics.grossBilled)}</span>
                 </div>
                 <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-rose-400 font-black text-[10px]">−</span>
-                  <span className="text-rose-300 font-bold text-[7px] uppercase tracking-wider">{metrics.deductionRate}%</span>
+                  <span className="text-rose-500 font-black text-[10px]">−</span>
+                  <span className="text-rose-500 font-bold text-[7px] uppercase tracking-wider">{metrics.deductionRate}%</span>
                 </div>
-                <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 min-w-[80px]">
-                  <span className="text-rose-300 font-bold uppercase tracking-wider text-[7px]">Deductions</span>
-                  <span className="text-rose-200 font-black text-[11px]">{fmtCr(metrics.deductions)}</span>
+                <div className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border min-w-[80px] ${isDark ? 'bg-rose-500/10 border-rose-500/20 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-900'}`}>
+                  <span className={`font-bold uppercase tracking-wider text-[7px] ${isDark ? 'text-rose-300' : 'text-rose-700'}`}>Deductions</span>
+                  <span className={`font-black text-[11px] ${isDark ? 'text-rose-200' : 'text-rose-950'}`}>{fmtCr(metrics.deductions)}</span>
                 </div>
                 <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-emerald-400 font-black text-[10px]">→</span>
+                  <span className="text-emerald-500 font-black text-[10px]">→</span>
                 </div>
-                <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 min-w-[80px]">
-                  <span className="text-emerald-300 font-bold uppercase tracking-wider text-[7px]">Net Agency Paid</span>
-                  <span className="text-emerald-200 font-black text-[11px]">{fmtCr(metrics.billReceived)}</span>
+                <div className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border min-w-[80px] ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}`}>
+                  <span className={`font-bold uppercase tracking-wider text-[7px] ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>Net Agency Paid</span>
+                  <span className={`font-black text-[11px] ${isDark ? 'text-emerald-200' : 'text-emerald-950'}`}>{fmtCr(metrics.billReceived)}</span>
                 </div>
                 <div className="flex-1 min-w-[80px]">
-                  <div className="h-2 w-full rounded-full overflow-hidden flex bg-slate-800">
+                  <div className={`h-2 w-full rounded-full overflow-hidden flex ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                     <div
                       style={{ width: `${metrics.grossBilled > 0 ? ((metrics.billReceived / metrics.grossBilled) * 100).toFixed(1) : 0}%` }}
                       className="bg-emerald-500 h-full"
@@ -1290,17 +1290,17 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                       title={`Deductions: ${fmtCr(metrics.deductions)} (${metrics.deductionRate}%)`}
                     />
                   </div>
-                  <p className="text-[7.5px] text-slate-500 mt-0.5 font-mono">Net retained: {metrics.grossBilled > 0 ? (100 - Number(metrics.deductionRate)).toFixed(1) : 0}% of Gross</p>
+                  <p className={`text-[7.5px] mt-0.5 font-mono ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>Net retained: {metrics.grossBilled > 0 ? (100 - Number(metrics.deductionRate)).toFixed(1) : 0}% of Gross</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Dual Realization Progress Bars */}
-          <div className="my-2 space-y-2 p-2.5 rounded-xl border border-white/5 bg-slate-950/40">
+          <div className={`my-2 space-y-2 p-2.5 rounded-xl border transition-all ${isDark ? 'border-white/5 bg-slate-950/40' : 'border-slate-200 bg-white/80'}`}>
             {/* Bar 1: Investment vs Remaining WO Value */}
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase text-slate-400 mb-1 font-mono">
+              <div className={`flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase mb-1 font-mono ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="truncate">1. Capital Investment Realization</span>
                   <ChartInfoTooltip
@@ -1308,9 +1308,9 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                     formula="Remaining WO Value = Total WO Value - Approved Requisition Investment"
                   />
                 </div>
-                <span className="shrink-0 text-slate-300">WO Value: {fmtCr(metrics.woValue)}</span>
+                <span className={`shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-900'}`}>WO Value: {fmtCr(metrics.woValue)}</span>
               </div>
-              <div className="h-3 w-full rounded-full overflow-hidden flex bg-slate-800">
+              <div className={`h-3 w-full rounded-full overflow-hidden flex ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                 <div
                   style={{ width: `${Math.max(1, Math.min(100, Number(metrics.investmentPct)))}%` }}
                   className="bg-amber-500 h-full transition-all duration-500"
@@ -1322,15 +1322,15 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                   title={`Remaining WO Value: ${fmtCr(metrics.remainingWOValue)}`}
                 />
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono text-slate-400">
+              <div className={`flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" /> Total Inv: {fmtCr(metrics.investment)} ({metrics.investmentPct}%)</span>
                 <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-sky-500/30 shrink-0" /> Remaining: {fmtCr(metrics.remainingWOValue)}</span>
               </div>
             </div>
 
             {/* Bar 2: Recovery Realization against Total Investment */}
-            <div className="border-t border-white/5 pt-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase text-slate-400 mb-1 font-mono">
+            <div className={`border-t pt-1.5 ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
+              <div className={`flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[8.5px] font-bold uppercase mb-1 font-mono ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="truncate">2. Recovery Realization (Investment Pool)</span>
                   <ChartInfoTooltip
@@ -1338,9 +1338,9 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                     formula="Pending Recovery = Approved Requisitions - Agency Billed Payments"
                   />
                 </div>
-                <span className="shrink-0 text-slate-300">Pool: {fmtCr(metrics.investment)}</span>
+                <span className={`shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-900'}`}>Pool: {fmtCr(metrics.investment)}</span>
               </div>
-              <div className="h-3 w-full rounded-full overflow-hidden flex bg-slate-800">
+              <div className={`h-3 w-full rounded-full overflow-hidden flex ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                 <div
                   style={{ width: `${Math.max(1, metrics.recoveryBarPct)}%` }}
                   className="bg-emerald-500 h-full transition-all duration-500"
@@ -1354,10 +1354,10 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                   />
                 )}
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono text-slate-400">
+              <div className={`flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mt-1 text-[8px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" /> Agency Paid: {fmtCr(metrics.billReceived)} ({metrics.recoveryAgainstInvestPct}%)</span>
                 {metrics.surplusRecovery > 0
-                  ? <span className="flex items-center gap-1 truncate text-emerald-400"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" /> Surplus: +{fmtCr(metrics.surplusRecovery)}</span>
+                  ? <span className="flex items-center gap-1 truncate text-emerald-500 font-bold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" /> Surplus: +{fmtCr(metrics.surplusRecovery)}</span>
                   : <span className="flex items-center gap-1 truncate"><span className="w-1.5 h-1.5 rounded-full bg-rose-500/80 shrink-0" /> Pending: {fmtCr(metrics.pendingRecovery)}</span>
                 }
               </div>
@@ -1365,14 +1365,14 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
           </div>
 
           {/* Visual Progress Stage Color Bands with Stacked Bar & Distribution Badges */}
-          <div className="mt-2 pt-2 border-t border-white/5">
+          <div className={`mt-2 pt-2 border-t ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 mb-1">
-              <p className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">Progress Stage Color Bands Distribution</p>
-              <span className="text-[8px] font-mono text-slate-500 font-bold shrink-0">{metrics.totalProjects} Total WOs</span>
+              <p className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider truncate ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>Progress Stage Color Bands Distribution</p>
+              <span className={`text-[8px] font-mono font-bold shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{metrics.totalProjects} Total WOs</span>
             </div>
 
             {/* Multi-segment distribution bar */}
-            <div className="h-2 w-full rounded-full overflow-hidden flex bg-slate-800 mb-2">
+            <div className={`h-2 w-full rounded-full overflow-hidden flex mb-2 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
               {metrics.bands.map((b, idx) => Number(b.pct) > 0 && (
                 <div
                   key={idx}
