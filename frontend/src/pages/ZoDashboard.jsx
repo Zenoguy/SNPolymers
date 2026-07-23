@@ -1076,7 +1076,7 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
       surplusRecovery,
       remainingWOValue,
       investmentPct,
-      billRecoveryPct,
+      disbursementPct,
       recoveryAgainstInvestPct,
       recoveryBarPct,
       bands,
@@ -1170,7 +1170,7 @@ const InvestmentRecoveryPlot = ({ projects, agencyPaymentAmount = 0, isModal = f
                   />
                 </div>
               </div>
-              <p className="text-base sm:text-lg font-black font-mono text-emerald-400 mt-1">{metrics.billRecoveryPct}%</p>
+              <p className="text-base sm:text-lg font-black font-mono text-emerald-400 mt-1">{metrics.disbursementPct}%</p>
               <p className="text-[8.5px] text-slate-400 font-mono mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-white/5 pt-1 min-w-0">
                 <span className="truncate">Rec: <strong className="text-slate-200">{fmtCr(metrics.billReceived)}</strong></span>
                 <span className="text-slate-500 truncate">of {fmtCr(metrics.woValue)}</span>
