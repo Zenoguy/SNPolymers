@@ -60,8 +60,7 @@ const DocTOC = ({ headings = [] }) => {
           return (
             <li
               key={heading.id}
-              style={{ paddingLeft: isSubheading ? '1rem' : '0' }}
-              className="transition-all"
+              className={`transition-all ${isSubheading ? 'pl-4' : 'pl-0'}`}
             >
               <a
                 href={`#${heading.id}`}
