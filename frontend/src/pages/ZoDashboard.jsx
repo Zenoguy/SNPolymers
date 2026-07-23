@@ -1610,18 +1610,18 @@ const ExecutiveKpiStrip = ({ projects, summaryKpis }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
       {kpis.map((kpi) => (
         <div
           key={kpi.id}
           className={`relative p-3.5 rounded-2xl border flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 overflow-hidden ${isDark ? 'bg-[#101520]/90 border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] hover:border-white/20' : 'bg-white border-slate-200 shadow-sm hover:shadow-md'}`}
-          style={{ minHeight: '135px' }}
+          style={{ minHeight: '130px' }}
         >
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: kpi.glow }} />
           <div className="absolute top-2.5 right-2.5 z-10">
             <ChartInfoTooltip description={kpi.description} formula={kpi.formula} />
           </div>
-          <p className="text-[9.5px] font-black tracking-wider uppercase leading-snug pr-6" style={{ color: kpi.color }}>{kpi.title}</p>
+          <p className="text-[9.5px] font-black tracking-wider uppercase leading-snug pr-6 truncate" style={{ color: kpi.color }} title={kpi.title}>{kpi.title}</p>
           <div className="my-auto py-1">
             <span className={`text-base xl:text-lg font-bold font-mono tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{kpi.value}</span>
           </div>
