@@ -5,6 +5,8 @@ import TopNavbar from './TopNavbar';
 import BackgroundShapes from './BackgroundShapes';
 import { useTheme } from './ThemeContext';
 
+import ErrorBoundary from './ErrorBoundary';
+
 const AppLayout = () => {
   const { isDark } = useTheme();
 
@@ -19,7 +21,9 @@ const AppLayout = () => {
       <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
         <TopNavbar />
         <main className="flex-grow p-4 md:p-6 overflow-y-auto no-scrollbar w-full relative z-10">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

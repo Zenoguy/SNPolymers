@@ -2637,16 +2637,10 @@ const HoDashboard = () => {
         </div>
 
         <div className="flex flex-col items-end gap-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold text-slate-300 dark:text-slate-300 bg-white/5 px-2.5 py-1 rounded-xl border border-white/10 flex items-center gap-1.5 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Data Source: Live ERP Database Sync
-            </span>
-            <ChartInfoTooltip
-              description="Analytics metrics are derived in real-time from live system entries across Work Orders, Approved Estimates, ZO Fund Requisitions, Bank Disbursals, DPR Logs, and Contractor Bills."
-              formula="Source = Live SQL aggregation across work_orders, estimate_sheets, requisitions & agency_bills tables"
-            />
-          </div>
+          <ChartInfoTooltip
+            description="Analytics metrics are derived in real-time from live system entries across Work Orders, Approved Estimates, ZO Fund Requisitions, Bank Disbursals, DPR Logs, and Contractor Bills."
+            formula="Source = Live SQL aggregation across work_orders, estimate_sheets, requisitions & agency_bills tables"
+          />
           <button
             onClick={handleRefresh}
             disabled={refreshMutation.isPending}
@@ -2824,7 +2818,6 @@ const HoDashboard = () => {
           <div className="hidden md:block h-px w-24 bg-white/[0.045]" />
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
-          <span className="hidden sm:inline">Data Source: Live ERP Ledger (Work Orders, Estimates, Requisitions & Bills)</span>
           <ChartInfoTooltip
             description="All Executive KPI metrics are calculated in real-time by aggregating live database records across Work Orders, Final Approved Estimates, ZO Fund Requisitions, Disbursals, DPR Progress Submissions, and Agency Bills."
             formula="Source = Live SQL aggregation across work_orders, estimate_sheets, requisitions & agency_bills"

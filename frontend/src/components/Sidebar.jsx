@@ -171,7 +171,7 @@ export const MobileHeader = () => {
       title: 'Digital Twins',
       items: [
         {
-          to: '/analytics',
+          to: '/analytics/digital-twin',
           label: 'Digital Twin Hub',
           icon: (
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,7 +180,7 @@ export const MobileHeader = () => {
           )
         },
         {
-          to: '/analytics/audit-compliance',
+          to: '/analytics/audit',
           label: 'Audit & Compliance',
           icon: (
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
