@@ -81,7 +81,7 @@ const JeDashboardView = () => {
     });
   }, [projects, estimates, requisitions]);
 
-  const streakCount = user?.daily_streak || roleData.stats?.daily_streak || 12;
+  const streakCount = user?.daily_streak || roleData.stats?.daily_streak || 0;
 
   return (
     <div className="space-y-8 pb-12">
@@ -99,7 +99,7 @@ const JeDashboardView = () => {
         <div className="flex gap-8 text-center md:text-right">
           <div>
             <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">Assigned Projects</span>
-            <span className="text-sm font-extrabold text-slate-200">{projects.length || 4} Sites Mapped</span>
+            <span className="text-sm font-extrabold text-slate-200">{projects.length || 0} Sites Mapped</span>
           </div>
           <div>
             <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">Operator Role</span>
@@ -163,15 +163,15 @@ const JeDashboardView = () => {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                 <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Total Reports</span>
-                <span className="text-2xl font-bold text-slate-100 font-mono">{roleData.stats?.totalReports || 42}</span>
+                <span className="text-2xl font-bold text-slate-100 font-mono">{roleData.stats?.totalReports || 0}</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                 <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Approved Estimates</span>
-                <span className="text-2xl font-bold text-emerald-400 font-mono">{roleData.stats?.approvedCount || 9}</span>
+                <span className="text-2xl font-bold text-emerald-400 font-mono">{roleData.stats?.approvedCount || 0}</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                 <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Pending Review</span>
-                <span className="text-2xl font-bold text-amber-500 font-mono">{roleData.stats?.pendingCount || 2}</span>
+                <span className="text-2xl font-bold text-amber-500 font-mono">{roleData.stats?.pendingCount || 0}</span>
               </div>
             </div>
 
@@ -215,15 +215,8 @@ const JeDashboardView = () => {
                 </table>
               </div>
             ) : (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center p-3 rounded-2xl bg-white/2 border border-white/5">
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold block">21 Jul 2026</span>
-                    <span className="text-xs font-bold text-slate-200 font-mono">WO-2312</span>
-                  </div>
-                  <span className="text-xs font-bold text-amber-400 font-mono">78%</span>
-                  <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Approved</span>
-                </div>
+              <div className="text-slate-500 text-xs py-8 text-center font-bold uppercase tracking-widest">
+                No recent daily progress submissions
               </div>
             )}
           </div>
@@ -281,11 +274,11 @@ const JeDashboardView = () => {
               <div className="space-y-3">
                 <div>
                   <div className="text-[10px] text-slate-500 font-bold uppercase">Assigned Office</div>
-                  <div className="text-sm font-bold text-slate-100">Kolkata North Zonal Office</div>
+                  <div className="text-sm font-bold text-slate-100">Unassigned Zonal Office</div>
                 </div>
                 <div>
                   <div className="text-[10px] text-slate-500 font-bold uppercase">Contact Number</div>
-                  <div className="text-sm font-semibold text-slate-300 font-mono">+91 98300 12345</div>
+                  <div className="text-sm font-semibold text-slate-300 font-mono">N/A</div>
                 </div>
               </div>
             )}
