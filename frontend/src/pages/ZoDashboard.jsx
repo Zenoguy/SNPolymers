@@ -1795,8 +1795,8 @@ const ZoHomedashboardOverview = ({ selectedZoName, projects, balancesRes, isDark
   // Find active ZO balance
   const activeBal = useMemo(() => {
     const list = balancesRes?.balances || (balancesRes?.balance ? [balancesRes.balance] : []);
-    if (!list.length) return { available_balance: 0, assigned_credit_limit: 2000000 };
-    if (!selectedZoName) return list[0] || { available_balance: 0, assigned_credit_limit: 2000000 };
+    if (!list.length) return { available_balance: 0, assigned_credit_limit: 0 };
+    if (!selectedZoName) return list[0] || { available_balance: 0, assigned_credit_limit: 0 };
     const match = list.find(b => {
       const name = (b.zo_name || b.zo_user_id || '').toLowerCase();
       return name.includes(selectedZoName.toLowerCase());
@@ -1805,7 +1805,7 @@ const ZoHomedashboardOverview = ({ selectedZoName, projects, balancesRes, isDark
   }, [balancesRes, selectedZoName]);
 
   const availBal = activeBal.available_balance ?? 0;
-  const limitBal = activeBal.assigned_credit_limit ?? activeBal.allocated_amount ?? 2000000;
+  const limitBal = activeBal.assigned_credit_limit ?? activeBal.allocated_amount ?? 0;
 
   // Calculate JE productivity list from projects
   const jeStats = useMemo(() => {

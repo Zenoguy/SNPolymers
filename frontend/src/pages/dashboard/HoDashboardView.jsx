@@ -83,6 +83,12 @@ const HoDashboardView = () => {
     return { approvedSum, pendingCount: pendingRequisitions.length };
   }, [requisitions, pendingRequisitions]);
 
+  const approvalRate = useMemo(() => {
+    if (!requisitions.length) return '0%';
+    const appCount = requisitions.filter(r => r.requisition_status === 'Approved').length;
+    return `${((appCount / requisitions.length) * 100).toFixed(1)}%`;
+  }, [requisitions]);
+
   // 5. Fetch all projects
   const { data: projectsRes } = useQuery({
     queryKey: ['dashboardProjects'],
@@ -159,7 +165,7 @@ const HoDashboardView = () => {
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                 <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Approval Rate</span>
-                <span className="text-xl font-bold text-emerald-400">96.4%</span>
+                <span className="text-xl font-bold text-emerald-400">{approvalRate}</span>
               </div>
             </div>
             <Link to="/analytics/ho" className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 font-medium">
@@ -273,7 +279,7 @@ const HoDashboardView = () => {
                   </div>
                 </div>
                 <div className="text-base font-extrabold text-amber-400 font-mono shrink-0">
-                  {formatINR(roleData.capitalFlow?.inFlight?.total || 2260000)}
+                  {formatINR(roleData.capitalFlow?.inFlight?.total || 0)}
                 </div>
               </div>
 
@@ -286,7 +292,7 @@ const HoDashboardView = () => {
                   </div>
                 </div>
                 <div className="text-base font-extrabold text-emerald-400 font-mono shrink-0">
-                  {formatINR(roleData.capitalFlow?.recentMoved?.total || 9140000)}
+                  {formatINR(roleData.capitalFlow?.recentMoved?.total || 0)}
                 </div>
               </div>
 
@@ -296,19 +302,19 @@ const HoDashboardView = () => {
                   <div>
                     <div className="flex justify-between items-center text-[10px] mb-1">
                       <span className="font-semibold text-slate-300">Zonal Office Disbursals</span>
-                      <span className="font-mono font-bold text-slate-100">{formatINR(roleData.capitalFlow?.recentMoved?.zonalAllocations || 5820000)}</span>
+                      <span className="font-mono font-bold text-slate-100">{formatINR(roleData.capitalFlow?.recentMoved?.zonalAllocations || 0)}</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: '64%' }} />
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(roleData.capitalFlow?.recentMoved?.total || 0) > 0 ? Math.round(((roleData.capitalFlow?.recentMoved?.zonalAllocations || 0) / roleData.capitalFlow.recentMoved.total) * 100) : 0}%` }} />
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between items-center text-[10px] mb-1">
                       <span className="font-semibold text-slate-300">Site Requisitions Paid</span>
-                      <span className="font-mono font-bold text-slate-100">{formatINR(roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 3320000)}</span>
+                      <span className="font-mono font-bold text-slate-100">{formatINR(roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0)}</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div className="h-full bg-sky-500 rounded-full" style={{ width: '36%' }} />
+                      <div className="h-full bg-sky-500 rounded-full" style={{ width: `${(roleData.capitalFlow?.recentMoved?.total || 0) > 0 ? Math.round(((roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0) / roleData.capitalFlow.recentMoved.total) * 100) : 0}%` }} />
                     </div>
                   </div>
                 </div>
@@ -349,19 +355,19 @@ const HoDashboardView = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
                   <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Junior Eng (JE)</span>
-                  <span className="text-xl font-mono font-black text-amber-500 mt-1">{overview?.userCounts?.je || roleData.stats?.totalUsers || 24}</span>
+                  <span className="text-xl font-mono font-black text-amber-500 mt-1">{overview?.userCounts?.je || roleData.stats?.totalUsers || 0}</span>
                 </div>
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
                   <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Zonal Offices (ZO)</span>
-                  <span className="text-xl font-mono font-black text-sky-500 mt-1">{overview?.userCounts?.zo || 6}</span>
+                  <span className="text-xl font-mono font-black text-sky-500 mt-1">{overview?.userCounts?.zo || 0}</span>
                 </div>
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
                   <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Head Office (HO)</span>
-                  <span className="text-xl font-mono font-black text-emerald-500 mt-1">{overview?.userCounts?.ho || 4}</span>
+                  <span className="text-xl font-mono font-black text-emerald-500 mt-1">{overview?.userCounts?.ho || 0}</span>
                 </div>
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
                   <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Admin Staff</span>
-                  <span className="text-xl font-mono font-black text-rose-500 mt-1">{overview?.userCounts?.admin || 3}</span>
+                  <span className="text-xl font-mono font-black text-rose-500 mt-1">{overview?.userCounts?.admin || 0}</span>
                 </div>
               </div>
             </div>
@@ -387,7 +393,7 @@ const HoDashboardView = () => {
                     <span className="w-2 h-2 rounded-full bg-amber-500/40 group-hover:bg-amber-400 transition" />
                   </div>
                   <div className="text-xl sm:text-2xl font-mono font-black text-amber-500 dark:text-amber-400 mt-2 truncate">
-                    {estimates.filter(e => e.estimate_status === 'Draft').length || 8}
+                    {estimates.filter(e => e.estimate_status === 'Draft').length || 0}
                   </div>
                   <span className="text-[9px] text-slate-500 font-medium mt-1 block truncate">In preparation by JEs</span>
 
@@ -407,7 +413,7 @@ const HoDashboardView = () => {
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>Est. Total Value:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                        {formatINR(estimates.filter(e => e.estimate_status === 'Draft').reduce((sum, e) => sum + Number(e.total_amount || 125000), 0) || 1420000)}
+                        {formatINR(estimates.filter(e => e.estimate_status === 'Draft').reduce((sum, e) => sum + Number(e.total_amount || 0), 0) || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px]">
@@ -424,7 +430,7 @@ const HoDashboardView = () => {
                     <span className="w-2 h-2 rounded-full bg-sky-500/40 group-hover:bg-sky-400 transition" />
                   </div>
                   <div className="text-xl sm:text-2xl font-mono font-black text-sky-500 dark:text-sky-400 mt-2 truncate">
-                    {pendingEstimatesCount || 12}
+                    {pendingEstimatesCount || 0}
                   </div>
                   <span className="text-[9px] text-slate-500 font-medium mt-1 block truncate">ZO / HO technical audit</span>
 
@@ -444,13 +450,13 @@ const HoDashboardView = () => {
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>HO Review Pending:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                        {estimates.filter(e => e.estimate_status === 'Under HO Review').length || 7}
+                        {estimates.filter(e => e.estimate_status === 'Under HO Review').length || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>ZO Review Pending:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                        {estimates.filter(e => e.estimate_status === 'Under ZO Review').length || 5}
+                        {estimates.filter(e => e.estimate_status === 'Under ZO Review').length || 0}
                       </span>
                     </div>
                   </div>
@@ -463,7 +469,7 @@ const HoDashboardView = () => {
                     <span className="w-2 h-2 rounded-full bg-emerald-500/40 group-hover:bg-emerald-400 transition" />
                   </div>
                   <div className="text-xl sm:text-2xl font-mono font-black text-emerald-600 dark:text-emerald-400 mt-2 truncate">
-                    {overview.running || projects.filter(p => p.status === 'Running').length || 18}
+                    {overview.running || projects.filter(p => p.status === 'Running').length || 0}
                   </div>
                   <span className="text-[9px] text-slate-500 font-medium mt-1 block truncate">On-site work active</span>
 
@@ -483,12 +489,12 @@ const HoDashboardView = () => {
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>Total Active Value:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#34d399' : '#059669' }}>
-                        {formatINR(projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 18400000)}
+                        {formatINR(projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>Logging Compliance:</span>
-                      <span className="font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>94.2% daily reports</span>
+                      <span className="font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>{projects.length > 0 ? 'Active' : '0% daily reports'}</span>
                     </div>
                   </div>
                 </div>
@@ -502,15 +508,15 @@ const HoDashboardView = () => {
                   <div className="text-base sm:text-lg font-mono font-black text-purple-600 dark:text-purple-400 mt-2 truncate" title={
                     formatINR(
                       Math.max(0, 
-                        (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 18400000) - 
-                        (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 4250000)
+                        (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 0) - 
+                        (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0)
                       )
                     )
                   }>
                     {formatINR(
                       Math.max(0, 
-                        (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 18400000) - 
-                        (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 4250000)
+                        (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 0) - 
+                        (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0)
                       )
                     )}
                   </div>
@@ -532,13 +538,13 @@ const HoDashboardView = () => {
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>Total Portfolio Value:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                        {formatINR(projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 18400000)}
+                        {formatINR(projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>Gross Billed Amount:</span>
                       <span className="font-mono font-bold" style={{ color: isDark ? '#34d399' : '#059669' }}>
-                        {formatINR(roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 4250000)}
+                        {formatINR(roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px] pt-0.5 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
@@ -546,8 +552,8 @@ const HoDashboardView = () => {
                       <span className="font-mono font-bold" style={{ color: isDark ? '#c084fc' : '#7e22ce' }}>
                         {formatINR(
                           Math.max(0, 
-                            (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 18400000) - 
-                            (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 4250000)
+                            (projects.reduce((sum, p) => sum + Number(p.work_order_value || 0), 0) || 0) - 
+                            (roleData.capitalFlow?.recentMoved?.requisitionsDisbursed || 0)
                           )
                         )}
                       </span>
